@@ -18,3 +18,7 @@
 后端：Spring Boot+Spring Security + JWT+MyBatis-Plus
 
 数据库：MySQL
+
+##### ui设计
+
+Figma链接：https://www.figma.com/make/S3hqMhhyBZ3Wo8dd0F4LnW/%E7%89%A9%E4%B8%9A%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F?t=XqQMH58515RlfGan-1
