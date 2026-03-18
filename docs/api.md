@@ -1,106 +1,125 @@
-# 物业管理系统 - API 接口设计文档
+# 智慧物业管理系统 (WisdomPM) API 接口设计文档
 
 ## 1. 通用说明
 
-*   **Base URL:** `http://localhost:8080/api/v1`
-*   **请求格式:** `Content-Type: application/json`
-*   **认证方式:** Header 携带 `Authorization: Bearer <JWT_TOKEN>`
-*   **状态码定义:**
-    *   `200`: 请求成功
-    *   `401`: 未登录或 Token 过期
-    *   `403`: 无权限访问
-    *   `500`: 服务器内部错误
+### 1.1 基础信息
+*   **网关地址**: `http://localhost:8080/api/v1`
+*   **数据格式**: `Content-Type: application/json`
+*   **认证方式**: 请求头携带 `Authorization: Bearer <JWT_TOKEN>`
 
----
-
-## 2. 基础响应格式
-
-所有接口均返回以下统一结构：
+### 1.2 统一返回格式 (`Result<T>`)
+所有接口必须返回以下结构的 JSON：
 ```json
 {
-  "code": 200,      // 业务状态码
+  "code": 200,      // 业务状态码: 200-成功, 401-未登录, 403-无权限, 500-系统异常
   "msg": "操作成功", // 提示信息
-  "data": {}        // 具体业务数据（对象或数组）
+  "data": {}        // 具体的业务数据 (Object 或 Array)
 }
 ```
 
 ---
 
-## 3. 核心 API 接口列表
+## 2. 模块 API 设计
 
-### 3.1 用户认证模块 (Auth)
-| 接口名称 | 请求方法 | 路径 | 说明 |
-| :--- | :--- | :--- | :--- |
-| 用户登录 | `POST` | `/auth/login` | 提交用户名密码，返回 JWT Token |
-| 获取当前用户信息 | `GET` | `/auth/info` | 返回当前登录用户的角色、权限、个人信息 |
-| 退出登录 | `POST` | `/auth/logout` | 注销当前 Token |
-
-### 3.2 房产管理模块 (House)
-| 接口名称 | 请求方法 | 路径 | 参数 (Query/Body) |
-| :--- | :--- | :--- | :--- |
-| 分页查询房屋 | `GET` | `/houses` | `page`, `size`, `buildingNum` (可选) |
-| 添加房屋信息 | `POST` | `/houses` | `buildingNum`, `unitNum`, `roomNum`, `area` |
-| 修改房屋信息 | `PUT` | `/houses/{id}` | 房屋对象 JSON |
-| 删除房屋 | `DELETE` | `/houses/{id}` | 房屋 ID |
-
-### 3.3 缴费管理模块 (Bill)
-| 接口名称 | 请求方法 | 路径 | 说明 |
-| :--- | :--- | :--- | :--- |
-| 查询账单列表 | `GET` | `/bills` | 支持按状态（已缴/未缴）和业主名筛选 |
-| 生成月度账单 | `POST` | `/bills/generate` | 管理员触发，根据单价和面积生成本月账单 |
-| 模拟在线缴费 | `PUT` | `/bills/pay/{id}` | 住户操作，将账单状态改为“已缴” |
-| 导出欠费报表 | `GET` | `/bills/export` | 返回 Excel 文件流（使用 EasyExcel 实现） |
-
-### 3.4 报修管理模块 (Repair)
-| 接口名称 | 请求方法 | 路径 | 参数说明 |
-| :--- | :--- | :--- | :--- |
-| 提交报修申请 | `POST` | `/repairs` | `description`, `images` (住户端) |
-| 获取报修列表 | `GET` | `/repairs` | 住户看个人，管理员看全部 |
-| 更新报修状态 | `PUT` | `/repairs/{id}/status` | `status` (处理中/已完成) |
-
-### 3.5 公告管理模块 (Notice)
-| 接口名称 | 请求方法 | 路径 | 说明 |
-| :--- | :--- | :--- | :--- |
-| 发布公告 | `POST` | `/notices` | 管理员发布（标题、内容） |
-| 获取最新公告 | `GET` | `/notices/latest` | 住户端展示最新的 5 条公告 |
+### 2.1 认证与权限模块 (Auth & RBAC)
+| 功能 | 方法 | 路径 | DTO (入参) | VO (出参) |
+| :--- | :--- | :--- | :--- | :--- |
+| 用户登录 | `POST` | `/auth/login` | `UserLoginDTO` | `String (Token)` |
+| 用户注册 | `POST` | `/auth/register` | `UserRegisterDTO` | - |
+| 获取当前用户信息 | `GET` | `/auth/info` | - | `UserVO` |
+| 分页获取角色列表 | `GET` | `/roles` | `PageQueryDTO` | `PageResult<RoleVO>` |
+| 更新角色权限 | `PUT` | `/roles/{id}/perms` | `RolePermUpdateDTO` | - |
 
 ---
 
-## 4. 典型接口数据示例
+### 2.2 资产与合同模块 (Asset & Contract)
+| 功能 | 方法 | 路径 | DTO (入参) | VO (出参) |
+| :--- | :--- | :--- | :--- | :--- |
+| 获取资产空间树 | `GET` | `/assets/tree` | - | `List<AssetTreeVO>` |
+| 分页查询资产列表 | `GET` | `/assets` | `AssetPageQueryDTO` | `PageResult<AssetVO>` |
+| 新增/编辑资产 | `POST/PUT` | `/assets` | `AssetDTO` | - |
+| 删除资产 | `DELETE` | `/assets/{id}` | - | - |
+| 分页查询合同 | `GET` | `/contracts` | `ContractPageQueryDTO` | `PageResult<ContractVO>` |
+| 新增/终止合同 | `POST/PUT` | `/contracts` | `ContractDTO` | - |
 
-### 接口：`GET /api/v1/houses` (获取房屋列表)
+---
 
-**请求参数:**
-*   `page`: 1
-*   `size`: 10
+### 2.3 财务与计费模块 (Finance & Billing)
+| 功能 | 方法 | 路径 | DTO (入参) | VO (出参) |
+| :--- | :--- | :--- | :--- | :--- |
+| 批量生成月度账单 | `POST` | `/bills/batch-generate` | `BillGenerateDTO` | `BatchRecordVO` |
+| 查询账单批处理历史 | `GET` | `/bills/batch-logs` | `PageQueryDTO` | `PageResult<BatchRecordVO>` |
+| 分页查询账单明细 | `GET` | `/bills` | `BillPageQueryDTO` | `PageResult<BillVO>` |
+| 财务流水核销确认 | `PUT` | `/finance/audit/{id}` | `PaymentAuditDTO` | - |
+| 分页查询缴费流水 | `GET` | `/finance/payments` | `PaymentPageQueryDTO` | `PageResult<PaymentVO>` |
 
-**响应数据:**
-```json
+---
+
+### 2.4 服务模块 (Repair & Complaint)
+| 功能 | 方法 | 路径 | DTO (入参) | VO (出参) |
+| :--- | :--- | :--- | :--- | :--- |
+| 获取报修看板数据 | `GET` | `/repairs/kanban` | - | `RepairKanbanVO` |
+| 录入/代录工单 | `POST` | `/repairs` | `RepairDTO` | - |
+| 派发工单/指派师傅 | `PUT` | `/repairs/dispatch` | `RepairDispatchDTO` | - |
+| 更新工单状态 | `PUT` | `/repairs/status` | `RepairStatusUpdateDTO` | - |
+| 分页查询投诉建议 | `GET` | `/complaints` | `ComplaintPageQueryDTO` | `PageResult<ComplaintVO>` |
+| 处理并反馈投诉 | `PUT` | `/complaints/handle` | `ComplaintHandleDTO` | - |
+
+---
+
+### 2.5 公告与系统模块 (Notice & System)
+| 功能 | 方法 | 路径 | DTO (入参) | VO (出参) |
+| :--- | :--- | :--- | :--- | :--- |
+| 分页查询公告历史 | `GET` | `/notices` | `NoticePageQueryDTO` | `PageResult<NoticeVO>` |
+| 发布/暂存公告 | `POST` | `/notices` | `NoticeDTO` | - |
+| 获取导入导出任务 | `GET` | `/system/tasks` | `PageQueryDTO` | `PageResult<FileTaskVO>` |
+| 导出财务报表 | `GET` | `/system/export/finance` | `ReportExportDTO` | `File (Resource)` |
+| 导入资产数据 | `POST` | `/system/import/assets` | `MultipartFile` | `ImportResultVO` |
+
+---
+
+## 3. 典型对象定义 (POJO 示例)
+
+### 3.1 DTO (接收参数)
+```typescript
+// AssetPageQueryDTO
 {
-  "code": 200,
-  "msg": "查询成功",
-  "data": {
-    "records": [
-      {
-        "id": 101,
-        "buildingNum": "12号楼",
-        "unitNum": "1单元",
-        "roomNum": "502",
-        "area": 89.5,
-        "ownerName": "张三",
-        "ownerPhone": "13800138000"
-      }
-    ],
-    "total": 50,
-    "current": 1
-  }
+  page: number;
+  pageSize: number;
+  name?: string;       // 房号模糊查询
+  type?: string;       // SHOP, RESIDENTIAL
+  status?: string;     // VACANT, SOLD等
+}
+```
+
+### 3.2 VO (返回参数)
+```typescript
+// AssetTreeVO (递归结构)
+{
+  id: number;
+  name: string;
+  type: string;
+  children: AssetTreeVO[];
+}
+
+// RepairKanbanVO (状态看板)
+{
+  pending: RepairVO[];    // 待处理
+  processing: RepairVO[]; // 处理中
+  completed: RepairVO[];  // 已办结
 }
 ```
 
 ---
 
-## 5. 开发建议
-1.  **接口测试:** 建议在后端集成 **Knife4j** (Swagger)，启动项目后访问 `http://localhost:8080/doc.html` 即可直接在线调试上述所有接口。
-2.  **前端调用:** 前端 Axios 请求拦截器中需统一处理 `401` 错误，若发现 Token 过期，应强制跳转回登录页。
-3.  **安全性:** 对于 `DELETE` 或 `POST` 类敏感接口，后端 Controller 需加 `@PreAuthorize("hasRole('ADMIN')")` 权限注解。
+## 4. 开发注意事项
 
+1.  **路径占位符**: 使用 `{id}` 表示路径参数，Java 端需使用 `@PathVariable` 接收。
+2.  **分页封装**: `PageResult` 统一包含 `total` (总数) 和 `records` (当前页数据列表)。
+3.  **状态码规范**:
+    *   `200`: 成功。
+    *   `400`: 参数校验失败（前端传参有误）。
+    *   `401`: JWT 缺失或过期，前端需引导至登录页。
+    *   `403`: 角色权限不足。
+    *   `500`: 后端代码异常或数据库报错。
+4.  **Swagger/Knife4j**: 所有接口开发完成后，需及时在 Controller 增加 `@Operation` 注解，确保在线文档 `doc.html` 实时更新。
