@@ -78,6 +78,10 @@
 
 ---
 
+### ER图
+<img width="968" height="894" alt="image" src="https://github.com/user-attachments/assets/8c24617b-7f58-44ec-bde1-be902a8ca722" />
+
+
 ## 3. 典型对象定义 (POJO 示例)
 
 ### 3.1 DTO (接收参数)
