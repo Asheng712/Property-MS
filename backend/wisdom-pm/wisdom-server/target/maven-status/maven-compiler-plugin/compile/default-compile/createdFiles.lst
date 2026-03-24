@@ -1,0 +1,3 @@
+com\wisdom\Application.class
+com\wisdom\dto\AssetPageQueryDTO.class
+com\wisdom\service\HouseService.class
