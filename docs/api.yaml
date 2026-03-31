@@ -1,0 +1,251 @@
+openapi: 3.0.0
+info:
+  title: 智慧物业管理系统 (WisdomPM) API
+  description: |
+    基于 Spring Boot 3.x + React 开发的智慧物业管理系统后台接口文档。
+    包含资产管理、财务核销、报修调度、权限控制等核心模块。
+    **开发规范：** 所有接口均返回统一的 `Result` 对象。
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: 开发环境服务器
+
+# --- 安全定义：JWT 校验 ---
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # --- 数据模型定义 (Schemas) ---
+  schemas:
+    # 统一返回结果
+    Result:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 业务状态码 (200:成功, 500:失败, 401:未授权)
+        msg:
+          type: string
+          description: 响应消息
+        data:
+          type: object
+          description: 业务数据内容
+
+    # 分页结果封装
+    PageResult:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+          description: 总记录数
+        records:
+          type: array
+          items:
+            type: object
+          description: 数据列表内容
+
+    # 资产模型 (House/Shop)
+    Asset:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        parentId:
+          type: integer
+          format: int64
+          description: 父级ID (楼栋ID)
+        name:
+          type: string
+          description: 房号/铺号名称
+        type:
+          type: string
+          enum: [BUILDING, UNIT, RESIDENTIAL, SHOP]
+        area:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [VACANT, SOLD, RENTING, DECORATING]
+        ownerName:
+          type: string
+        ownerPhone:
+          type: string
+
+    # 登录请求
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+security:
+  - bearerAuth: []
+
+# --- 接口路径定义 ---
+paths:
+  # 1. 权限与用户模块
+  /auth/login:
+    post:
+      tags:
+        - 1. 权限与用户模块 (RBAC)
+      summary: 用户登录获取Token
+      security: [] # 登录接口无需Token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功，返回JWT Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+
+  /auth/info:
+    get:
+      tags:
+        - 1. 权限与用户模块 (RBAC)
+      summary: 获取当前管理员信息及权限
+      responses:
+        '200':
+          description: 成功
+
+  # 2. 资产与合同模块
+  /assets/tree:
+    get:
+      tags:
+        - 2. 资产与合同模块
+      summary: 获取资产空间树 (用于UI左侧导航)
+      responses:
+        '200':
+          description: 返回嵌套的树形结构
+
+  /assets:
+    get:
+      tags:
+        - 2. 资产与合同模块
+      summary: 分页查询资产列表 (楼栋、商铺)
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: name
+          in: query
+          description: 房号/业主模糊搜索
+          schema: { type: string }
+      responses:
+        '200':
+          description: 成功
+    post:
+      tags:
+        - 2. 资产与合同模块
+      summary: 新增资产资源
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '200':
+          description: 资产录入成功
+
+  # 3. 财务与计费模块
+  /bills/batch-generate:
+    post:
+      tags:
+        - 3. 财务与计费模块
+      summary: 智能账单引擎：一键批量生成本月账单
+      responses:
+        '200':
+          description: 批处理任务启动成功
+
+  /finance/payments:
+    get:
+      tags:
+        - 3. 财务与计费模块
+      summary: 分页查询缴费流水记录
+      responses:
+        '200':
+          description: 成功
+
+  /finance/audit/{id}:
+    put:
+      tags:
+        - 3. 财务与计费模块
+      summary: 财务核销确认
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: 状态已更新为已缴费
+
+  # 4. 服务模块
+  /repairs/kanban:
+    get:
+      tags:
+        - 4. 服务模块 (报修/投诉)
+      summary: 获取报修调度看板数据 (待处理/处理中/已办结)
+      responses:
+        '200':
+          description: 成功
+
+  /repairs:
+    post:
+      tags:
+        - 4. 服务模块 (报修/投诉)
+      summary: 录入代办报修单
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                houseId: { type: integer }
+                content: { type: string }
+                priority: { type: integer, description: "1-普通, 2-紧急" }
+      responses:
+        '200':
+          description: 录入成功
+
+  # 5. 公告与系统模块
+  /notices:
+    post:
+      tags:
+        - 5. 公告与系统模块
+      summary: 发布定向社区公告
+      responses:
+        '200':
+          description: 发布成功
+
+  /system/export/finance:
+    get:
+      tags:
+        - 5. 公告与系统模块
+      summary: 导出财务欠费明细报表 (Excel)
+      responses:
+        '200':
+          description: 返回二进制文件流
+          content:
+            application/vnd.ms-excel:
+              schema:
+                type: string
+                format: binary
