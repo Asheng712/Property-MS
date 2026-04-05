@@ -1,24 +1,27 @@
 <template>
-  <PageContainer title="定向公告发布" description="支持按楼栋、角色或车主群体定向下发公告，提升通知触达效率。">
+  <PageContainer title="定向公告发布" description="支持按楼栋、角色或车主群体定向下发公告，支持草稿保存、发布和详情预览。">
     <template #actions>
-      <el-button type="primary" class="btn-primary-gradient" @click="dialogVisible = true">新建公告</el-button>
+      <el-button type="primary" class="btn-primary-gradient" @click="openCreate">新建公告</el-button>
     </template>
 
     <section class="announcement-grid">
-      <article v-for="notice in noticeRecords" :key="notice.id" class="surface-card announcement-card">
-        <div class="announcement-card__status">
-          <span class="status-pill" :class="notice.status === 'published' ? 'success' : 'info'">
-            {{ notice.status === 'published' ? '已发布' : '草稿' }}
-          </span>
-          <span class="muted-text">{{ notice.publishAt }}</span>
-        </div>
+      <PanelCard v-for="notice in notices" :key="notice.id" class="announcement-card">
+        <template #header>
+          <div class="announcement-card__status">
+            <StatusBadge :label="notice.status === 'published' ? '已发布' : '草稿'" :tone="notice.status === 'published' ? 'success' : 'info'" />
+            <span class="muted-text">{{ notice.publishAt }}</span>
+          </div>
+        </template>
         <h3>{{ notice.title }}</h3>
         <p>{{ notice.summary }}</p>
         <footer>
           <span>投递对象: {{ notice.audience }}</span>
-          <el-button link type="primary">查看详情</el-button>
+          <div>
+            <el-button v-if="notice.status === 'draft'" link type="primary" @click="publishExisting(notice.id)">发布</el-button>
+            <el-button link type="primary" @click="openDetail(notice.id)">详情</el-button>
+          </div>
         </footer>
-      </article>
+      </PanelCard>
     </section>
 
     <el-dialog v-model="dialogVisible" title="新建公告" width="560px">
@@ -42,16 +45,28 @@
         <el-button type="primary" @click="publishNotice">立即发布</el-button>
       </template>
     </el-dialog>
+
+    <el-drawer v-model="detailVisible" title="公告详情" size="420px">
+      <InfoList v-if="activeNotice" :items="detailItems" />
+    </el-drawer>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
+import PanelCard from '@/components/PanelCard.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { noticeRecords } from '@/mock/data'
+import type { NoticeRecord } from '@/types'
+import { createLocalId, nowText } from '@/utils/format'
 
 const dialogVisible = ref(false)
+const detailVisible = ref(false)
+const activeId = ref('')
+const notices = ref<NoticeRecord[]>(noticeRecords.map((item) => ({ ...item })))
 
 const draft = reactive({
   title: '',
@@ -59,14 +74,76 @@ const draft = reactive({
   summary: '',
 })
 
+const activeNotice = computed(() => notices.value.find((item) => item.id === activeId.value) ?? null)
+const detailItems = computed(() =>
+  activeNotice.value
+    ? [
+        { label: '公告标题', value: activeNotice.value.title },
+        { label: '推送对象', value: activeNotice.value.audience },
+        { label: '发布时间', value: activeNotice.value.publishAt },
+        { label: '状态', value: activeNotice.value.status === 'published' ? '已发布' : '草稿' },
+        { label: '摘要', value: activeNotice.value.summary },
+      ]
+    : [],
+)
+
+function openCreate() {
+  draft.title = ''
+  draft.audience = '全体业主'
+  draft.summary = ''
+  dialogVisible.value = true
+}
+
 function saveDraft() {
+  if (!draft.title.trim()) {
+    ElMessage.warning('请先填写公告标题')
+    return
+  }
+  notices.value = [
+    {
+      id: createLocalId('notice'),
+      title: draft.title,
+      audience: draft.audience,
+      publishAt: nowText(),
+      status: 'draft',
+      summary: draft.summary,
+    },
+    ...notices.value,
+  ]
   dialogVisible.value = false
   ElMessage.success('公告草稿已保存')
 }
 
 function publishNotice() {
+  if (!draft.title.trim()) {
+    ElMessage.warning('请先填写公告标题')
+    return
+  }
+  notices.value = [
+    {
+      id: createLocalId('notice'),
+      title: draft.title,
+      audience: draft.audience,
+      publishAt: nowText(),
+      status: 'published',
+      summary: draft.summary,
+    },
+    ...notices.value,
+  ]
   dialogVisible.value = false
   ElMessage.success('公告已发布到目标对象')
+}
+
+function publishExisting(noticeId: string) {
+  notices.value = notices.value.map((item) =>
+    item.id === noticeId ? { ...item, status: 'published', publishAt: nowText() } : item,
+  )
+  ElMessage.success('草稿公告已发布')
+}
+
+function openDetail(noticeId: string) {
+  activeId.value = noticeId
+  detailVisible.value = true
 }
 </script>
 
@@ -78,7 +155,7 @@ function publishNotice() {
 }
 
 .announcement-card h3 {
-  margin: 16px 0 10px;
+  margin: 0 0 10px;
   font-size: 24px;
   color: #22304a;
 }

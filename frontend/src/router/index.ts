@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 
 const router = createRouter({
@@ -43,6 +44,17 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  const appStore = useAppStore()
+  const isAuthPage = to.path === '/login' || to.path === '/register'
+
+  if (!appStore.isAuthenticated && !isAuthPage) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+
+  if (appStore.isAuthenticated && isAuthPage) {
+    return { path: '/dashboard' }
+  }
+
   document.title = `${String(to.meta.title ?? '智慧物业管理系统')} | WisdomPM`
 })
 

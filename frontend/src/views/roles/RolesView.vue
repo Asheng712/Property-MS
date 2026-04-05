@@ -1,16 +1,13 @@
 <template>
-  <PageContainer title="角色权限控制 (RBAC)" description="细粒度划分不同操作人员的权限边界，支持角色切换和权限即时保存。">
+  <PageContainer title="角色权限控制 (RBAC)" description="细粒度划分不同操作人员的权限边界，支持新增角色与本地权限实时编辑。">
     <template #actions>
       <el-button type="primary" class="btn-primary-gradient" @click="dialogVisible = true">新增角色</el-button>
     </template>
 
     <div class="roles-layout">
-      <section class="surface-card role-list">
-        <div class="section-title">
-          <h3>系统角色组</h3>
-        </div>
+      <PanelCard title="系统角色组" class="role-list">
         <button
-          v-for="role in roleRecords"
+          v-for="role in roles"
           :key="role.id"
           type="button"
           class="role-list__item"
@@ -20,16 +17,18 @@
           <strong>{{ role.name }}</strong>
           <span>{{ role.description }}</span>
         </button>
-      </section>
+      </PanelCard>
 
-      <section class="surface-card permission-panel">
-        <div class="permission-panel__header">
-          <div>
-            <h3>{{ activeRole.name }}</h3>
-            <p>{{ activeRole.locked ? '该角色拥有系统的完整控制权，不可修改核心权限。' : activeRole.description }}</p>
+      <PanelCard class="permission-panel">
+        <template #header>
+          <div class="permission-panel__header">
+            <div>
+              <h3>{{ activeRole.name }}</h3>
+              <p>{{ activeRole.locked ? '该角色拥有系统的完整控制权，不可修改核心权限。' : activeRole.description }}</p>
+            </div>
+            <el-button :disabled="Boolean(activeRole.locked)" type="primary" @click="savePermissions">保存配置</el-button>
           </div>
-          <el-button :disabled="Boolean(activeRole.locked)" type="primary" @click="savePermissions">保存配置</el-button>
-        </div>
+        </template>
 
         <div class="permission-group" v-for="group in editableGroups" :key="group.id">
           <div class="permission-group__title">
@@ -46,7 +45,7 @@
             </el-checkbox>
           </div>
         </div>
-      </section>
+      </PanelCard>
     </div>
 
     <el-dialog v-model="dialogVisible" title="新增角色" width="500px">
@@ -70,7 +69,10 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import PageContainer from '@/components/PageContainer.vue'
+import PanelCard from '@/components/PanelCard.vue'
 import { roleRecords } from '@/mock/data'
+import type { RoleRecord } from '@/types'
+import { createLocalId } from '@/utils/format'
 
 interface EditablePermission {
   label: string
@@ -84,7 +86,8 @@ interface EditableGroup {
   permissions: EditablePermission[]
 }
 
-const activeRoleId = ref(roleRecords[0].id)
+const roles = ref<RoleRecord[]>(roleRecords.map((item) => ({ ...item, permissionGroups: item.permissionGroups.map((group) => ({ ...group, permissions: [...group.permissions] })) })))
+const activeRoleId = ref(roles.value[0]?.id ?? '')
 const dialogVisible = ref(false)
 const editableGroups = ref<EditableGroup[]>([])
 
@@ -93,11 +96,15 @@ const draft = reactive({
   description: '',
 })
 
-const activeRole = computed(() => roleRecords.find((item) => item.id === activeRoleId.value) ?? roleRecords[0])
+const activeRole = computed(() => roles.value.find((item) => item.id === activeRoleId.value) ?? roles.value[0])
 
 watch(
   activeRole,
   (role) => {
+    if (!role) {
+      editableGroups.value = []
+      return
+    }
     editableGroups.value = role.permissionGroups.map((group) => ({
       id: group.id,
       title: group.title,
@@ -112,14 +119,45 @@ watch(
 )
 
 function savePermissions() {
+  if (!activeRole.value) {
+    return
+  }
+  roles.value = roles.value.map((role) =>
+    role.id === activeRole.value.id
+      ? {
+          ...role,
+          permissionGroups: editableGroups.value
+            .filter((group) => group.enabled)
+            .map((group) => ({
+              id: group.id,
+              title: group.title,
+              permissions: group.permissions.filter((permission) => permission.checked).map((permission) => permission.label),
+            })),
+        }
+      : role,
+  )
   ElMessage.success(`${activeRole.value.name} 的权限配置已保存`)
 }
 
 function createRole() {
+  if (!draft.name.trim()) {
+    ElMessage.warning('请先填写角色名称')
+    return
+  }
+  const newRole: RoleRecord = {
+    id: createLocalId('role'),
+    name: draft.name,
+    description: draft.description || '自定义角色',
+    permissionGroups: [
+      { id: 'asset', title: '资产全景管理', permissions: ['查看资产树'] },
+    ],
+  }
+  roles.value = [...roles.value, newRole]
+  activeRoleId.value = newRole.id
   dialogVisible.value = false
-  ElMessage.success(`角色 ${draft.name || '新角色'} 已创建`)
   draft.name = ''
   draft.description = ''
+  ElMessage.success(`角色 ${newRole.name} 已创建`)
 }
 </script>
 
@@ -166,7 +204,7 @@ function createRole() {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  width: 100%;
 }
 
 .permission-panel__header h3 {

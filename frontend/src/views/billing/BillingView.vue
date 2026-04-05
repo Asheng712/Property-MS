@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="智能账单引擎" description="一键基于单价、面积或阶梯计费规则批量生成账单，批处理过程透明可追踪。">
+  <PageContainer title="智能账单引擎" description="基于物业费、租金与阶梯水电规则批量生成账单，保留处理记录与详情。">
     <template #actions>
       <el-button plain @click="ruleDialogVisible = true">计费规则配置</el-button>
       <el-button type="primary" class="btn-primary-gradient" @click="generateMonthlyBills">一键生成本月账单</el-button>
@@ -9,39 +9,34 @@
       <article class="surface-card billing-summary__card">
         <div class="billing-summary__icon">⚡</div>
         <div>
-          <strong>12,450</strong>
+          <strong>{{ totalGenerated }}</strong>
           <span>本月已生成账单数</span>
         </div>
       </article>
     </div>
 
-    <section class="surface-card">
-      <div class="section-title">
-        <h3>账单批处理记录</h3>
-      </div>
-      <el-table :data="billBatches">
+    <PanelCard title="账单批处理记录">
+      <el-table :data="batches">
         <el-table-column prop="batchNo" label="生成批次号" min-width="150" />
         <el-table-column prop="scope" label="计费对象范围" min-width="180" />
         <el-table-column prop="feeType" label="费用类型" min-width="140" />
         <el-table-column prop="generatedCount" label="生成数量" min-width="100" />
         <el-table-column label="总金额" min-width="140">
-          <template #default="{ row }">¥{{ row.totalAmount.toLocaleString() }}</template>
+          <template #default="{ row }">{{ formatCurrency(row.totalAmount) }}</template>
         </el-table-column>
         <el-table-column prop="executedAt" label="执行时间" min-width="150" />
         <el-table-column label="状态" min-width="120">
           <template #default="{ row }">
-            <span class="status-pill" :class="row.status === 'done' ? 'success' : 'info'">
-              {{ row.status === 'done' ? '已生成' : '处理中' }}
-            </span>
+            <StatusBadge :label="row.status === 'done' ? '已生成' : '处理中'" :tone="row.status === 'done' ? 'success' : 'info'" />
           </template>
         </el-table-column>
         <el-table-column label="操作" width="120">
-          <template #default>
-            <el-button link type="primary">查看明细</el-button>
+          <template #default="{ row }">
+            <el-button link type="primary" @click="openDetail(row.id)">查看明细</el-button>
           </template>
         </el-table-column>
       </el-table>
-    </section>
+    </PanelCard>
 
     <el-dialog v-model="ruleDialogVisible" title="计费规则配置" width="560px">
       <el-form label-position="top" class="dialog-form">
@@ -66,16 +61,28 @@
         <el-button type="primary" @click="saveRules">保存配置</el-button>
       </template>
     </el-dialog>
+
+    <el-drawer v-model="detailVisible" title="批处理详情" size="420px">
+      <InfoList v-if="activeBatch" :items="detailItems" />
+    </el-drawer>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
+import PanelCard from '@/components/PanelCard.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { billBatches } from '@/mock/data'
+import type { BillBatch } from '@/types'
+import { createLocalId, formatCurrency, nowText } from '@/utils/format'
 
 const ruleDialogVisible = ref(false)
+const detailVisible = ref(false)
+const activeId = ref('')
+const batches = ref<BillBatch[]>(billBatches.map((item) => ({ ...item })))
 
 const ruleForm = reactive({
   propertyMode: 'area',
@@ -83,13 +90,46 @@ const ruleForm = reactive({
   cycle: 'monthly',
 })
 
+const totalGenerated = computed(() => batches.value.reduce((sum, item) => sum + item.generatedCount, 0).toLocaleString('zh-CN'))
+const activeBatch = computed(() => batches.value.find((item) => item.id === activeId.value) ?? null)
+const detailItems = computed(() =>
+  activeBatch.value
+    ? [
+        { label: '批次号', value: activeBatch.value.batchNo },
+        { label: '范围', value: activeBatch.value.scope },
+        { label: '费用类型', value: activeBatch.value.feeType },
+        { label: '生成数量', value: activeBatch.value.generatedCount },
+        { label: '总金额', value: formatCurrency(activeBatch.value.totalAmount) },
+        { label: '执行时间', value: activeBatch.value.executedAt },
+      ]
+    : [],
+)
+
 function generateMonthlyBills() {
-  ElMessage.success('已触发本月账单生成任务，当前为演示态。')
+  batches.value = [
+    {
+      id: createLocalId('batch'),
+      batchNo: `BATCH-${Date.now()}`,
+      scope: '全小区',
+      feeType: ruleForm.propertyMode === 'area' ? '物业费' : '固定费用',
+      generatedCount: 268,
+      totalAmount: 186000,
+      executedAt: nowText(),
+      status: 'done',
+    },
+    ...batches.value,
+  ]
+  ElMessage.success('已生成本月批处理账单')
 }
 
 function saveRules() {
   ruleDialogVisible.value = false
   ElMessage.success('计费规则已保存')
+}
+
+function openDetail(batchId: string) {
+  activeId.value = batchId
+  detailVisible.value = true
 }
 </script>
 

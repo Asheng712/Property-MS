@@ -11,7 +11,11 @@
         </div>
         <div class="auth-copy">
           <h1>打造下一代<br />智慧物业管理体验</h1>
-          <p>基于前沿的数字化引擎，一站式解决资产、财务、服务与人员权限调度，全面提升物业服务品质与经营效率。</p>
+          <p>覆盖收费、报修、投诉、公告与权限体系，一套后台串联物业日常的全部关键节点。</p>
+          <ul class="auth-tips">
+            <li>默认体验账号: `admin / 123456`</li>
+            <li>支持按角色登录: 超级管理员、财务经理、前台客服、维修工程部</li>
+          </ul>
         </div>
       </div>
     </section>
@@ -22,25 +26,39 @@
           <h2>欢迎回来</h2>
           <p>请登录您的管理账户以继续</p>
         </div>
-        <el-form label-position="top" @submit.prevent>
-          <el-form-item label="登录账号 / 手机号">
-            <el-input v-model="form.username" placeholder="请输入管理员账号" />
+        <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
+          <el-form-item label="登录角色" prop="role">
+            <el-segmented v-model="form.role" :options="roleOptions" block />
           </el-form-item>
-          <el-form-item>
+          <el-form-item label="登录账号 / 手机号" prop="username">
+            <el-input v-model="form.username" placeholder="请输入账号、姓名或手机号" clearable />
+          </el-form-item>
+          <el-form-item prop="password">
             <template #label>
               <div class="auth-label">
                 <span>登录密码</span>
                 <router-link to="/register">忘记密码?</router-link>
               </div>
             </template>
-            <el-input v-model="form.password" type="password" show-password placeholder="请输入登录密码" />
+            <el-input
+              v-model="form.password"
+              type="password"
+              show-password
+              placeholder="请输入登录密码"
+              @keyup.enter="handleLogin"
+            />
           </el-form-item>
           <div class="auth-remember">
             <el-checkbox v-model="form.remember">记住我</el-checkbox>
+            <span v-if="redirectText" class="auth-redirect">{{ redirectText }}</span>
           </div>
-          <el-button type="primary" size="large" class="auth-submit btn-primary-gradient" @click="handleLogin">
+          <el-button type="primary" size="large" class="auth-submit btn-primary-gradient" :loading="submitting" @click="handleLogin">
             登录系统
           </el-button>
+          <div class="auth-quick">
+            <el-button plain @click="fillDemo('admin')">管理员示例</el-button>
+            <el-button plain @click="fillDemo('finance')">财务示例</el-button>
+          </div>
           <p class="auth-footer">
             还没有账户？
             <router-link to="/register">立即注册</router-link>
@@ -52,22 +70,67 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, reactive, ref } from 'vue'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 
+type LoginRole = '超级管理员' | '财务经理' | '前台客服' | '维修工程部'
+
 const router = useRouter()
+const route = useRoute()
 const appStore = useAppStore()
+const formRef = ref<FormInstance>()
+const submitting = ref(false)
+
+const roleOptions: LoginRole[] = ['超级管理员', '财务经理', '前台客服', '维修工程部']
 
 const form = reactive({
-  username: 'admin',
-  password: '123456',
+  role: (route.query.role as LoginRole) || '超级管理员',
+  username: (route.query.account as string) || 'admin',
+  password: '',
   remember: true,
 })
 
-function handleLogin() {
-  appStore.setCurrentUser('管理员')
-  router.push('/dashboard')
+const rules: FormRules<typeof form> = {
+  role: [{ required: true, message: '请选择登录角色', trigger: 'change' }],
+  username: [{ required: true, message: '请输入登录账号或手机号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入登录密码', trigger: 'blur' }],
+}
+
+const redirectText = computed(() =>
+  route.query.redirect ? `登录后将跳转到 ${String(route.query.redirect)}` : '',
+)
+
+function fillDemo(userId: 'admin' | 'finance') {
+  if (userId === 'admin') {
+    form.role = '超级管理员'
+    form.username = 'admin'
+  } else {
+    form.role = '财务经理'
+    form.username = 'finance'
+  }
+  form.password = '123456'
+}
+
+async function handleLogin() {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) {
+    return
+  }
+
+  submitting.value = true
+  const matched = appStore.loginByCredential(form.username, form.password, form.role)
+  submitting.value = false
+
+  if (!matched) {
+    ElMessage.error('账号、密码或角色不匹配')
+    return
+  }
+
+  ElMessage.success(`欢迎回来，${matched.name}`)
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
+  router.push(redirect)
 }
 </script>
 
@@ -133,7 +196,7 @@ function handleLogin() {
 }
 
 .auth-copy {
-  max-width: 520px;
+  max-width: 560px;
   color: #fff;
 }
 
@@ -144,10 +207,20 @@ function handleLogin() {
 }
 
 .auth-copy p {
-  margin: 0;
-  font-size: 22px;
+  margin: 0 0 20px;
+  font-size: 21px;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.82);
+}
+
+.auth-tips {
+  margin: 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.auth-tips li + li {
+  margin-top: 10px;
 }
 
 .auth-panel {
@@ -185,13 +258,29 @@ function handleLogin() {
 }
 
 .auth-remember {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 18px;
+}
+
+.auth-redirect {
+  color: #8fa0b7;
+  font-size: 13px;
 }
 
 .auth-submit {
   width: 100%;
   height: 52px;
   font-size: 17px;
+}
+
+.auth-quick {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .auth-footer {
@@ -205,7 +294,7 @@ function handleLogin() {
   }
 
   .auth-hero {
-    min-height: 360px;
+    min-height: 420px;
   }
 
   .auth-copy h1 {
@@ -225,6 +314,15 @@ function handleLogin() {
 
   .auth-copy h1 {
     font-size: 34px;
+  }
+
+  .auth-quick {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-remember {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

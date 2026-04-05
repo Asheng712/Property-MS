@@ -1,11 +1,8 @@
 <template>
-  <PageContainer title="报表导出与导入" description="统一管理财务导出、资产导入和周报推送任务，减少重复人工整理工作。">
+  <PageContainer title="报表导出与导入" description="统一管理财务导出、资产导入和周报推送任务，支持操作留痕与任务状态更新。">
     <div class="reports-grid">
-      <section class="surface-card">
-        <div class="section-title">
-          <h3>任务进度</h3>
-        </div>
-        <article v-for="card in reportCards" :key="card.id" class="report-task">
+      <PanelCard title="任务进度">
+        <article v-for="card in cards" :key="card.id" class="report-task">
           <div class="report-task__text">
             <strong>{{ card.title }}</strong>
             <span>{{ card.subtitle }}</span>
@@ -15,29 +12,54 @@
             <el-progress :percentage="card.progress" />
           </div>
         </article>
-      </section>
+      </PanelCard>
 
-      <section class="surface-card">
-        <div class="section-title">
-          <h3>快捷操作</h3>
-        </div>
+      <PanelCard title="快捷操作">
         <div class="quick-actions">
           <button v-for="action in reportActions" :key="action.id" type="button" class="quick-actions__item" @click="runAction(action.title)">
             <el-icon :size="24"><component :is="action.icon" /></el-icon>
             <span>{{ action.title }}</span>
           </button>
         </div>
-      </section>
+      </PanelCard>
     </div>
+
+    <PanelCard title="最近执行记录">
+      <el-table :data="history">
+        <el-table-column prop="time" label="执行时间" min-width="160" />
+        <el-table-column prop="title" label="任务名称" min-width="160" />
+        <el-table-column prop="operator" label="执行人" min-width="120" />
+        <el-table-column label="状态" min-width="120">
+          <template #default="{ row }">
+            <StatusBadge :label="row.status" :tone="row.status === '已完成' ? 'success' : 'info'" />
+          </template>
+        </el-table-column>
+      </el-table>
+    </PanelCard>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
+import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import PageContainer from '@/components/PageContainer.vue'
+import PanelCard from '@/components/PanelCard.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { reportActions, reportCards } from '@/mock/data'
+import { nowText } from '@/utils/format'
+
+const cards = reactive(reportCards.map((item) => ({ ...item })))
+const history = ref([
+  { time: '2026-04-05 08:00', title: '收费日报', operator: '管理员', status: '已完成' },
+  { time: '2026-04-05 08:10', title: '资产台账导入', operator: '财务经理', status: '执行中' },
+])
 
 function runAction(title: string) {
+  history.value = [{ time: nowText(), title, operator: '管理员', status: '已完成' }, ...history.value]
+  const target = cards.find((item) => title.includes(item.title.replace('日报', '')) || title.includes(item.title))
+  if (target) {
+    target.progress = Math.min(100, target.progress + 6)
+  }
   ElMessage.success(`${title} 已开始执行`)
 }
 </script>
@@ -47,6 +69,7 @@ function runAction(title: string) {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: 20px;
+  margin-bottom: 20px;
 }
 
 .report-task {

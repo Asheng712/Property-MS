@@ -58,34 +58,165 @@
           </div>
         </div>
         <div class="topbar__right">
-          <el-button circle plain><el-icon><Search /></el-icon></el-button>
-          <el-button circle plain><el-icon><FullScreen /></el-icon></el-button>
-          <el-button circle plain><el-icon><Setting /></el-icon></el-button>
-          <div class="topbar__user">
-            <div class="avatar">{{ appStore.currentUser.slice(0, 1) }}</div>
-            <span>{{ appStore.currentUser }} (退出)</span>
-          </div>
+          <el-button circle plain @click="openSearch">
+            <el-icon><Search /></el-icon>
+          </el-button>
+          <el-button circle plain @click="goHome">
+            <el-icon><House /></el-icon>
+          </el-button>
+          <el-button circle plain @click="settingsVisible = true">
+            <el-icon><Setting /></el-icon>
+          </el-button>
+
+          <el-dropdown trigger="click" @command="handleUserCommand">
+            <button class="topbar__user topbar__user-btn" type="button">
+              <div class="avatar">{{ appStore.currentUser.slice(0, 1) }}</div>
+              <span>{{ appStore.currentUser }} / {{ appStore.currentRole }}</span>
+              <el-icon><ArrowDown /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item disabled>{{ appStore.currentUser }} 当前在线</el-dropdown-item>
+                <el-dropdown-item divided disabled>切换用户</el-dropdown-item>
+                <el-dropdown-item
+                  v-for="user in appStore.users"
+                  :key="user.id"
+                  :command="`switch:${user.id}`"
+                >
+                  {{ user.name }} / {{ user.role }}
+                </el-dropdown-item>
+                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+                <el-dropdown-item command="register">前往注册</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </header>
       <main class="main-content">
         <router-view />
       </main>
     </div>
+
+    <el-dialog v-model="searchVisible" title="全局搜索" width="520px">
+      <el-input v-model="searchKeyword" placeholder="搜索页面、模块或功能..." clearable />
+      <div class="search-result">
+        <button
+          v-for="item in filteredNavigation"
+          :key="item.path"
+          type="button"
+          class="search-result__item"
+          @click="goTo(item.path)"
+        >
+          <span>{{ item.label }}</span>
+          <small>{{ item.path }}</small>
+        </button>
+      </div>
+    </el-dialog>
+
+    <el-drawer v-model="settingsVisible" title="系统设置" size="420px">
+      <div class="settings-list">
+        <div class="settings-item">
+          <div>
+            <strong>当前用户</strong>
+            <p>{{ appStore.currentUser }} / {{ appStore.currentRole }}</p>
+          </div>
+        </div>
+        <div class="settings-item">
+          <div>
+            <strong>紧凑侧边栏</strong>
+            <p>适合小尺寸屏幕或密集操作</p>
+          </div>
+          <el-switch :model-value="appStore.sidebarCollapsed" @change="handleCompactChange" />
+        </div>
+        <div class="settings-item">
+          <div>
+            <strong>消息提示音</strong>
+            <p>用于报修、收费等业务提醒</p>
+          </div>
+          <el-switch :model-value="appStore.noticeSoundEnabled" @change="handleNoticeSoundChange" />
+        </div>
+        <div class="settings-item">
+          <div>
+            <strong>返回登录页</strong>
+            <p>退出当前登录并跳转到登录页</p>
+          </div>
+          <el-button plain @click="logout">退出</el-button>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Fold, FullScreen, Menu, Search, Setting } from '@element-plus/icons-vue'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ArrowDown, Fold, House, Menu, Search, Setting } from '@element-plus/icons-vue'
+import { computed, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
 import BrandLogo from '@/components/BrandLogo.vue'
 import { navigationItems } from '@/mock/data'
 import { useAppStore } from '@/stores/app'
 
 const appStore = useAppStore()
 const route = useRoute()
+const router = useRouter()
+
+const searchVisible = ref(false)
+const settingsVisible = ref(false)
+const searchKeyword = ref('')
 
 const currentTitle = computed(() => String(route.meta.title ?? '智慧物业管理系统'))
+const filteredNavigation = computed(() =>
+  navigationItems.filter((item) => !searchKeyword.value || item.label.includes(searchKeyword.value) || item.path.includes(searchKeyword.value)),
+)
+
+function openSearch() {
+  searchVisible.value = true
+}
+
+function goHome() {
+  router.push('/dashboard')
+}
+
+function goTo(path: string) {
+  searchVisible.value = false
+  router.push(path)
+}
+
+function handleCompactChange(value: boolean | string | number) {
+  const shouldCollapse = Boolean(value)
+  if (appStore.sidebarCollapsed !== shouldCollapse) {
+    appStore.toggleSidebar()
+  }
+}
+
+function handleNoticeSoundChange(value: boolean | string | number) {
+  appStore.toggleNoticeSound(Boolean(value))
+  ElMessage.success(Boolean(value) ? '已开启消息提示音' : '已关闭消息提示音')
+}
+
+function handleUserCommand(command: string) {
+  if (command === 'logout') {
+    logout()
+    return
+  }
+
+  if (command === 'register') {
+    router.push('/register')
+    return
+  }
+
+  if (command.startsWith('switch:')) {
+    const userId = command.split(':')[1]
+    appStore.switchUser(userId)
+    ElMessage.success(`已切换为 ${appStore.currentUser} 身份`)
+  }
+}
+
+function logout() {
+  appStore.logout()
+  settingsVisible.value = false
+  router.push('/login')
+}
 </script>
 
 <style scoped>
@@ -171,6 +302,12 @@ const currentTitle = computed(() => String(route.meta.title ?? '智慧物业管�
   color: #5f6f89;
 }
 
+.topbar__user-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
 .avatar {
   display: grid;
   place-items: center;
@@ -192,6 +329,51 @@ const currentTitle = computed(() => String(route.meta.title ?? '智慧物业管�
 
 .sidebar__brand--mobile {
   padding: 0 0 18px;
+}
+
+.search-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.search-result__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e8eef6;
+  border-radius: 14px;
+  background: #fbfdff;
+  cursor: pointer;
+}
+
+.search-result__item small {
+  color: #93a1b7;
+}
+
+.settings-list {
+  display: grid;
+  gap: 18px;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf1f7;
+}
+
+.settings-item strong {
+  color: #24344e;
+}
+
+.settings-item p {
+  margin: 6px 0 0;
+  color: #8ea0b8;
 }
 
 @media (max-width: 1024px) {

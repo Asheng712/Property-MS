@@ -1,7 +1,7 @@
 <template>
   <PageContainer title="管理员运营看板" description="聚合收费、报修、投诉和资产经营数据，帮助管理人员快速了解园区整体运行状态。">
     <template #actions>
-      <el-button plain>首页</el-button>
+      <el-button plain @click="goHome">首页</el-button>
     </template>
 
     <div class="dashboard-grid">
@@ -16,10 +16,17 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import PageContainer from '@/components/PageContainer.vue'
 import PieLegendCard from '@/components/PieLegendCard.vue'
 import StatCard from '@/components/StatCard.vue'
 import { dashboardStats, parkingChart, rentalChart } from '@/mock/data'
+
+const router = useRouter()
+
+function goHome() {
+  router.push('/dashboard')
+}
 </script>
 
 <style scoped>

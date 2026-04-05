@@ -1,14 +1,11 @@
 <template>
-  <PageContainer title="资产全景管理" description="以树形结构管理楼栋、单元、房间及商铺，基础台账一目了然。">
+  <PageContainer title="资产全景管理" description="以树形结构管理楼栋、单元、房间及商铺，支持新增、编辑与台账明细查看。">
     <template #actions>
-      <el-button type="primary" class="btn-primary-gradient" @click="assetDialogVisible = true">新增资产</el-button>
+      <el-button type="primary" class="btn-primary-gradient" @click="openCreateDialog">新增资产</el-button>
     </template>
 
     <div class="asset-layout">
-      <section class="surface-card tree-panel">
-        <div class="section-title">
-          <h3>社区空间结构</h3>
-        </div>
+      <PanelCard title="社区空间结构" class="tree-panel">
         <el-tree
           node-key="id"
           :data="assetTree"
@@ -16,17 +13,18 @@
           :expand-on-click-node="false"
           @node-click="handleNodeClick"
         />
-      </section>
+      </PanelCard>
 
       <section class="asset-main">
         <DataToolbar
           v-model:keyword="keyword"
           v-model:status="status"
-          placeholder="搜索房间号、业主姓名..."
+          placeholder="搜索房号、业主姓名..."
           select-placeholder="筛选状态"
           :filters="statusFilters"
         />
-        <section class="surface-card">
+
+        <PanelCard title="资产台账" description="支持查看状态、承租人和面积信息">
           <el-table :data="filteredAssets">
             <el-table-column prop="code" label="房号/铺号" min-width="120" />
             <el-table-column prop="name" label="房间号/店铺号" min-width="140" />
@@ -34,25 +32,26 @@
               <template #default="{ row }">{{ getCategoryText(row.category) }}</template>
             </el-table-column>
             <el-table-column label="建筑面积" min-width="160">
-              <template #default="{ row }">{{ row.area }}㎡ {{ row.areaLabel }}</template>
+              <template #default="{ row }">{{ formatArea(row.area) }} {{ row.areaLabel }}</template>
             </el-table-column>
             <el-table-column label="交付状态" min-width="120">
               <template #default="{ row }">
-                <span class="status-pill" :class="getAssetStatusClass(row.deliveryStatus)">{{ getAssetStatusText(row.deliveryStatus) }}</span>
+                <StatusBadge :label="getAssetStatusText(row.deliveryStatus)" :tone="getAssetStatusTone(row.deliveryStatus)" />
               </template>
             </el-table-column>
             <el-table-column prop="occupant" label="业主/承租人" min-width="140" />
-            <el-table-column label="操作" width="100" fixed="right">
+            <el-table-column label="操作" width="140" fixed="right">
               <template #default="{ row }">
-                <el-button link type="primary" @click="openEdit(row.code)">编辑</el-button>
+                <el-button link type="primary" @click="openDetail(row.id)">详情</el-button>
+                <el-button link type="primary" @click="openEdit(row.id)">编辑</el-button>
               </template>
             </el-table-column>
           </el-table>
-        </section>
+        </PanelCard>
       </section>
     </div>
 
-    <el-dialog v-model="assetDialogVisible" title="新增资产" width="520px">
+    <el-dialog v-model="assetDialogVisible" :title="editingAssetId ? '编辑资产' : '新增资产'" width="520px">
       <el-form label-position="top" class="dialog-form">
         <el-form-item label="房号/铺号">
           <el-input v-model="draftAsset.code" />
@@ -65,7 +64,17 @@
           </el-select>
         </el-form-item>
         <el-form-item label="建筑面积">
-          <el-input v-model="draftAsset.area" />
+          <el-input v-model.number="draftAsset.area" />
+        </el-form-item>
+        <el-form-item label="业主/承租人">
+          <el-input v-model="draftAsset.occupant" />
+        </el-form-item>
+        <el-form-item label="交付状态">
+          <el-select v-model="draftAsset.deliveryStatus">
+            <el-option label="经营中" value="occupied" />
+            <el-option label="空置" value="vacant" />
+            <el-option label="已售" value="sold" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -73,6 +82,10 @@
         <el-button type="primary" @click="saveAsset">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-drawer v-model="detailVisible" title="资产详情" size="420px">
+      <InfoList v-if="activeAsset" :items="detailItems" />
+    </el-drawer>
   </PageContainer>
 </template>
 
@@ -80,16 +93,25 @@
 import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import DataToolbar from '@/components/DataToolbar.vue'
+import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
+import PanelCard from '@/components/PanelCard.vue'
+import StatusBadge from '@/components/StatusBadge.vue'
 import { assetRecords, assetTree } from '@/mock/data'
+import type { AssetRecord } from '@/types'
+import { createLocalId, formatArea } from '@/utils/format'
 
-type AssetStatus = 'occupied' | 'vacant' | 'sold'
-type AssetCategory = 'shop' | 'residence' | 'parking'
+type AssetStatus = AssetRecord['deliveryStatus']
+type AssetCategory = AssetRecord['category']
 
 const keyword = ref('')
 const status = ref('')
 const selectedZone = ref('')
 const assetDialogVisible = ref(false)
+const detailVisible = ref(false)
+const editingAssetId = ref('')
+const activeAssetId = ref('')
+const assets = ref<AssetRecord[]>(assetRecords.map((item) => ({ ...item })))
 
 const statusFilters = [
   { label: '经营中', value: 'occupied' },
@@ -103,7 +125,7 @@ const assetStatusText: Record<AssetStatus, string> = {
   sold: '已售',
 }
 
-const assetStatusClass: Record<AssetStatus, string> = {
+const assetStatusTone: Record<AssetStatus, 'success' | 'warning' | 'info'> = {
   occupied: 'success',
   vacant: 'warning',
   sold: 'info',
@@ -118,24 +140,62 @@ const categoryText: Record<AssetCategory, string> = {
 const draftAsset = reactive({
   code: '',
   category: 'shop' as AssetCategory,
-  area: '',
+  area: 0,
+  occupant: '',
+  deliveryStatus: 'vacant' as AssetStatus,
 })
 
 const filteredAssets = computed(() =>
-  assetRecords.filter((item) => {
-    const matchesZone = !selectedZone.value || item.zone === selectedZone.value || item.id === selectedZone.value
-    const matchesKeyword = !keyword.value || `${item.code}${item.occupant}`.includes(keyword.value)
+  assets.value.filter((item) => {
+    const matchesZone = !selectedZone.value || item.zone === selectedZone.value
+    const matchesKeyword = !keyword.value || `${item.code}${item.occupant}${item.name}`.includes(keyword.value)
     const matchesStatus = !status.value || item.deliveryStatus === status.value
     return matchesZone && matchesKeyword && matchesStatus
   }),
+)
+
+const activeAsset = computed(() => assets.value.find((item) => item.id === activeAssetId.value) ?? null)
+
+const detailItems = computed(() =>
+  activeAsset.value
+    ? [
+        { label: '房号/铺号', value: activeAsset.value.code },
+        { label: '资源类型', value: getCategoryText(activeAsset.value.category) },
+        { label: '建筑面积', value: formatArea(activeAsset.value.area) },
+        { label: '状态', value: getAssetStatusText(activeAsset.value.deliveryStatus) },
+        { label: '业主/承租人', value: activeAsset.value.occupant || '-' },
+        { label: '所属分区', value: activeAsset.value.zone.toUpperCase() },
+      ]
+    : [],
 )
 
 function handleNodeClick(node: { id: string }) {
   selectedZone.value = node.id.includes('-') ? node.id.split('-')[0] : node.id
 }
 
-function openEdit(code: string) {
-  ElMessage.success(`已打开 ${code} 的编辑弹窗占位，可继续接后端接口。`)
+function openCreateDialog() {
+  editingAssetId.value = ''
+  resetDraft()
+  assetDialogVisible.value = true
+}
+
+function openEdit(assetId: string) {
+  const found = assets.value.find((item) => item.id === assetId)
+  if (!found) {
+    return
+  }
+  editingAssetId.value = assetId
+  draftAsset.code = found.code
+  draftAsset.category = found.category
+  draftAsset.area = found.area
+  draftAsset.occupant = found.occupant === '-' ? '' : found.occupant
+  draftAsset.deliveryStatus = found.deliveryStatus
+  assetDialogVisible.value = true
+}
+
+function openDetail(assetId: string) {
+  activeAssetId.value = assetId
+  detailVisible.value = true
 }
 
 function getCategoryText(category: AssetCategory) {
@@ -146,20 +206,46 @@ function getAssetStatusText(statusValue: AssetStatus) {
   return assetStatusText[statusValue]
 }
 
-function getAssetStatusClass(statusValue: AssetStatus) {
-  return assetStatusClass[statusValue]
+function getAssetStatusTone(statusValue: AssetStatus) {
+  return assetStatusTone[statusValue]
 }
 
 function saveAsset() {
-  if (!draftAsset.code.trim()) {
-    ElMessage.warning('请先填写资产编号')
+  if (!draftAsset.code.trim() || !draftAsset.area) {
+    ElMessage.warning('请完整填写资产编号和面积')
     return
   }
+
+  const baseRecord: AssetRecord = {
+    id: editingAssetId.value || createLocalId('asset'),
+    code: draftAsset.code,
+    name: draftAsset.code,
+    category: draftAsset.category,
+    area: draftAsset.area,
+    areaLabel: `${draftAsset.area}平方米`,
+    deliveryStatus: draftAsset.deliveryStatus,
+    occupant: draftAsset.occupant.trim() || '-',
+    zone: selectedZone.value || 'a',
+  }
+
+  if (editingAssetId.value) {
+    assets.value = assets.value.map((item) => (item.id === editingAssetId.value ? baseRecord : item))
+    ElMessage.success('资产信息已更新')
+  } else {
+    assets.value = [baseRecord, ...assets.value]
+    ElMessage.success('资产已新增到台账')
+  }
+
   assetDialogVisible.value = false
-  ElMessage.success('资产已保存到本地演示态')
+  resetDraft()
+}
+
+function resetDraft() {
   draftAsset.code = ''
   draftAsset.category = 'shop'
-  draftAsset.area = ''
+  draftAsset.area = 0
+  draftAsset.occupant = ''
+  draftAsset.deliveryStatus = 'vacant'
 }
 </script>
 
