@@ -38,14 +38,14 @@
 
 ### 2.2 资产与合同模块 (Asset & Contract)
 
-| 功能       | 方法         | 路径             | DTO (入参) | VO (出参)                  |
-|:-------- |:---------- |:-------------- |:------------------------------------ |:------------------------ |
-| 获取资产空间树  | `GET`      | `/assets/tree` | -                                    | `List<AssetTreeVO>`      |
-| 分页查询资产列表 | `GET`      | `/assets`      | `AssetPageQueryDTO`                  | `PageResult<AssetVO>`    |
-| 新增/编辑资产  | `POST/PUT` | `/assets`      | `AssetDTO`                           | -                        |
-| 删除资产     | `DELETE`   | `/assets/{id}` | -                                    | -                        |
-| 分页查询合同   | `GET`      | `/contracts`   | `ContractPageQueryDTO`               | `PageResult<ContractVO>` |
-| 新增/终止合同  | `POST/PUT` | `/contracts`   | `ContractDTO`                        | -                        |
+| 功能       | 方法         | 路径             | DTO (入参)               | VO (出参)                  |
+|:-------- |:---------- |:-------------- |:---------------------- |:------------------------ |
+| 获取资产空间树  | `GET`      | `/assets/tree` | -                      | `List<AssetTreeVO>`      |
+| 分页查询资产列表 | `GET`      | `/assets`      | `AssetPageQueryDTO`    | `PageResult<AssetVO>`    |
+| 新增/编辑资产  | `POST/PUT` | `/assets`      | `AssetDTO`             | -                        |
+| 删除资产     | `DELETE`   | `/assets/{id}` | -                      | -                        |
+| 分页查询合同   | `GET`      | `/contracts`   | `ContractPageQueryDTO` | `PageResult<ContractVO>` |
+| 新增/终止合同  | `POST/PUT` | `/contracts`   | `ContractDTO`          | -                        |
 
 ---
 
@@ -85,6 +85,14 @@
 | 导入资产数据   | `POST` | `/system/import/assets`  | `MultipartFile`      | `ImportResultVO`         |
 
 ---
+
+### 2.6 AI辅助功能模块 (Notice & Finance & Repair)
+
+| 功能       | 方法     | 路径                    | DTO (入参)                        | VO (出参)                   |
+| -------- | ------ | --------------------- | ------------------------------- | ------------------------- |
+| AI辅助生成公告 | `POST` | `/ai/notice/generate` | `String(topic),String(content)` | `String(generatedNotice)` |
+| 发布/暂存公告  | `POST` | `/ai/finance/analyze` | `String(reportData)`            | `String(analysis)`        |
+| 获取导入导出任务 | `POST` | `/ai/repair/analyze`  | `String(description)`           | `RepairAnalysisResult`    |
 
 ### ER图
 
@@ -137,3 +145,5 @@
    * `403`: 角色权限不足。
    * `500`: 后端代码异常或数据库报错。
 4. **Swagger/Knife4j**: 所有接口开发完成后，需及时在 Controller 增加 `@Operation` 注解，确保在线文档 `doc.html` 实时更新。
+
+
