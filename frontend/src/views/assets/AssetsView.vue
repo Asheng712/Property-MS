@@ -1,14 +1,15 @@
 <template>
-  <PageContainer title="资产全景管理" description="以树形结构管理楼栋、单元、房间及商铺，支持新增、编辑与台账明细查看。">
+  <PageContainer title="资产管理" description="已接入最新后端资产树、分页查询、新增、编辑和删除接口。">
     <template #actions>
       <el-button type="primary" class="btn-primary-gradient" @click="openCreateDialog">新增资产</el-button>
     </template>
 
     <div class="asset-layout">
-      <PanelCard title="社区空间结构" class="tree-panel">
+      <PanelCard title="资产空间树" class="tree-panel">
         <el-tree
           node-key="id"
           :data="assetTree"
+          :props="{ label: 'name', children: 'children' }"
           default-expand-all
           :expand-on-click-node="false"
           @node-click="handleNodeClick"
@@ -19,67 +20,97 @@
         <DataToolbar
           v-model:keyword="keyword"
           v-model:status="status"
-          placeholder="搜索房号、业主姓名..."
-          select-placeholder="筛选状态"
+          placeholder="搜索资产名称"
+          select-placeholder="筛选资产状态"
           :filters="statusFilters"
-        />
+        >
+          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+        </DataToolbar>
 
-        <PanelCard title="资产台账" description="支持查看状态、承租人和面积信息">
-          <el-table :data="filteredAssets">
-            <el-table-column prop="code" label="房号/铺号" min-width="120" />
-            <el-table-column prop="name" label="房间号/店铺号" min-width="140" />
-            <el-table-column label="资源类型" min-width="120">
-              <template #default="{ row }">{{ getCategoryText(row.category) }}</template>
+        <PanelCard title="资产台账" description="数据来自 /api/v1/assets。">
+          <el-table v-loading="loading" :data="assets">
+            <el-table-column prop="id" label="ID" width="90" />
+            <el-table-column prop="name" label="资产名称" min-width="180" />
+            <el-table-column label="资产类型" min-width="120">
+              <template #default="{ row }">{{ getTypeText(row.type) }}</template>
             </el-table-column>
-            <el-table-column label="建筑面积" min-width="160">
-              <template #default="{ row }">{{ formatArea(row.area) }} {{ row.areaLabel }}</template>
+            <el-table-column label="建筑面积" min-width="140">
+              <template #default="{ row }">{{ formatArea(Number(row.area)) }}</template>
             </el-table-column>
-            <el-table-column label="交付状态" min-width="120">
+            <el-table-column label="状态" min-width="120">
               <template #default="{ row }">
-                <StatusBadge :label="getAssetStatusText(row.deliveryStatus)" :tone="getAssetStatusTone(row.deliveryStatus)" />
+                <StatusBadge :label="getStatusText(row.status)" :tone="getStatusTone(row.status)" />
               </template>
             </el-table-column>
-            <el-table-column prop="occupant" label="业主/承租人" min-width="140" />
-            <el-table-column label="操作" width="140" fixed="right">
+            <el-table-column prop="ownerName" label="业主姓名" min-width="140">
+              <template #default="{ row }">{{ row.ownerName || '-' }}</template>
+            </el-table-column>
+            <el-table-column prop="ownerPhone" label="业主电话" min-width="160">
+              <template #default="{ row }">{{ row.ownerPhone || '-' }}</template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="创建时间" min-width="180">
+              <template #default="{ row }">{{ row.createTime || '-' }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="180" fixed="right">
               <template #default="{ row }">
-                <el-button link type="primary" @click="openDetail(row.id)">详情</el-button>
-                <el-button link type="primary" @click="openEdit(row.id)">编辑</el-button>
+                <el-button link type="primary" @click="openDetail(row)">详情</el-button>
+                <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+                <el-button link type="danger" @click="removeAsset(row.id)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
+
+          <div class="pagination-wrap">
+            <el-pagination
+              background
+              layout="total, sizes, prev, pager, next"
+              :current-page="query.page"
+              :page-size="query.pageSize"
+              :page-sizes="[10, 20, 50]"
+              :total="total"
+              @current-change="handlePageChange"
+              @size-change="handleSizeChange"
+            />
+          </div>
         </PanelCard>
       </section>
     </div>
 
-    <el-dialog v-model="assetDialogVisible" :title="editingAssetId ? '编辑资产' : '新增资产'" width="520px">
+    <el-dialog v-model="dialogVisible" :title="draft.id ? '编辑资产' : '新增资产'" width="560px">
       <el-form label-position="top" class="dialog-form">
-        <el-form-item label="房号/铺号">
-          <el-input v-model="draftAsset.code" />
+        <el-form-item label="上级资产 ID">
+          <el-input-number v-model="draft.parentId" :min="0" :precision="0" class="full-width" />
         </el-form-item>
-        <el-form-item label="资源类型">
-          <el-select v-model="draftAsset.category">
-            <el-option label="商铺" value="shop" />
-            <el-option label="住宅" value="residence" />
-            <el-option label="车位" value="parking" />
+        <el-form-item label="资产名称">
+          <el-input v-model="draft.name" placeholder="请输入资产名称" />
+        </el-form-item>
+        <el-form-item label="资产类型">
+          <el-select v-model="draft.type" placeholder="请选择资产类型">
+            <el-option label="楼栋" value="BUILDING" />
+            <el-option label="单元" value="UNIT" />
+            <el-option label="住宅" value="RESIDENTIAL" />
+            <el-option label="商铺" value="SHOP" />
           </el-select>
         </el-form-item>
         <el-form-item label="建筑面积">
-          <el-input v-model.number="draftAsset.area" />
+          <el-input-number v-model="draft.area" :min="0" :precision="2" class="full-width" />
         </el-form-item>
-        <el-form-item label="业主/承租人">
-          <el-input v-model="draftAsset.occupant" />
-        </el-form-item>
-        <el-form-item label="交付状态">
-          <el-select v-model="draftAsset.deliveryStatus">
-            <el-option label="经营中" value="occupied" />
-            <el-option label="空置" value="vacant" />
-            <el-option label="已售" value="sold" />
+        <el-form-item label="资产状态">
+          <el-select v-model="draft.status" placeholder="请选择资产状态">
+            <el-option v-for="item in statusFilters" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="业主姓名">
+          <el-input v-model="draft.ownerName" placeholder="请输入业主姓名" />
+        </el-form-item>
+        <el-form-item label="业主电话">
+          <el-input v-model="draft.ownerPhone" placeholder="请输入业主电话" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="assetDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveAsset">保存</el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="submitting" @click="saveAsset">保存</el-button>
       </template>
     </el-dialog>
 
@@ -90,162 +121,258 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import DataToolbar from '@/components/DataToolbar.vue'
 import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { assetRecords, assetTree } from '@/mock/data'
-import type { AssetRecord } from '@/types'
-import { createLocalId, formatArea } from '@/utils/format'
+import { assetApi } from '@/services/api'
+import { formatArea } from '@/utils/format'
+import type { AssetRecord, AssetTreeNode } from '@/types'
 
-type AssetStatus = AssetRecord['deliveryStatus']
-type AssetCategory = AssetRecord['category']
-
+const loading = ref(false)
+const submitting = ref(false)
+const dialogVisible = ref(false)
+const detailVisible = ref(false)
 const keyword = ref('')
 const status = ref('')
-const selectedZone = ref('')
-const assetDialogVisible = ref(false)
-const detailVisible = ref(false)
-const editingAssetId = ref('')
-const activeAssetId = ref('')
-const assets = ref<AssetRecord[]>(assetRecords.map((item) => ({ ...item })))
+const total = ref(0)
+const selectedTreeNodeId = ref<number | null>(null)
+const assets = ref<AssetRecord[]>([])
+const assetTree = ref<AssetTreeNode[]>([])
+const activeAsset = ref<AssetRecord | null>(null)
+
+const query = reactive({
+  page: 1,
+  pageSize: 10,
+})
+
+const draft = reactive<{
+  id?: number
+  parentId?: number
+  name: string
+  type: string
+  area: number
+  status: string
+  ownerName: string
+  ownerPhone: string
+}>({
+  id: undefined,
+  parentId: undefined,
+  name: '',
+  type: 'SHOP',
+  area: 0,
+  status: 'occupied',
+  ownerName: '',
+  ownerPhone: '',
+})
 
 const statusFilters = [
-  { label: '经营中', value: 'occupied' },
+  { label: '已入住', value: 'occupied' },
   { label: '空置', value: 'vacant' },
   { label: '已售', value: 'sold' },
 ]
 
-const assetStatusText: Record<AssetStatus, string> = {
-  occupied: '经营中',
-  vacant: '空置',
-  sold: '已售',
-}
-
-const assetStatusTone: Record<AssetStatus, 'success' | 'warning' | 'info'> = {
-  occupied: 'success',
-  vacant: 'warning',
-  sold: 'info',
-}
-
-const categoryText: Record<AssetCategory, string> = {
-  shop: '商铺',
-  residence: '住宅',
-  parking: '车位',
-}
-
-const draftAsset = reactive({
-  code: '',
-  category: 'shop' as AssetCategory,
-  area: 0,
-  occupant: '',
-  deliveryStatus: 'vacant' as AssetStatus,
-})
-
-const filteredAssets = computed(() =>
-  assets.value.filter((item) => {
-    const matchesZone = !selectedZone.value || item.zone === selectedZone.value
-    const matchesKeyword = !keyword.value || `${item.code}${item.occupant}${item.name}`.includes(keyword.value)
-    const matchesStatus = !status.value || item.deliveryStatus === status.value
-    return matchesZone && matchesKeyword && matchesStatus
-  }),
-)
-
-const activeAsset = computed(() => assets.value.find((item) => item.id === activeAssetId.value) ?? null)
-
 const detailItems = computed(() =>
   activeAsset.value
     ? [
-        { label: '房号/铺号', value: activeAsset.value.code },
-        { label: '资源类型', value: getCategoryText(activeAsset.value.category) },
-        { label: '建筑面积', value: formatArea(activeAsset.value.area) },
-        { label: '状态', value: getAssetStatusText(activeAsset.value.deliveryStatus) },
-        { label: '业主/承租人', value: activeAsset.value.occupant || '-' },
-        { label: '所属分区', value: activeAsset.value.zone.toUpperCase() },
+        { label: 'ID', value: String(activeAsset.value.id) },
+        { label: '上级资产 ID', value: activeAsset.value.parentId ? String(activeAsset.value.parentId) : '-' },
+        { label: '资产名称', value: activeAsset.value.name },
+        { label: '资产类型', value: getTypeText(activeAsset.value.type) },
+        { label: '建筑面积', value: formatArea(Number(activeAsset.value.area)) },
+        { label: '资产状态', value: getStatusText(activeAsset.value.status) },
+        { label: '业主姓名', value: activeAsset.value.ownerName || '-' },
+        { label: '业主电话', value: activeAsset.value.ownerPhone || '-' },
+        { label: '创建时间', value: activeAsset.value.createTime || '-' },
       ]
     : [],
 )
 
-function handleNodeClick(node: { id: string }) {
-  selectedZone.value = node.id.includes('-') ? node.id.split('-')[0] : node.id
+onMounted(() => {
+  void Promise.all([loadTree(), loadAssets()])
+})
+
+async function loadTree() {
+  try {
+    assetTree.value = await assetApi.getTree()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载资产树失败')
+  }
+}
+
+async function loadAssets() {
+  loading.value = true
+  try {
+    const result = await assetApi.getList({
+      page: query.page,
+      pageSize: query.pageSize,
+      name: keyword.value.trim() || undefined,
+      status: status.value || undefined,
+      type: undefined,
+    })
+
+    assets.value = selectedTreeNodeId.value
+      ? result.records.filter((item) => item.parentId === selectedTreeNodeId.value || item.id === selectedTreeNodeId.value)
+      : result.records
+    total.value = result.total
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载资产列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+function handleNodeClick(node: AssetTreeNode) {
+  selectedTreeNodeId.value = node.id
+  void loadAssets()
+}
+
+function handleSearch() {
+  query.page = 1
+  void loadAssets()
+}
+
+function handleReset() {
+  keyword.value = ''
+  status.value = ''
+  selectedTreeNodeId.value = null
+  query.page = 1
+  void loadAssets()
+}
+
+function handlePageChange(page: number) {
+  query.page = page
+  void loadAssets()
+}
+
+function handleSizeChange(size: number) {
+  query.pageSize = size
+  query.page = 1
+  void loadAssets()
 }
 
 function openCreateDialog() {
-  editingAssetId.value = ''
   resetDraft()
-  assetDialogVisible.value = true
+  draft.parentId = selectedTreeNodeId.value ?? undefined
+  dialogVisible.value = true
 }
 
-function openEdit(assetId: string) {
-  const found = assets.value.find((item) => item.id === assetId)
-  if (!found) {
-    return
-  }
-  editingAssetId.value = assetId
-  draftAsset.code = found.code
-  draftAsset.category = found.category
-  draftAsset.area = found.area
-  draftAsset.occupant = found.occupant === '-' ? '' : found.occupant
-  draftAsset.deliveryStatus = found.deliveryStatus
-  assetDialogVisible.value = true
+function openEdit(asset: AssetRecord) {
+  draft.id = asset.id
+  draft.parentId = asset.parentId ?? undefined
+  draft.name = asset.name
+  draft.type = asset.type
+  draft.area = Number(asset.area)
+  draft.status = asset.status
+  draft.ownerName = asset.ownerName || ''
+  draft.ownerPhone = asset.ownerPhone || ''
+  dialogVisible.value = true
 }
 
-function openDetail(assetId: string) {
-  activeAssetId.value = assetId
+function openDetail(asset: AssetRecord) {
+  activeAsset.value = asset
   detailVisible.value = true
 }
 
-function getCategoryText(category: AssetCategory) {
-  return categoryText[category]
-}
-
-function getAssetStatusText(statusValue: AssetStatus) {
-  return assetStatusText[statusValue]
-}
-
-function getAssetStatusTone(statusValue: AssetStatus) {
-  return assetStatusTone[statusValue]
-}
-
-function saveAsset() {
-  if (!draftAsset.code.trim() || !draftAsset.area) {
-    ElMessage.warning('请完整填写资产编号和面积')
+async function saveAsset() {
+  if (!draft.name.trim()) {
+    ElMessage.warning('请输入资产名称')
     return
   }
 
-  const baseRecord: AssetRecord = {
-    id: editingAssetId.value || createLocalId('asset'),
-    code: draftAsset.code,
-    name: draftAsset.code,
-    category: draftAsset.category,
-    area: draftAsset.area,
-    areaLabel: `${draftAsset.area}平方米`,
-    deliveryStatus: draftAsset.deliveryStatus,
-    occupant: draftAsset.occupant.trim() || '-',
-    zone: selectedZone.value || 'a',
+  if (draft.area <= 0) {
+    ElMessage.warning('建筑面积必须大于 0')
+    return
   }
 
-  if (editingAssetId.value) {
-    assets.value = assets.value.map((item) => (item.id === editingAssetId.value ? baseRecord : item))
-    ElMessage.success('资产信息已更新')
-  } else {
-    assets.value = [baseRecord, ...assets.value]
-    ElMessage.success('资产已新增到台账')
-  }
+  submitting.value = true
+  try {
+    const payload = {
+      id: draft.id,
+      parentId: draft.parentId,
+      name: draft.name.trim(),
+      type: draft.type,
+      area: draft.area,
+      status: draft.status,
+      ownerName: draft.ownerName.trim() || undefined,
+      ownerPhone: draft.ownerPhone.trim() || undefined,
+    }
 
-  assetDialogVisible.value = false
-  resetDraft()
+    if (draft.id) {
+      await assetApi.update(payload)
+      ElMessage.success('资产更新成功')
+    } else {
+      await assetApi.create(payload)
+      ElMessage.success('资产新增成功')
+    }
+
+    dialogVisible.value = false
+    resetDraft()
+    await Promise.all([loadTree(), loadAssets()])
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '保存资产失败')
+  } finally {
+    submitting.value = false
+  }
+}
+
+async function removeAsset(id: number) {
+  await ElMessageBox.confirm('删除后不可恢复，确定继续吗？', '删除资产', {
+    type: 'warning',
+  })
+
+  try {
+    await assetApi.remove(id)
+    ElMessage.success('资产删除成功')
+    await Promise.all([loadTree(), loadAssets()])
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '删除资产失败')
+  }
 }
 
 function resetDraft() {
-  draftAsset.code = ''
-  draftAsset.category = 'shop'
-  draftAsset.area = 0
-  draftAsset.occupant = ''
-  draftAsset.deliveryStatus = 'vacant'
+  draft.id = undefined
+  draft.parentId = undefined
+  draft.name = ''
+  draft.type = 'SHOP'
+  draft.area = 0
+  draft.status = 'occupied'
+  draft.ownerName = ''
+  draft.ownerPhone = ''
+}
+
+function getTypeText(value: string) {
+  const mapping: Record<string, string> = {
+    BUILDING: '楼栋',
+    UNIT: '单元',
+    RESIDENTIAL: '住宅',
+    SHOP: '商铺',
+  }
+
+  return mapping[value] || value
+}
+
+function getStatusText(value: string) {
+  const mapping: Record<string, string> = {
+    occupied: '已入住',
+    vacant: '空置',
+    sold: '已售',
+  }
+
+  return mapping[value] || value
+}
+
+function getStatusTone(value: string) {
+  const mapping: Record<string, 'success' | 'warning' | 'info'> = {
+    occupied: 'success',
+    vacant: 'warning',
+    sold: 'info',
+  }
+
+  return mapping[value] || 'info'
 }
 </script>
 
@@ -263,6 +390,16 @@ function resetDraft() {
 .asset-main {
   display: grid;
   gap: 16px;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.full-width {
+  width: 100%;
 }
 
 @media (max-width: 1024px) {

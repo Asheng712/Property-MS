@@ -1,30 +1,37 @@
 <template>
-  <PageContainer title="缴费流水与核销" description="聚合线上支付、人工核销和退款记录，支持对账查看、批量核销与异常状态跟踪。">
-    <template #actions>
-      <el-button plain @click="reconcile">批量核销</el-button>
-      <el-button type="primary" class="btn-primary-gradient" @click="exportRecords">导出流水</el-button>
-    </template>
-
-    <DataToolbar v-model:keyword="keyword" v-model:status="status" placeholder="搜索账单编号、缴费人..." :filters="filters" />
+  <PageContainer title="缴费流水与核销" description="已接入缴费流水分页查询与人工核销接口。">
+    <DataToolbar
+      v-model:keyword="keyword"
+      v-model:status="status"
+      placeholder="搜索交易流水号"
+      select-placeholder="筛选核销状态"
+      :filters="filters"
+    >
+      <el-button @click="handleReset">重置</el-button>
+      <el-button type="primary" @click="handleSearch">查询</el-button>
+    </DataToolbar>
 
     <PanelCard title="缴费流水">
-      <el-table :data="filteredPayments">
-        <el-table-column prop="billNo" label="账单编号" min-width="160" />
-        <el-table-column prop="payer" label="缴费人" min-width="130" />
-        <el-table-column label="缴费金额" min-width="130">
-          <template #default="{ row }">{{ formatCurrency(row.amount) }}</template>
+      <el-table v-loading="loading" :data="payments">
+        <el-table-column prop="trxNo" label="交易流水号" min-width="180" />
+        <el-table-column prop="billNo" label="账单号" min-width="160" />
+        <el-table-column prop="houseName" label="资产名称" min-width="150">
+          <template #default="{ row }">{{ row.houseName || `房屋ID: ${row.houseId}` }}</template>
         </el-table-column>
-        <el-table-column prop="channel" label="缴费渠道" min-width="130" />
-        <el-table-column prop="paidAt" label="时间" min-width="150" />
+        <el-table-column label="缴费金额" min-width="140">
+          <template #default="{ row }">{{ formatCurrency(Number(row.payAmount)) }}</template>
+        </el-table-column>
+        <el-table-column prop="payType" label="支付方式" min-width="120" />
+        <el-table-column prop="payTime" label="支付时间" min-width="170" />
         <el-table-column label="状态" min-width="120">
           <template #default="{ row }">
-            <StatusBadge :label="getStatusText(row.status)" :tone="getStatusTone(row.status)" />
+            <StatusBadge :label="row.statusText || getStatusText(row.status)" :tone="getStatusTone(row.status)" />
           </template>
         </el-table-column>
         <el-table-column label="操作" width="170">
           <template #default="{ row }">
-            <el-button link type="primary" @click="inspectRecord(row.id)">详情</el-button>
-            <el-button v-if="row.status === 'pending'" link type="primary" @click="confirmPayment(row.id)">确认</el-button>
+            <el-button link type="primary" @click="inspectRecord(row)">详情</el-button>
+            <el-button v-if="row.status === 0" link type="primary" @click="confirmPayment(row.id)">确认</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -37,90 +44,98 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import DataToolbar from '@/components/DataToolbar.vue'
 import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { paymentRecords } from '@/mock/data'
+import { financeApi } from '@/services/api'
+import { formatCurrency } from '@/utils/format'
 import type { PaymentRecord } from '@/types'
-import { formatCurrency, nowText } from '@/utils/format'
 
-type PaymentStatus = PaymentRecord['status']
-
+const loading = ref(false)
 const keyword = ref('')
 const status = ref('')
 const detailVisible = ref(false)
-const activeId = ref('')
-const payments = ref<PaymentRecord[]>(paymentRecords.map((item) => ({ ...item })))
+const payments = ref<PaymentRecord[]>([])
+const activePayment = ref<PaymentRecord | null>(null)
 
 const filters = [
-  { label: '已支付', value: 'paid' },
-  { label: '待核销', value: 'pending' },
-  { label: '退款中', value: 'refund' },
+  { label: '待核销', value: '0' },
+  { label: '已核销', value: '1' },
 ]
-
-const statusText: Record<PaymentStatus, string> = {
-  paid: '已支付',
-  pending: '待核销',
-  refund: '退款中',
-}
-
-const statusTone: Record<PaymentStatus, 'success' | 'warning' | 'danger'> = {
-  paid: 'success',
-  pending: 'warning',
-  refund: 'danger',
-}
-
-const filteredPayments = computed(() =>
-  payments.value.filter((item) => {
-    const matchesKeyword = !keyword.value || `${item.billNo}${item.payer}${item.channel}`.includes(keyword.value)
-    const matchesStatus = !status.value || item.status === status.value
-    return matchesKeyword && matchesStatus
-  }),
-)
-
-const activePayment = computed(() => payments.value.find((item) => item.id === activeId.value) ?? null)
 
 const detailItems = computed(() =>
   activePayment.value
     ? [
-        { label: '账单编号', value: activePayment.value.billNo },
-        { label: '缴费人', value: activePayment.value.payer },
-        { label: '金额', value: formatCurrency(activePayment.value.amount) },
-        { label: '渠道', value: activePayment.value.channel },
-        { label: '缴费时间', value: activePayment.value.paidAt },
-        { label: '状态', value: getStatusText(activePayment.value.status) },
+        { label: '交易流水号', value: activePayment.value.trxNo },
+        { label: '账单号', value: activePayment.value.billNo || '-' },
+        { label: '资产名称', value: activePayment.value.houseName || '-' },
+        { label: '金额', value: formatCurrency(Number(activePayment.value.payAmount)) },
+        { label: '支付方式', value: activePayment.value.payType },
+        { label: '支付时间', value: activePayment.value.payTime || '-' },
+        { label: '操作人', value: activePayment.value.operator || '-' },
+        { label: '状态', value: activePayment.value.statusText || getStatusText(activePayment.value.status) },
       ]
     : [],
 )
 
-function reconcile() {
-  payments.value = payments.value.map((item) => (item.status === 'pending' ? { ...item, status: 'paid', paidAt: nowText() } : item))
-  ElMessage.success('待核销流水已批量确认')
+onMounted(() => {
+  void loadPayments()
+})
+
+async function loadPayments() {
+  loading.value = true
+  try {
+    const result = await financeApi.getPayments({
+      page: 1,
+      pageSize: 20,
+      trxNo: keyword.value.trim() || undefined,
+      status: status.value ? Number(status.value) : undefined,
+    })
+    payments.value = result.records
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载缴费流水失败')
+  } finally {
+    loading.value = false
+  }
 }
 
-function exportRecords() {
-  ElMessage.success('缴费流水导出任务已加入队列')
+function handleSearch() {
+  void loadPayments()
 }
 
-function inspectRecord(paymentId: string) {
-  activeId.value = paymentId
+function handleReset() {
+  keyword.value = ''
+  status.value = ''
+  void loadPayments()
+}
+
+function inspectRecord(payment: PaymentRecord) {
+  activePayment.value = payment
   detailVisible.value = true
 }
 
-function confirmPayment(paymentId: string) {
-  payments.value = payments.value.map((item) => (item.id === paymentId ? { ...item, status: 'paid', paidAt: nowText() } : item))
-  ElMessage.success('该笔流水已核销完成')
+async function confirmPayment(id: number) {
+  try {
+    await financeApi.auditPayment(id, {
+      status: 1,
+      operator: 'admin',
+    })
+    ElMessage.success('该笔流水已核销完成')
+    await loadPayments()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '核销失败')
+  }
 }
 
-function getStatusText(statusValue: PaymentStatus) {
-  return statusText[statusValue]
+function getStatusText(value: number) {
+  return value === 1 ? '已核销' : '待核销'
 }
 
-function getStatusTone(statusValue: PaymentStatus) {
-  return statusTone[statusValue]
+function getStatusTone(value: number) {
+  return value === 1 ? 'success' : 'warning'
 }
 </script>

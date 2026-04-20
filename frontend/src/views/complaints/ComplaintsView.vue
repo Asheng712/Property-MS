@@ -1,59 +1,57 @@
 <template>
-  <PageContainer title="投诉建议闭环" description="统一追踪投诉来源、优先级、处理进度和回访结果，支持处理动作真实落表。">
+  <PageContainer title="投诉建议闭环" description="已接入投诉分页查询与处理反馈接口。">
     <template #actions>
-      <el-button type="primary" class="btn-primary-gradient" @click="openFeedback()">快速回访</el-button>
+      <el-button type="primary" class="btn-primary-gradient" @click="openFeedback()">快速处理</el-button>
     </template>
 
-    <DataToolbar v-model:keyword="keyword" v-model:status="status" placeholder="搜索投诉人、主题..." :filters="filters" />
+    <DataToolbar
+      v-model:keyword="keyword"
+      v-model:status="status"
+      placeholder="搜索投诉分类"
+      select-placeholder="筛选处理状态"
+      :filters="filters"
+    >
+      <el-button @click="handleReset">重置</el-button>
+      <el-button type="primary" @click="handleSearch">查询</el-button>
+    </DataToolbar>
 
     <PanelCard title="投诉列表">
-      <el-table :data="filteredComplaints">
-        <el-table-column prop="id" label="编号" min-width="120" />
-        <el-table-column prop="resident" label="投诉人" min-width="120" />
-        <el-table-column prop="topic" label="投诉主题" min-width="220" />
-        <el-table-column prop="createdAt" label="提交时间" min-width="160" />
-        <el-table-column label="优先级" min-width="110">
-          <template #default="{ row }">
-            <StatusBadge :label="getPriorityText(row.priority)" :tone="getPriorityTone(row.priority)" />
-          </template>
-        </el-table-column>
+      <el-table v-loading="loading" :data="complaints">
+        <el-table-column prop="complaintNo" label="投诉编号" min-width="150" />
+        <el-table-column prop="category" label="投诉分类" min-width="140" />
+        <el-table-column prop="content" label="投诉内容" min-width="240" show-overflow-tooltip />
+        <el-table-column prop="source" label="来源" min-width="120" />
+        <el-table-column prop="createTime" label="提交时间" min-width="170" />
         <el-table-column label="状态" min-width="120">
           <template #default="{ row }">
-            <StatusBadge :label="getStatusText(row.status)" :tone="getStatusTone(row.status)" />
+            <StatusBadge :label="row.statusText || getStatusText(row.status)" :tone="getStatusTone(row.status)" />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140">
+        <el-table-column label="操作" width="150">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openDetail(row.id)">详情</el-button>
-            <el-button link type="primary" @click="openFeedback(row.id)">处理</el-button>
+            <el-button link type="primary" @click="openDetail(row)">详情</el-button>
+            <el-button link type="primary" @click="openFeedback(row)">处理</el-button>
           </template>
         </el-table-column>
       </el-table>
     </PanelCard>
 
-    <el-drawer v-model="feedbackDrawer" title="投诉回访记录" size="420px">
+    <el-drawer v-model="feedbackDrawer" title="投诉处理" size="420px">
       <el-form label-position="top" class="dialog-form">
         <el-form-item label="处理结果">
           <el-select v-model="feedback.status">
-            <el-option label="已解决" value="closed" />
-            <el-option label="跟进中" value="following" />
+            <el-option label="处理中" :value="1" />
+            <el-option label="已办结" :value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="优先级调整">
-          <el-select v-model="feedback.priority">
-            <el-option label="高优先级" value="high" />
-            <el-option label="中优先级" value="medium" />
-            <el-option label="低优先级" value="low" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="回访说明">
+        <el-form-item label="处理说明">
           <el-input v-model="feedback.note" type="textarea" rows="6" />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="drawer-footer">
           <el-button @click="feedbackDrawer = false">取消</el-button>
-          <el-button type="primary" @click="submitFeedback">保存回访</el-button>
+          <el-button type="primary" :loading="submitting" @click="submitFeedback">保存处理结果</el-button>
         </div>
       </template>
     </el-drawer>
@@ -65,127 +63,137 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import DataToolbar from '@/components/DataToolbar.vue'
 import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { complaintRecords } from '@/mock/data'
+import { complaintApi } from '@/services/api'
 import type { ComplaintRecord } from '@/types'
 
-type ComplaintStatus = ComplaintRecord['status']
-type ComplaintPriority = ComplaintRecord['priority']
-
+const loading = ref(false)
+const submitting = ref(false)
 const keyword = ref('')
 const status = ref('')
 const feedbackDrawer = ref(false)
 const detailVisible = ref(false)
-const activeId = ref('')
-const complaints = ref<ComplaintRecord[]>(complaintRecords.map((item) => ({ ...item })))
+const complaints = ref<ComplaintRecord[]>([])
+const activeComplaint = ref<ComplaintRecord | null>(null)
 
 const filters = [
-  { label: '新建', value: 'new' },
-  { label: '跟进中', value: 'following' },
-  { label: '已关闭', value: 'closed' },
+  { label: '待处理', value: '0' },
+  { label: '处理中', value: '1' },
+  { label: '已办结', value: '2' },
 ]
 
-const statusText: Record<ComplaintStatus, string> = {
-  new: '新建',
-  following: '跟进中',
-  closed: '已关闭',
-}
-
-const statusTone: Record<ComplaintStatus, 'warning' | 'info' | 'success'> = {
-  new: 'warning',
-  following: 'info',
-  closed: 'success',
-}
-
-const priorityText: Record<ComplaintPriority, string> = {
-  high: '高优先级',
-  medium: '中优先级',
-  low: '低优先级',
-}
-
-const priorityTone: Record<ComplaintPriority, 'danger' | 'warning' | 'info'> = {
-  high: 'danger',
-  medium: 'warning',
-  low: 'info',
-}
-
 const feedback = reactive({
-  status: 'closed' as ComplaintStatus,
-  priority: 'medium' as ComplaintPriority,
+  status: 1,
   note: '',
 })
 
-const filteredComplaints = computed(() =>
-  complaints.value.filter((item) => {
-    const matchesKeyword = !keyword.value || `${item.resident}${item.topic}`.includes(keyword.value)
-    const matchesStatus = !status.value || item.status === status.value
-    return matchesKeyword && matchesStatus
-  }),
-)
-
-const activeComplaint = computed(() => complaints.value.find((item) => item.id === activeId.value) ?? null)
 const detailItems = computed(() =>
   activeComplaint.value
     ? [
-        { label: '投诉编号', value: activeComplaint.value.id },
-        { label: '投诉人', value: activeComplaint.value.resident },
-        { label: '主题', value: activeComplaint.value.topic },
-        { label: '提交时间', value: activeComplaint.value.createdAt },
-        { label: '优先级', value: getPriorityText(activeComplaint.value.priority) },
-        { label: '状态', value: getStatusText(activeComplaint.value.status) },
+        { label: '投诉编号', value: activeComplaint.value.complaintNo },
+        { label: '投诉分类', value: activeComplaint.value.category },
+        { label: '投诉来源', value: activeComplaint.value.source },
+        { label: '投诉内容', value: activeComplaint.value.content },
+        { label: '处理结果', value: activeComplaint.value.handleResult || '-' },
+        { label: '状态', value: activeComplaint.value.statusText || getStatusText(activeComplaint.value.status) },
+        { label: '提交时间', value: activeComplaint.value.createTime || '-' },
       ]
     : [],
 )
 
-function openComplaint(complaintId?: string) {
-  activeId.value = complaintId ?? complaints.value[0]?.id ?? ''
+onMounted(() => {
+  void loadComplaints()
+})
+
+async function loadComplaints() {
+  loading.value = true
+  try {
+    const result = await complaintApi.getList({
+      page: 1,
+      pageSize: 20,
+      category: keyword.value.trim() || undefined,
+      status: status.value ? Number(status.value) : undefined,
+    })
+    complaints.value = result.records
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载投诉数据失败')
+  } finally {
+    loading.value = false
+  }
 }
 
-function openFeedback(complaintId?: string) {
-  openComplaint(complaintId)
-  if (activeComplaint.value) {
-    feedback.status = activeComplaint.value.status === 'new' ? 'following' : activeComplaint.value.status
-    feedback.priority = activeComplaint.value.priority
-  }
-  feedback.note = ''
+function handleSearch() {
+  void loadComplaints()
+}
+
+function handleReset() {
+  keyword.value = ''
+  status.value = ''
+  void loadComplaints()
+}
+
+function openFeedback(complaint?: ComplaintRecord) {
+  activeComplaint.value = complaint || complaints.value[0] || null
+  feedback.status = activeComplaint.value?.status === 2 ? 2 : 1
+  feedback.note = activeComplaint.value?.handleResult || ''
   feedbackDrawer.value = true
 }
 
-function openDetail(complaintId: string) {
-  openComplaint(complaintId)
+function openDetail(complaint: ComplaintRecord) {
+  activeComplaint.value = complaint
   detailVisible.value = true
 }
 
-function submitFeedback() {
-  complaints.value = complaints.value.map((item) =>
-    item.id === activeId.value
-      ? { ...item, status: feedback.status, priority: feedback.priority }
-      : item,
-  )
-  feedbackDrawer.value = false
-  ElMessage.success('投诉回访记录已保存')
+async function submitFeedback() {
+  if (!activeComplaint.value) {
+    return
+  }
+
+  submitting.value = true
+  try {
+    await complaintApi.handle({
+      id: activeComplaint.value.id,
+      status: feedback.status,
+      handleResult: feedback.note.trim() || '已处理',
+    })
+    ElMessage.success('投诉处理结果已保存')
+    feedbackDrawer.value = false
+    await loadComplaints()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '处理投诉失败')
+  } finally {
+    submitting.value = false
+  }
 }
 
-function getStatusText(statusValue: ComplaintStatus) {
-  return statusText[statusValue]
+function getStatusText(value: number) {
+  if (value === 2) {
+    return '已办结'
+  }
+
+  if (value === 1) {
+    return '处理中'
+  }
+
+  return '待处理'
 }
 
-function getStatusTone(statusValue: ComplaintStatus) {
-  return statusTone[statusValue]
-}
+function getStatusTone(value: number) {
+  if (value === 2) {
+    return 'success'
+  }
 
-function getPriorityText(priorityValue: ComplaintPriority) {
-  return priorityText[priorityValue]
-}
+  if (value === 1) {
+    return 'info'
+  }
 
-function getPriorityTone(priorityValue: ComplaintPriority) {
-  return priorityTone[priorityValue]
+  return 'warning'
 }
 </script>
 

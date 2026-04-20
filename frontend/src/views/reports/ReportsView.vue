@@ -1,37 +1,40 @@
 <template>
-  <PageContainer title="报表导出与导入" description="统一管理财务导出、资产导入和周报推送任务，支持操作留痕与任务状态更新。">
+  <PageContainer title="报表导出与导入" description="已接入文件任务列表、财务导出和资产导入接口。">
     <div class="reports-grid">
-      <PanelCard title="任务进度">
-        <article v-for="card in cards" :key="card.id" class="report-task">
-          <div class="report-task__text">
-            <strong>{{ card.title }}</strong>
-            <span>{{ card.subtitle }}</span>
-          </div>
-          <div class="report-task__meta">
-            <span>{{ card.metric }}</span>
-            <el-progress :percentage="card.progress" />
-          </div>
-        </article>
-      </PanelCard>
-
       <PanelCard title="快捷操作">
         <div class="quick-actions">
-          <button v-for="action in reportActions" :key="action.id" type="button" class="quick-actions__item" @click="runAction(action.title)">
-            <el-icon :size="24"><component :is="action.icon" /></el-icon>
-            <span>{{ action.title }}</span>
+          <button type="button" class="quick-actions__item" @click="exportFinanceReport">
+            <span>导出财务报表</span>
+            <small>调用 /api/v1/system/export/finance</small>
           </button>
+          <label class="quick-actions__item quick-actions__item--file">
+            <span>导入资产数据</span>
+            <small>调用 /api/v1/system/import/assets</small>
+            <input type="file" accept=".xlsx,.xls,.csv" class="hidden-input" @change="handleImport" />
+          </label>
+        </div>
+      </PanelCard>
+
+      <PanelCard title="任务说明">
+        <div class="report-task">
+          <strong>当前页面已从本地 mock 切换为真实任务列表。</strong>
+          <span>导出或导入后，会刷新系统任务记录。</span>
         </div>
       </PanelCard>
     </div>
 
     <PanelCard title="最近执行记录">
-      <el-table :data="history">
-        <el-table-column prop="time" label="执行时间" min-width="160" />
-        <el-table-column prop="title" label="任务名称" min-width="160" />
-        <el-table-column prop="operator" label="执行人" min-width="120" />
+      <el-table v-loading="loading" :data="tasks">
+        <el-table-column prop="createTime" label="执行时间" min-width="170" />
+        <el-table-column prop="taskType" label="任务类型" min-width="120" />
+        <el-table-column prop="fileName" label="文件名" min-width="220" />
+        <el-table-column prop="operator" label="操作人" min-width="120" />
+        <el-table-column prop="dataCount" label="数据量" min-width="100">
+          <template #default="{ row }">{{ row.dataCount ?? '-' }}</template>
+        </el-table-column>
         <el-table-column label="状态" min-width="120">
           <template #default="{ row }">
-            <StatusBadge :label="row.status" :tone="row.status === '已完成' ? 'success' : 'info'" />
+            <StatusBadge :label="row.status" :tone="row.status === 'SUCCESS' ? 'success' : 'info'" />
           </template>
         </el-table-column>
       </el-table>
@@ -40,27 +43,66 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { reportActions, reportCards } from '@/mock/data'
-import { nowText } from '@/utils/format'
+import { systemApi } from '@/services/api'
+import type { FileTaskRecord } from '@/types'
 
-const cards = reactive(reportCards.map((item) => ({ ...item })))
-const history = ref([
-  { time: '2026-04-05 08:00', title: '收费日报', operator: '管理员', status: '已完成' },
-  { time: '2026-04-05 08:10', title: '资产台账导入', operator: '财务经理', status: '执行中' },
-])
+const loading = ref(false)
+const tasks = ref<FileTaskRecord[]>([])
 
-function runAction(title: string) {
-  history.value = [{ time: nowText(), title, operator: '管理员', status: '已完成' }, ...history.value]
-  const target = cards.find((item) => title.includes(item.title.replace('日报', '')) || title.includes(item.title))
-  if (target) {
-    target.progress = Math.min(100, target.progress + 6)
+onMounted(() => {
+  void loadTasks()
+})
+
+async function loadTasks() {
+  loading.value = true
+  try {
+    const result = await systemApi.getTasks({
+      page: 1,
+      pageSize: 20,
+    })
+    tasks.value = result.records
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载任务记录失败')
+  } finally {
+    loading.value = false
   }
-  ElMessage.success(`${title} 已开始执行`)
+}
+
+async function exportFinanceReport() {
+  try {
+    await systemApi.exportFinance({
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      reportType: 'finance',
+    })
+    ElMessage.success('财务导出任务已提交')
+    await loadTasks()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '导出财务报表失败')
+  }
+}
+
+async function handleImport(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) {
+    return
+  }
+
+  try {
+    await systemApi.importAssets(file)
+    ElMessage.success('资产导入任务已提交')
+    await loadTasks()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '导入资产失败')
+  } finally {
+    input.value = ''
+  }
 }
 </script>
 
@@ -73,27 +115,8 @@ function runAction(title: string) {
 }
 
 .report-task {
-  padding: 18px 0;
-  border-bottom: 1px solid #edf1f7;
-}
-
-.report-task:last-child {
-  border-bottom: none;
-}
-
-.report-task__text {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.report-task__text strong {
-  color: #20304b;
-}
-
-.report-task__text span,
-.report-task__meta span {
+  display: grid;
+  gap: 10px;
   color: #8ea0b8;
 }
 
@@ -104,13 +127,25 @@ function runAction(title: string) {
 
 .quick-actions__item {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
   padding: 18px;
   border: 1px solid #e8eef6;
   border-radius: 18px;
   background: linear-gradient(180deg, #fbfdff, #f5f9ff);
   color: #234;
+  cursor: pointer;
+  text-align: left;
+}
+
+.quick-actions__item--file {
+  position: relative;
+}
+
+.hidden-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
   cursor: pointer;
 }
 

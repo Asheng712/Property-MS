@@ -14,19 +14,19 @@ import {
   SetUp,
 } from '@element-plus/icons-vue'
 import type {
-  AssetRecord,
-  AssetTreeNode,
   BillBatch,
   ChartSegment,
-  ComplaintRecord,
-  ContractRecord,
+  LegacyAssetRecord,
+  LegacyAssetTreeNode,
+  LegacyComplaintRecord,
+  LegacyContractRecord,
+  LegacyNoticeRecord,
+  LegacyPaymentRecord,
+  LegacyRoleRecord,
   NavigationItem,
-  NoticeRecord,
-  PaymentRecord,
   QuickStat,
   RepairTicket,
   ReportCard,
-  RoleRecord,
 } from '@/types'
 
 export const navigationItems: NavigationItem[] = [
@@ -65,7 +65,7 @@ export const parkingChart: ChartSegment[] = [
   { label: '已出售', value: 7, color: '#f59e0b' },
 ]
 
-export const assetTree: AssetTreeNode[] = [
+export const assetTree: LegacyAssetTreeNode[] = [
   {
     id: 'a',
     label: 'A区商业街',
@@ -84,14 +84,14 @@ export const assetTree: AssetTreeNode[] = [
   },
 ]
 
-export const assetRecords: AssetRecord[] = [
+export const assetRecords: LegacyAssetRecord[] = [
   { id: '1', code: 'A1-101', name: 'A1-101', category: 'shop', area: 120, areaLabel: '120平方米', deliveryStatus: 'occupied', occupant: '张伟', zone: 'a' },
   { id: '2', code: 'A1-102', name: 'A1-102', category: 'shop', area: 85, areaLabel: '85平方米', deliveryStatus: 'vacant', occupant: '-', zone: 'a' },
   { id: '3', code: 'B2-201', name: 'B2-201', category: 'residence', area: 105, areaLabel: '105平方米', deliveryStatus: 'sold', occupant: '李娜', zone: 'b' },
   { id: '4', code: 'B2-202', name: 'B2-202', category: 'residence', area: 140, areaLabel: '140平方米', deliveryStatus: 'sold', occupant: '王强', zone: 'b' },
 ]
 
-export const contractRecords: ContractRecord[] = [
+export const contractRecords: LegacyContractRecord[] = [
   { id: '1', contractNo: 'CT-2024-001', tenant: '星河咖啡', asset: 'A1-101', period: '2024-01-01 至 2026-12-31', amount: 168000, status: 'active' },
   { id: '2', contractNo: 'CT-2024-016', tenant: '优品超市', asset: 'A1-103', period: '2024-04-01 至 2025-03-31', amount: 98000, status: 'expiring' },
   { id: '3', contractNo: 'CT-2024-021', tenant: '萌宠护理', asset: 'A2-202', period: '待审批', amount: 72000, status: 'draft' },
@@ -103,7 +103,7 @@ export const billBatches: BillBatch[] = [
   { id: '3', batchNo: 'BATCH-2403-03', scope: '全小区', feeType: '阶梯水电费', generatedCount: 570, totalAmount: 85600, executedAt: '2024-03-02 08:30', status: 'processing' },
 ]
 
-export const paymentRecords: PaymentRecord[] = [
+export const paymentRecords: LegacyPaymentRecord[] = [
   { id: '1', billNo: 'PAY-202403-001', payer: '张伟', amount: 3200, channel: '微信支付', paidAt: '2024-03-03 09:15', status: 'paid' },
   { id: '2', billNo: 'PAY-202403-018', payer: '李娜', amount: 1680, channel: '支付宝', paidAt: '2024-03-03 11:20', status: 'paid' },
   { id: '3', billNo: 'PAY-202403-026', payer: '优品超市', amount: 56000, channel: '银行转账', paidAt: '2024-03-03 14:05', status: 'pending' },
@@ -117,18 +117,18 @@ export const repairTickets: RepairTicket[] = [
   { id: 'REP-24-004', title: '自动感应门异响', location: '大堂', reporter: '前台客服', assignee: '赵工', ageLabel: '已办结', stage: 'done' },
 ]
 
-export const complaintRecords: ComplaintRecord[] = [
+export const complaintRecords: LegacyComplaintRecord[] = [
   { id: 'CMP-001', resident: '陈女士', topic: '夜间噪音扰民', createdAt: '2024-03-02 20:30', status: 'new', priority: 'high' },
   { id: 'CMP-002', resident: '刘先生', topic: '快递堆放占用消防通道', createdAt: '2024-03-03 09:10', status: 'following', priority: 'medium' },
   { id: 'CMP-003', resident: '周女士', topic: '电梯广告屏亮度过高', createdAt: '2024-03-03 11:45', status: 'closed', priority: 'low' },
 ]
 
-export const noticeRecords: NoticeRecord[] = [
+export const noticeRecords: LegacyNoticeRecord[] = [
   { id: 'N-001', title: '4月园区消防演练通知', audience: '全体业主', publishAt: '2024-03-25 09:00', status: 'published', summary: '请各楼栋提前知悉演练安排与疏散路线。' },
   { id: 'N-002', title: 'A区停车场临时封闭公告', audience: 'A区车主', publishAt: '2024-03-26 18:00', status: 'draft', summary: '因排水改造，A区停车场将临时封闭 12 小时。' },
 ]
 
-export const roleRecords: RoleRecord[] = [
+export const roleRecords: LegacyRoleRecord[] = [
   {
     id: 'admin',
     name: '超级管理员',

@@ -1,17 +1,11 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-
-interface UserProfile {
-  id: string
-  name: string
-  role: string
-  phone?: string
-  password: string
-  projectName?: string
-}
+import { authApi } from '@/services/api'
+import { clearToken, setToken } from '@/services/http'
+import type { LoginPayload, RegisterPayload, UserInfo } from '@/types'
 
 const STORAGE_KEY = 'wisdompm-app-state'
-const USERS_STORAGE_KEY = 'wisdompm-users'
+const PROFILE_KEY = 'wisdompm-user-profile'
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) {
@@ -32,45 +26,36 @@ function loadState() {
 
   return safeParse<{
     isAuthenticated: boolean
-    currentUserId: string
     compactMode: boolean
     noticeSound: boolean
   }>(window.localStorage.getItem(STORAGE_KEY))
 }
 
-function loadUsers() {
+function loadProfile() {
   if (typeof window === 'undefined') {
     return null
   }
 
-  return safeParse<UserProfile[]>(window.localStorage.getItem(USERS_STORAGE_KEY))
+  return safeParse<UserInfo>(window.localStorage.getItem(PROFILE_KEY))
 }
 
 export const useAppStore = defineStore('app', () => {
   const savedState = loadState()
-  const savedUsers = loadUsers()
-
-  const users = ref<UserProfile[]>(
-    savedUsers ?? [
-      { id: 'admin', name: '管理员', role: '超级管理员', phone: '13800000000', password: '123456', projectName: '智慧物业管理系统' },
-      { id: 'finance', name: '财务经理', role: '财务经理', phone: '13800000001', password: '123456', projectName: '智慧物业管理系统' },
-      { id: 'service', name: '前台客服', role: '前台客服', phone: '13800000002', password: '123456', projectName: '智慧物业管理系统' },
-      { id: 'repair', name: '维修主管', role: '维修工程部', phone: '13800000003', password: '123456', projectName: '智慧物业管理系统' },
-    ],
-  )
+  const savedProfile = loadProfile()
 
   const sidebarCollapsed = ref(savedState?.compactMode ?? false)
   const sidebarDrawerOpen = ref(false)
   const isAuthenticated = ref(savedState?.isAuthenticated ?? false)
-  const currentUserId = ref(savedState?.currentUserId ?? users.value[0].id)
   const noticeSoundEnabled = ref(savedState?.noticeSound ?? true)
+  const currentUserProfile = ref<UserInfo | null>(savedProfile)
 
   const sidebarWidth = computed(() => (sidebarCollapsed.value ? '88px' : '236px'))
-  const currentUserProfile = computed(
-    () => users.value.find((item) => item.id === currentUserId.value) ?? users.value[0],
+  const currentUser = computed(
+    () => currentUserProfile.value?.realName || currentUserProfile.value?.username || '未登录用户',
   )
-  const currentUser = computed(() => currentUserProfile.value.name)
-  const currentRole = computed(() => currentUserProfile.value.role)
+  const currentRole = computed(() => currentUserProfile.value?.roleName || '未分配角色')
+  const users = computed(() => (currentUserProfile.value ? [currentUserProfile.value] : []))
+  const currentUserId = computed(() => currentUserProfile.value?.id ?? 0)
 
   function persistState() {
     if (typeof window === 'undefined') {
@@ -81,19 +66,23 @@ export const useAppStore = defineStore('app', () => {
       STORAGE_KEY,
       JSON.stringify({
         isAuthenticated: isAuthenticated.value,
-        currentUserId: currentUserId.value,
         compactMode: sidebarCollapsed.value,
         noticeSound: noticeSoundEnabled.value,
       }),
     )
   }
 
-  function persistUsers() {
+  function persistProfile() {
     if (typeof window === 'undefined') {
       return
     }
 
-    window.localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users.value))
+    if (!currentUserProfile.value) {
+      window.localStorage.removeItem(PROFILE_KEY)
+      return
+    }
+
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(currentUserProfile.value))
   }
 
   function toggleSidebar() {
@@ -109,71 +98,42 @@ export const useAppStore = defineStore('app', () => {
     sidebarDrawerOpen.value = false
   }
 
-  function login(userId = 'admin') {
+  async function fetchCurrentUser() {
+    const profile = await authApi.getInfo()
+    currentUserProfile.value = profile
     isAuthenticated.value = true
-    currentUserId.value = userId
+    persistProfile()
     persistState()
+    return profile
   }
 
-  function loginByCredential(account: string, password: string, role?: string) {
-    const normalized = account.trim()
-    const matched = users.value.find((item) => {
-      const accountMatches =
-        item.id === normalized ||
-        item.name === normalized ||
-        item.phone === normalized
-      const roleMatches = !role || item.role === role
-      return accountMatches && item.password === password && roleMatches
-    })
+  async function loginByCredential(payload: LoginPayload) {
+    const token = await authApi.login(payload)
+    setToken(token)
+    const profile = await fetchCurrentUser()
+    return profile
+  }
 
-    if (!matched) {
-      return null
-    }
-
-    login(matched.id)
-    return matched
+  async function registerUser(payload: RegisterPayload) {
+    await authApi.register(payload)
   }
 
   function logout() {
     isAuthenticated.value = false
     sidebarDrawerOpen.value = false
+    currentUserProfile.value = null
+    clearToken()
+    persistProfile()
     persistState()
   }
 
-  function switchUser(userId: string) {
-    currentUserId.value = userId
-    persistState()
+  function switchUser(_userId: string) {
+    // 最新后端尚未提供切换用户接口，保留方法避免布局组件报错。
   }
 
   function toggleNoticeSound(value?: boolean) {
     noticeSoundEnabled.value = typeof value === 'boolean' ? value : !noticeSoundEnabled.value
     persistState()
-  }
-
-  function registerUser(payload: {
-    company: string
-    name: string
-    mobile: string
-    password: string
-    role: string
-  }) {
-    const existing = users.value.find((item) => item.phone === payload.mobile)
-    if (existing) {
-      return { ok: false as const, message: '该手机号已注册，请直接登录' }
-    }
-
-    const user: UserProfile = {
-      id: `user-${Date.now()}`,
-      name: payload.name,
-      role: payload.role,
-      phone: payload.mobile,
-      password: payload.password,
-      projectName: payload.company,
-    }
-
-    users.value = [user, ...users.value]
-    persistUsers()
-    return { ok: true as const, user }
   }
 
   return {
@@ -190,8 +150,8 @@ export const useAppStore = defineStore('app', () => {
     toggleSidebar,
     openSidebarDrawer,
     closeSidebarDrawer,
-    login,
     loginByCredential,
+    fetchCurrentUser,
     logout,
     switchUser,
     toggleNoticeSound,
