@@ -77,14 +77,6 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item disabled>{{ appStore.currentUser }} 当前在线</el-dropdown-item>
-                <el-dropdown-item divided disabled>切换用户</el-dropdown-item>
-                <el-dropdown-item
-                  v-for="user in appStore.users"
-                  :key="user.id"
-                  :command="`switch:${user.id}`"
-                >
-                  {{ user.name }} / {{ user.role }}
-                </el-dropdown-item>
                 <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 <el-dropdown-item command="register">前往注册</el-dropdown-item>
               </el-dropdown-menu>
@@ -124,7 +116,7 @@
         <div class="settings-item">
           <div>
             <strong>紧凑侧边栏</strong>
-            <p>适合小尺寸屏幕或密集操作</p>
+            <p>适合小屏幕或高密度操作</p>
           </div>
           <el-switch :model-value="appStore.sidebarCollapsed" @change="handleCompactChange" />
         </div>
@@ -166,7 +158,9 @@ const searchKeyword = ref('')
 
 const currentTitle = computed(() => String(route.meta.title ?? '智慧物业管理系统'))
 const filteredNavigation = computed(() =>
-  navigationItems.filter((item) => !searchKeyword.value || item.label.includes(searchKeyword.value) || item.path.includes(searchKeyword.value)),
+  navigationItems.filter(
+    (item) => !searchKeyword.value || item.label.includes(searchKeyword.value) || item.path.includes(searchKeyword.value),
+  ),
 )
 
 function openSearch() {
@@ -202,13 +196,6 @@ function handleUserCommand(command: string) {
 
   if (command === 'register') {
     router.push('/register')
-    return
-  }
-
-  if (command.startsWith('switch:')) {
-    const userId = command.split(':')[1]
-    appStore.switchUser(userId)
-    ElMessage.success(`已切换为 ${appStore.currentUser} 身份`)
   }
 }
 

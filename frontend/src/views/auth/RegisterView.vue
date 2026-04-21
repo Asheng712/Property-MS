@@ -2,30 +2,28 @@
   <div class="register-shell">
     <div class="register-panel glass-card">
       <div class="register-panel__copy">
-        <h1>创建物业管理账户</h1>
-        <p>支持管理账号注册、园区信息初始化和默认角色配置，帮助你快速搭起第一版运营后台。</p>
+        <h1>创建物业管理账号</h1>
+        <p>当前注册页已接入后端 `POST /api/v1/auth/register` 接口，注册成功后可直接跳回登录页。</p>
         <ul>
-          <li>注册后自动写入本地演示用户池</li>
-          <li>默认支持跳转回登录并带入账号信息</li>
+          <li>用户名必须唯一</li>
+          <li>角色 ID 需要和后端角色表数据对应</li>
         </ul>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="register-form" @submit.prevent>
-        <el-form-item label="公司/项目名称" prop="company">
-          <el-input v-model="form.company" placeholder="例如：智慧物业管理系统" />
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>
-        <el-form-item label="管理员姓名" prop="name">
-          <el-input v-model="form.name" placeholder="请输入姓名" />
+        <el-form-item label="真实姓名" prop="realName">
+          <el-input v-model="form.realName" placeholder="请输入真实姓名" />
         </el-form-item>
-        <el-form-item label="手机号" prop="mobile">
-          <el-input v-model="form.mobile" placeholder="请输入手机号" />
+        <el-form-item label="手机号" prop="phone">
+          <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
-        <el-form-item label="默认角色" prop="role">
-          <el-select v-model="form.role">
-            <el-option label="超级管理员" value="超级管理员" />
-            <el-option label="财务经理" value="财务经理" />
-            <el-option label="前台客服" value="前台客服" />
-            <el-option label="维修工程部" value="维修工程部" />
-          </el-select>
+        <el-form-item label="邮箱">
+          <el-input v-model="form.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="角色 ID" prop="roleId">
+          <el-input-number v-model="form.roleId" :min="1" class="full-width" />
         </el-form-item>
         <el-form-item label="设置密码" prop="password">
           <el-input v-model="form.password" type="password" show-password />
@@ -53,31 +51,30 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 
-type RegisterRole = '超级管理员' | '财务经理' | '前台客服' | '维修工程部'
-
 const router = useRouter()
 const appStore = useAppStore()
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
 
 const form = reactive({
-  company: '',
-  name: '',
-  mobile: '',
-  role: '超级管理员' as RegisterRole,
+  username: '',
+  realName: '',
+  phone: '',
+  email: '',
+  roleId: 1,
   password: '',
   confirmPassword: '',
   agree: false,
 })
 
 const rules: FormRules<typeof form> = {
-  company: [{ required: true, message: '请输入项目或公司名称', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入管理员姓名', trigger: 'blur' }],
-  mobile: [
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  realName: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
+  phone: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
     { pattern: /^1\d{10}$/, message: '请输入正确的 11 位手机号', trigger: 'blur' },
   ],
-  role: [{ required: true, message: '请选择默认角色', trigger: 'change' }],
+  roleId: [{ required: true, message: '请输入角色 ID', trigger: 'change' }],
   password: [
     { required: true, message: '请设置登录密码', trigger: 'blur' },
     { min: 6, message: '密码长度至少 6 位', trigger: 'blur' },
@@ -116,28 +113,29 @@ async function handleRegister() {
   }
 
   submitting.value = true
-  const result = appStore.registerUser({
-    company: form.company,
-    name: form.name,
-    mobile: form.mobile,
-    password: form.password,
-    role: form.role,
-  })
-  submitting.value = false
 
-  if (!result.ok) {
-    ElMessage.error(result.message)
-    return
+  try {
+    await appStore.registerUser({
+      username: form.username.trim(),
+      password: form.password,
+      realName: form.realName.trim(),
+      phone: form.phone.trim(),
+      email: form.email.trim() || undefined,
+      roleId: form.roleId,
+    })
+
+    ElMessage.success('注册成功，请使用新账号登录')
+    router.push({
+      path: '/login',
+      query: {
+        account: form.username,
+      },
+    })
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '注册失败')
+  } finally {
+    submitting.value = false
   }
-
-  ElMessage.success('注册成功，请登录新账户')
-  router.push({
-    path: '/login',
-    query: {
-      account: result.user.phone,
-      role: result.user.role,
-    },
-  })
 }
 </script>
 
@@ -184,10 +182,6 @@ async function handleRegister() {
   color: rgba(255, 255, 255, 0.82);
 }
 
-.register-panel__copy li + li {
-  margin-top: 10px;
-}
-
 .register-form {
   padding: 16px;
 }
@@ -201,6 +195,10 @@ async function handleRegister() {
 .register-submit {
   width: 100%;
   height: 48px;
+}
+
+.full-width {
+  width: 100%;
 }
 
 @media (max-width: 768px) {

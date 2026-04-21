@@ -1,10 +1,10 @@
 <template>
-  <PageContainer title="报修工单调度" description="完整的接单、派单、维修与回访闭环流程，支持人工录单和状态推进。">
+  <PageContainer title="报修工单调度" description="已接入报修看板、新建工单、派单和完工接口。">
     <template #actions>
       <el-button type="primary" class="btn-primary-gradient" @click="ticketDialogVisible = true">录入人工工单</el-button>
     </template>
 
-    <div class="kanban-grid">
+    <div class="kanban-grid" v-loading="loading">
       <PanelCard v-for="column in columns" :key="column.key" class="kanban-column">
         <template #header>
           <div class="kanban-column__header">
@@ -18,16 +18,16 @@
 
         <article v-for="ticket in column.items" :key="ticket.id" class="kanban-ticket glass-card">
           <div class="kanban-ticket__top">
-            <span class="ticket-id">{{ ticket.id }}</span>
-            <span class="ticket-age" :class="{ warning: column.key === 'todo' }">{{ ticket.ageLabel }}</span>
+            <span class="ticket-id">{{ ticket.repairNo }}</span>
+            <span class="ticket-age">{{ ticket.priorityText || `优先级 ${ticket.priority}` }}</span>
           </div>
-          <h3>{{ ticket.title }}</h3>
-          <p>位置: {{ ticket.location }}</p>
+          <h3>{{ ticket.content }}</h3>
+          <p>位置: {{ ticket.houseName || `房屋ID: ${ticket.houseId}` }}</p>
           <footer>
-            <span>跟进人: {{ ticket.assignee ?? ticket.reporter }}</span>
-            <el-button v-if="column.key === 'todo'" plain size="small" @click="openAssignDialog(ticket.id)">立即派单</el-button>
-            <el-button v-else-if="column.key === 'doing'" link type="primary" @click="completeTicket(ticket.id)">完成维修</el-button>
-            <el-button v-else link type="info" @click="openDetail(ticket.id)">回访记录</el-button>
+            <span>跟进人: {{ ticket.workerName || ticket.reporter }}</span>
+            <el-button v-if="column.key === 'pending'" plain size="small" @click="openAssignDialog(ticket.id)">立即派单</el-button>
+            <el-button v-else-if="column.key === 'processing'" link type="primary" @click="completeTicket(ticket.id)">完成维修</el-button>
+            <el-button v-else link type="info" @click="openDetail(ticket)">回访记录</el-button>
           </footer>
         </article>
       </PanelCard>
@@ -35,26 +35,32 @@
 
     <el-dialog v-model="ticketDialogVisible" title="录入人工工单" width="520px">
       <el-form label-position="top" class="dialog-form">
-        <el-form-item label="报修主题">
-          <el-input v-model="ticketDraft.title" />
+        <el-form-item label="房屋 ID">
+          <el-input-number v-model="ticketDraft.houseId" :min="1" :precision="0" class="full-width" />
         </el-form-item>
-        <el-form-item label="报修位置">
-          <el-input v-model="ticketDraft.location" />
+        <el-form-item label="报修内容">
+          <el-input v-model="ticketDraft.content" type="textarea" rows="4" />
         </el-form-item>
         <el-form-item label="报修人">
           <el-input v-model="ticketDraft.reporter" />
         </el-form-item>
+        <el-form-item label="优先级">
+          <el-select v-model="ticketDraft.priority">
+            <el-option label="普通" :value="1" />
+            <el-option label="紧急" :value="2" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="ticketDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="createTicket">提交</el-button>
+        <el-button type="primary" :loading="submitting" @click="createTicket">提交</el-button>
       </template>
     </el-dialog>
 
     <el-dialog v-model="assignDialogVisible" title="派单给维修人员" width="420px">
       <el-form label-position="top" class="dialog-form">
-        <el-form-item label="维修人员">
-          <el-input v-model="assignDraft.assignee" placeholder="例如：赵工" />
+        <el-form-item label="维修人员 ID">
+          <el-input-number v-model="assignDraft.workerId" :min="1" :precision="0" class="full-width" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -63,110 +69,153 @@
       </template>
     </el-dialog>
 
-    <el-drawer v-model="detailVisible" title="工单回访记录" size="420px">
+    <el-drawer v-model="detailVisible" title="工单详情" size="420px">
       <InfoList v-if="activeTicket" :items="detailItems" />
     </el-drawer>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
-import { repairTickets } from '@/mock/data'
-import type { RepairTicket } from '@/types'
-import { createLocalId } from '@/utils/format'
+import { repairApi } from '@/services/api'
+import type { RepairRecord } from '@/types'
 
+const loading = ref(false)
+const submitting = ref(false)
 const ticketDialogVisible = ref(false)
 const assignDialogVisible = ref(false)
 const detailVisible = ref(false)
-const selectedId = ref('')
-const tickets = ref<RepairTicket[]>(repairTickets.map((item) => ({ ...item })))
+const selectedId = ref<number | null>(null)
+const kanban = reactive({
+  pending: [] as RepairRecord[],
+  processing: [] as RepairRecord[],
+  completed: [] as RepairRecord[],
+})
+const activeTicket = ref<RepairRecord | null>(null)
 
 const ticketDraft = reactive({
-  title: '',
-  location: '',
+  houseId: 1,
+  content: '',
   reporter: '',
+  priority: 1,
 })
 
 const assignDraft = reactive({
-  assignee: '赵工',
+  workerId: 1,
 })
 
 const columns = computed(() => [
-  { key: 'todo', title: '待处理 (接单)', color: '#f97316', items: tickets.value.filter((item) => item.stage === 'todo') },
-  { key: 'doing', title: '处理中 (派单维修)', color: '#3b82f6', items: tickets.value.filter((item) => item.stage === 'doing') },
-  { key: 'done', title: '已办结 (回访评价)', color: '#10b981', items: tickets.value.filter((item) => item.stage === 'done') },
+  { key: 'pending', title: '待处理', color: '#f97316', items: kanban.pending },
+  { key: 'processing', title: '处理中', color: '#3b82f6', items: kanban.processing },
+  { key: 'completed', title: '已完成', color: '#10b981', items: kanban.completed },
 ])
-
-const activeTicket = computed(() => tickets.value.find((item) => item.id === selectedId.value) ?? null)
 
 const detailItems = computed(() =>
   activeTicket.value
     ? [
-        { label: '工单编号', value: activeTicket.value.id },
-        { label: '报修主题', value: activeTicket.value.title },
-        { label: '报修位置', value: activeTicket.value.location },
+        { label: '工单编号', value: activeTicket.value.repairNo },
+        { label: '房屋 ID', value: String(activeTicket.value.houseId) },
+        { label: '资产名称', value: activeTicket.value.houseName || '-' },
+        { label: '报修内容', value: activeTicket.value.content },
         { label: '报修人', value: activeTicket.value.reporter },
-        { label: '维修人', value: activeTicket.value.assignee ?? '-' },
-        { label: '当前阶段', value: activeTicket.value.stage === 'done' ? '已办结' : '处理中' },
+        { label: '维修人', value: activeTicket.value.workerName || '-' },
+        { label: '状态', value: activeTicket.value.statusText || String(activeTicket.value.status) },
+        { label: '创建时间', value: activeTicket.value.createTime || '-' },
+        { label: '完成时间', value: activeTicket.value.finishTime || '-' },
       ]
     : [],
 )
 
-function openAssignDialog(ticketId: string) {
-  selectedId.value = ticketId
-  assignDraft.assignee = '赵工'
+onMounted(() => {
+  void loadKanban()
+})
+
+async function loadKanban() {
+  loading.value = true
+  try {
+    const result = await repairApi.getKanban()
+    kanban.pending = result.pending
+    kanban.processing = result.processing
+    kanban.completed = result.completed
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载报修看板失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+function openAssignDialog(id: number) {
+  selectedId.value = id
+  assignDraft.workerId = 1
   assignDialogVisible.value = true
 }
 
-function assignTicket() {
-  tickets.value = tickets.value.map((item) =>
-    item.id === selectedId.value
-      ? { ...item, assignee: assignDraft.assignee.trim() || '赵工', stage: 'doing', ageLabel: '已派单' }
-      : item,
-  )
-  assignDialogVisible.value = false
-  ElMessage.success('工单已派发给维修工程部')
-}
-
-function completeTicket(ticketId: string) {
-  tickets.value = tickets.value.map((item) =>
-    item.id === ticketId ? { ...item, stage: 'done', ageLabel: '已办结' } : item,
-  )
-  ElMessage.success('工单已更新为完成待回访')
-}
-
-function openDetail(ticketId: string) {
-  selectedId.value = ticketId
-  detailVisible.value = true
-}
-
-function createTicket() {
-  if (!ticketDraft.title.trim() || !ticketDraft.location.trim()) {
-    ElMessage.warning('请补充报修主题和位置')
+async function assignTicket() {
+  if (!selectedId.value) {
     return
   }
 
-  tickets.value = [
-    {
-      id: createLocalId('REP'),
-      title: ticketDraft.title,
-      location: ticketDraft.location,
-      reporter: ticketDraft.reporter || '前台客服',
-      ageLabel: '刚刚创建',
-      stage: 'todo',
-    },
-    ...tickets.value,
-  ]
+  try {
+    await repairApi.dispatch({
+      id: selectedId.value,
+      workerId: assignDraft.workerId,
+    })
+    ElMessage.success('工单已派发')
+    assignDialogVisible.value = false
+    await loadKanban()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '派单失败')
+  }
+}
 
-  ticketDialogVisible.value = false
-  ticketDraft.title = ''
-  ticketDraft.location = ''
-  ticketDraft.reporter = ''
-  ElMessage.success('人工工单已录入')
+async function completeTicket(id: number) {
+  try {
+    await repairApi.updateStatus({
+      id,
+      status: 2,
+    })
+    ElMessage.success('工单已更新为完成')
+    await loadKanban()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '更新状态失败')
+  }
+}
+
+function openDetail(ticket: RepairRecord) {
+  activeTicket.value = ticket
+  detailVisible.value = true
+}
+
+async function createTicket() {
+  if (!ticketDraft.content.trim()) {
+    ElMessage.warning('请输入报修内容')
+    return
+  }
+
+  submitting.value = true
+  try {
+    await repairApi.create({
+      houseId: ticketDraft.houseId,
+      content: ticketDraft.content.trim(),
+      reporter: ticketDraft.reporter.trim() || '前台客服',
+      priority: ticketDraft.priority,
+    })
+    ElMessage.success('人工工单已录入')
+    ticketDialogVisible.value = false
+    ticketDraft.houseId = 1
+    ticketDraft.content = ''
+    ticketDraft.reporter = ''
+    ticketDraft.priority = 1
+    await loadKanban()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '录入工单失败')
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -245,8 +294,8 @@ function createTicket() {
   color: #8ea0b8;
 }
 
-.ticket-age.warning {
-  color: #f97316;
+.full-width {
+  width: 100%;
 }
 
 @media (max-width: 1200px) {
