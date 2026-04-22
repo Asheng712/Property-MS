@@ -25,7 +25,10 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Override
     public PageResult<ComplaintVO> getComplaintList(ComplaintPageQueryDTO complaintPageQueryDTO) {
-        Page<Complaint> page = new Page<>(complaintPageQueryDTO.getPage(), complaintPageQueryDTO.getPageSize());
+        Page<Complaint> page = new Page<>(
+            complaintPageQueryDTO.getPage() != null ? complaintPageQueryDTO.getPage() : 1,
+            complaintPageQueryDTO.getPageSize() != null ? complaintPageQueryDTO.getPageSize() : 10
+        );
         LambdaQueryWrapper<Complaint> queryWrapper = new LambdaQueryWrapper<>();
         if (complaintPageQueryDTO.getCategory() != null) {
             queryWrapper.like(Complaint::getCategory, complaintPageQueryDTO.getCategory());

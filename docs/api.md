@@ -84,9 +84,17 @@
 | 导出财务报表   | `GET`  | `/system/export/finance` | `ReportExportDTO`    | `File (Resource)`        |
 | 导入资产数据   | `POST` | `/system/import/assets`  | `MultipartFile`      | `ImportResultVO`         |
 
+* * *
+
+### 2.6 仪表盘模块 (Dashboard)
+
+| 功能       | 方法    | 路径                | DTO (入参) | VO (出参)               |
+| -------- | ----- | ----------------- | -------- | --------------------- |
+| 分页查询公告历史 | `GET` | `/dashboard/data` | `-`      | `Result<DashboardVO>` |
+
 ---
 
-### 2.6 AI辅助功能模块 (Notice & Finance & Repair)
+### 2.7 AI辅助功能模块 (Notice & Finance & Repair)
 
 | 功能       | 方法     | 路径                    | DTO (入参)                        | VO (出参)                   |
 | -------- | ------ | --------------------- | ------------------------------- | ------------------------- |
@@ -145,5 +153,3 @@
    * `403`: 角色权限不足。
    * `500`: 后端代码异常或数据库报错。
 4. **Swagger/Knife4j**: 所有接口开发完成后，需及时在 Controller 增加 `@Operation` 注解，确保在线文档 `doc.html` 实时更新。
-
-

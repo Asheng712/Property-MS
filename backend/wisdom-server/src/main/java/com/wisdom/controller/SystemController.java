@@ -37,4 +37,10 @@ public class SystemController {
         systemService.importAssets(file);
         return Result.success(null);
     }
+
+    @GetMapping("/dashboard")
+    @Operation(summary = "获取管理员看板数据")
+    public Result<?> getDashboardData() {
+        return Result.success(systemService.getDashboardData());
+    }
 }

@@ -24,7 +24,10 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public PageResult<RoleVO> getRoleList(PageQueryDTO pageQueryDTO) {
-        Page<Role> page = new Page<>(pageQueryDTO.getPage(), pageQueryDTO.getPageSize());
+        Page<Role> page = new Page<>(
+            pageQueryDTO.getPage() != null ? pageQueryDTO.getPage() : 1,
+            pageQueryDTO.getPageSize() != null ? pageQueryDTO.getPageSize() : 10
+        );
         IPage<Role> rolePage = roleMapper.selectPage(page, null);
         List<RoleVO> roleVOList = rolePage.getRecords().stream()
                 .map(role -> {

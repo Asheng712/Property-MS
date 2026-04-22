@@ -30,7 +30,10 @@ public class ContractServiceImpl implements ContractService {
 
     @Override
     public PageResult<ContractVO> getContractList(ContractPageQueryDTO contractPageQueryDTO) {
-        Page<Contract> page = new Page<>(contractPageQueryDTO.getPage(), contractPageQueryDTO.getPageSize());
+        Page<Contract> page = new Page<>(
+            contractPageQueryDTO.getPage() != null ? contractPageQueryDTO.getPage() : 1,
+            contractPageQueryDTO.getPageSize() != null ? contractPageQueryDTO.getPageSize() : 10
+        );
         LambdaQueryWrapper<Contract> queryWrapper = new LambdaQueryWrapper<>();
         if (contractPageQueryDTO.getTenantName() != null) {
             queryWrapper.like(Contract::getTenantName, contractPageQueryDTO.getTenantName());

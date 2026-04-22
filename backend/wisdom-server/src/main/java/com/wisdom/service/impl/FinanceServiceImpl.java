@@ -88,7 +88,10 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Override
     public PageResult<BatchRecordVO> getBatchLogs(PageQueryDTO pageQueryDTO) {
-        Page<BillBatch> page = new Page<>(pageQueryDTO.getPage(), pageQueryDTO.getPageSize());
+        Page<BillBatch> page = new Page<>(
+            pageQueryDTO.getPage() != null ? pageQueryDTO.getPage() : 1,
+            pageQueryDTO.getPageSize() != null ? pageQueryDTO.getPageSize() : 10
+        );
         IPage<BillBatch> batchPage = billBatchMapper.selectPage(page, null);
         List<BatchRecordVO> batchRecordVOList = batchPage.getRecords().stream()
                 .map(billBatch -> {
@@ -102,7 +105,10 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Override
     public PageResult<BillVO> getBillList(BillPageQueryDTO billPageQueryDTO) {
-        Page<Bill> page = new Page<>(billPageQueryDTO.getPage(), billPageQueryDTO.getPageSize());
+        Page<Bill> page = new Page<>(
+            billPageQueryDTO.getPage() != null ? billPageQueryDTO.getPage() : 1,
+            billPageQueryDTO.getPageSize() != null ? billPageQueryDTO.getPageSize() : 10
+        );
         LambdaQueryWrapper<Bill> queryWrapper = new LambdaQueryWrapper<>();
         if (billPageQueryDTO.getBillNo() != null) {
             queryWrapper.like(Bill::getBillNo, billPageQueryDTO.getBillNo());
@@ -152,7 +158,10 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Override
     public PageResult<PaymentVO> getPaymentList(PaymentPageQueryDTO paymentPageQueryDTO) {
-        Page<PaymentRecord> page = new Page<>(paymentPageQueryDTO.getPage(), paymentPageQueryDTO.getPageSize());
+        Page<PaymentRecord> page = new Page<>(
+            paymentPageQueryDTO.getPage() != null ? paymentPageQueryDTO.getPage() : 1,
+            paymentPageQueryDTO.getPageSize() != null ? paymentPageQueryDTO.getPageSize() : 10
+        );
         LambdaQueryWrapper<PaymentRecord> queryWrapper = new LambdaQueryWrapper<>();
         if (paymentPageQueryDTO.getTrxNo() != null) {
             queryWrapper.like(PaymentRecord::getTrxNo, paymentPageQueryDTO.getTrxNo());

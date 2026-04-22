@@ -26,7 +26,10 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public PageResult<NoticeVO> getNoticeList(NoticePageQueryDTO noticePageQueryDTO) {
-        Page<Notice> page = new Page<>(noticePageQueryDTO.getPage(), noticePageQueryDTO.getPageSize());
+        Page<Notice> page = new Page<>(
+            noticePageQueryDTO.getPage() != null ? noticePageQueryDTO.getPage() : 1,
+            noticePageQueryDTO.getPageSize() != null ? noticePageQueryDTO.getPageSize() : 10
+        );
         LambdaQueryWrapper<Notice> queryWrapper = new LambdaQueryWrapper<>();
         if (noticePageQueryDTO.getTitle() != null) {
             queryWrapper.like(Notice::getTitle, noticePageQueryDTO.getTitle());

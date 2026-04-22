@@ -10,6 +10,8 @@ import com.wisdom.entity.User;
 import com.wisdom.mapper.RepairMapper;
 import com.wisdom.mapper.AssetMapper;
 import com.wisdom.mapper.UserMapper;
+import com.wisdom.ai.AIService;
+import com.wisdom.ai.RepairAnalysisResult;
 import com.wisdom.service.RepairService;
 import com.wisdom.vo.RepairKanbanVO;
 import com.wisdom.vo.RepairVO;
@@ -32,6 +34,9 @@ public class RepairServiceImpl implements RepairService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private AIService aiService;
 
     @Override
     public RepairKanbanVO getRepairKanban() {
@@ -95,6 +100,11 @@ public class RepairServiceImpl implements RepairService {
         repair.setRepairNo("REP-" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         repair.setStatus(0);
         repair.setCreateTime(LocalDateTime.now());
+        
+        // 使用AI分析故障级别
+        RepairAnalysisResult analysisResult = aiService.analyzeRepair(repairDTO.getContent());
+        repair.setPriority(analysisResult.getPriority());
+        
         repairMapper.insert(repair);
     }
 

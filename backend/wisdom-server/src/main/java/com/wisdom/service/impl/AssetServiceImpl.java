@@ -53,7 +53,9 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public PageResult<AssetVO> getAssetList(AssetPageQueryDTO assetPageQueryDTO) {
-        Page<House> page = new Page<>(assetPageQueryDTO.getPage(), assetPageQueryDTO.getPageSize());
+        int pageNum = assetPageQueryDTO.getPage() != null ? assetPageQueryDTO.getPage() : 1;
+        int pageSize = assetPageQueryDTO.getPageSize() != null ? assetPageQueryDTO.getPageSize() : 10;
+        Page<House> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<House> queryWrapper = new LambdaQueryWrapper<>();
         if (assetPageQueryDTO.getName() != null) {
             queryWrapper.like(House::getName, assetPageQueryDTO.getName());
