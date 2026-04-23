@@ -38,12 +38,25 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next"
+          :current-page="query.page"
+          :page-size="query.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="total"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
+      </div>
     </PanelCard>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
@@ -52,7 +65,13 @@ import { systemApi } from '@/services/api'
 import type { FileTaskRecord } from '@/types'
 
 const loading = ref(false)
+const total = ref(0)
 const tasks = ref<FileTaskRecord[]>([])
+
+const query = reactive({
+  page: 1,
+  pageSize: 20,
+})
 
 onMounted(() => {
   void loadTasks()
@@ -62,15 +81,27 @@ async function loadTasks() {
   loading.value = true
   try {
     const result = await systemApi.getTasks({
-      page: 1,
-      pageSize: 20,
+      page: query.page,
+      pageSize: query.pageSize,
     })
     tasks.value = result.records
+    total.value = result.total
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '加载任务记录失败')
   } finally {
     loading.value = false
   }
+}
+
+function handlePageChange(page: number) {
+  query.page = page
+  void loadTasks()
+}
+
+function handleSizeChange(size: number) {
+  query.page = 1
+  query.pageSize = size
+  void loadTasks()
 }
 
 async function exportFinanceReport() {
@@ -147,6 +178,12 @@ async function handleImport(event: Event) {
   inset: 0;
   opacity: 0;
   cursor: pointer;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 @media (max-width: 1024px) {

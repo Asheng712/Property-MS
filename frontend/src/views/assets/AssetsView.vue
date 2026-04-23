@@ -151,7 +151,7 @@ const query = reactive({
 
 const draft = reactive<{
   id?: number
-  parentId?: number
+  parentId: number
   name: string
   type: string
   area: number
@@ -160,7 +160,7 @@ const draft = reactive<{
   ownerPhone: string
 }>({
   id: undefined,
-  parentId: undefined,
+  parentId: 0,
   name: '',
   type: 'SHOP',
   area: 0,
@@ -256,13 +256,13 @@ function handleSizeChange(size: number) {
 
 function openCreateDialog() {
   resetDraft()
-  draft.parentId = selectedTreeNodeId.value ?? undefined
+  draft.parentId = selectedTreeNodeId.value ?? 0
   dialogVisible.value = true
 }
 
 function openEdit(asset: AssetRecord) {
   draft.id = asset.id
-  draft.parentId = asset.parentId ?? undefined
+  draft.parentId = asset.parentId ?? 0
   draft.name = asset.name
   draft.type = asset.type
   draft.area = Number(asset.area)
@@ -335,7 +335,7 @@ async function removeAsset(id: number) {
 
 function resetDraft() {
   draft.id = undefined
-  draft.parentId = undefined
+  draft.parentId = 0
   draft.name = ''
   draft.type = 'SHOP'
   draft.area = 0

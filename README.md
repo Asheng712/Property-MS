@@ -1,3 +1,6 @@
+![Codecov](https://codecov.io/gh/Asheng712/Property-MS/branch/main/graph/badge.svg)
+![Codecov Workflow](https://github.com/Asheng712/Property-MS/actions/workflows/codecov.yml/badge.svg)
+
 ##### 物业管理系统 (Property Management System)
 
 ##### 团队成员

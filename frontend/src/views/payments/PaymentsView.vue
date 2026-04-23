@@ -35,6 +35,19 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next"
+          :current-page="query.page"
+          :page-size="query.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="total"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
+      </div>
     </PanelCard>
 
     <el-drawer v-model="detailVisible" title="流水详情" size="420px">
@@ -44,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import DataToolbar from '@/components/DataToolbar.vue'
 import InfoList from '@/components/InfoList.vue'
@@ -58,9 +71,15 @@ import type { PaymentRecord } from '@/types'
 const loading = ref(false)
 const keyword = ref('')
 const status = ref('')
+const total = ref(0)
 const detailVisible = ref(false)
 const payments = ref<PaymentRecord[]>([])
 const activePayment = ref<PaymentRecord | null>(null)
+
+const query = reactive({
+  page: 1,
+  pageSize: 20,
+})
 
 const filters = [
   { label: '待核销', value: '0' },
@@ -90,12 +109,13 @@ async function loadPayments() {
   loading.value = true
   try {
     const result = await financeApi.getPayments({
-      page: 1,
-      pageSize: 20,
+      page: query.page,
+      pageSize: query.pageSize,
       trxNo: keyword.value.trim() || undefined,
       status: status.value ? Number(status.value) : undefined,
     })
     payments.value = result.records
+    total.value = result.total
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '加载缴费流水失败')
   } finally {
@@ -104,12 +124,25 @@ async function loadPayments() {
 }
 
 function handleSearch() {
+  query.page = 1
   void loadPayments()
 }
 
 function handleReset() {
   keyword.value = ''
   status.value = ''
+  query.page = 1
+  void loadPayments()
+}
+
+function handlePageChange(page: number) {
+  query.page = page
+  void loadPayments()
+}
+
+function handleSizeChange(size: number) {
+  query.page = 1
+  query.pageSize = size
   void loadPayments()
 }
 
@@ -139,3 +172,11 @@ function getStatusTone(value: number) {
   return value === 1 ? 'success' : 'warning'
 }
 </script>
+
+<style scoped>
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+</style>

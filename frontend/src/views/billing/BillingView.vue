@@ -30,6 +30,19 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next"
+          :current-page="batchQuery.page"
+          :page-size="batchQuery.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="batchTotal"
+          @current-change="handleBatchPageChange"
+          @size-change="handleBatchSizeChange"
+        />
+      </div>
     </PanelCard>
 
     <PanelCard title="账单明细" description="数据来自 /api/v1/bills。">
@@ -49,12 +62,25 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next"
+          :current-page="billQuery.page"
+          :page-size="billQuery.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="billTotal"
+          @current-change="handleBillPageChange"
+          @size-change="handleBillSizeChange"
+        />
+      </div>
     </PanelCard>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
@@ -66,8 +92,20 @@ import type { BillBatchRecord, BillRecord } from '@/types'
 const generating = ref(false)
 const loadingBatches = ref(false)
 const loadingBills = ref(false)
+const batchTotal = ref(0)
+const billTotal = ref(0)
 const batches = ref<BillBatchRecord[]>([])
 const bills = ref<BillRecord[]>([])
+
+const batchQuery = reactive({
+  page: 1,
+  pageSize: 20,
+})
+
+const billQuery = reactive({
+  page: 1,
+  pageSize: 20,
+})
 
 const totalGenerated = computed(() =>
   batches.value.reduce((sum, item) => sum + Number(item.totalCount || 0), 0).toLocaleString('zh-CN'),
@@ -80,8 +118,12 @@ onMounted(() => {
 async function loadBatchLogs() {
   loadingBatches.value = true
   try {
-    const result = await financeApi.getBatchLogs({ page: 1, pageSize: 20 })
+    const result = await financeApi.getBatchLogs({
+      page: batchQuery.page,
+      pageSize: batchQuery.pageSize,
+    })
     batches.value = result.records
+    batchTotal.value = result.total
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '加载批次记录失败')
   } finally {
@@ -92,13 +134,39 @@ async function loadBatchLogs() {
 async function loadBills() {
   loadingBills.value = true
   try {
-    const result = await financeApi.getBills({ page: 1, pageSize: 20 })
+    const result = await financeApi.getBills({
+      page: billQuery.page,
+      pageSize: billQuery.pageSize,
+    })
     bills.value = result.records
+    billTotal.value = result.total
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '加载账单明细失败')
   } finally {
     loadingBills.value = false
   }
+}
+
+function handleBatchPageChange(page: number) {
+  batchQuery.page = page
+  void loadBatchLogs()
+}
+
+function handleBatchSizeChange(size: number) {
+  batchQuery.page = 1
+  batchQuery.pageSize = size
+  void loadBatchLogs()
+}
+
+function handleBillPageChange(page: number) {
+  billQuery.page = page
+  void loadBills()
+}
+
+function handleBillSizeChange(size: number) {
+  billQuery.page = 1
+  billQuery.pageSize = size
+  void loadBills()
 }
 
 async function generateMonthlyBills() {
@@ -151,5 +219,11 @@ async function generateMonthlyBills() {
   background: #e4efff;
   color: #2563eb;
   font-size: 24px;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 </style>

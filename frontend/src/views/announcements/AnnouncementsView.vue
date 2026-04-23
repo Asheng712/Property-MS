@@ -24,6 +24,19 @@
       </PanelCard>
     </section>
 
+    <div class="pagination-wrap">
+      <el-pagination
+        background
+        layout="total, sizes, prev, pager, next"
+        :current-page="query.page"
+        :page-size="query.pageSize"
+        :page-sizes="[10, 20, 50]"
+        :total="total"
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+      />
+    </div>
+
     <el-dialog v-model="dialogVisible" :title="draft.id ? '编辑公告' : '新建公告'" width="560px">
       <el-form label-position="top" class="dialog-form">
         <el-form-item label="公告标题">
@@ -72,6 +85,7 @@ const loading = ref(false)
 const submitting = ref(false)
 const dialogVisible = ref(false)
 const detailVisible = ref(false)
+const total = ref(0)
 const notices = ref<NoticeRecord[]>([])
 const activeNotice = ref<NoticeRecord | null>(null)
 
@@ -81,6 +95,11 @@ const draft = reactive({
   targetType: 'ALL',
   status: 'draft',
   content: '',
+})
+
+const query = reactive({
+  page: 1,
+  pageSize: 20,
 })
 
 const detailItems = computed(() =>
@@ -104,10 +123,11 @@ async function loadNotices() {
   loading.value = true
   try {
     const result = await noticeApi.getList({
-      page: 1,
-      pageSize: 20,
+      page: query.page,
+      pageSize: query.pageSize,
     })
     notices.value = result.records
+    total.value = result.total
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '加载公告失败')
   } finally {
@@ -118,6 +138,17 @@ async function loadNotices() {
 function openCreate() {
   resetDraft()
   dialogVisible.value = true
+}
+
+function handlePageChange(page: number) {
+  query.page = page
+  void loadNotices()
+}
+
+function handleSizeChange(size: number) {
+  query.page = 1
+  query.pageSize = size
+  void loadNotices()
 }
 
 function openEdit(notice: NoticeRecord) {
@@ -194,6 +225,12 @@ function resetDraft() {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 @media (max-width: 900px) {

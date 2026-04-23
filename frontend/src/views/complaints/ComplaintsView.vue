@@ -34,6 +34,19 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next"
+          :current-page="query.page"
+          :page-size="query.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="total"
+          @current-change="handlePageChange"
+          @size-change="handleSizeChange"
+        />
+      </div>
     </PanelCard>
 
     <el-drawer v-model="feedbackDrawer" title="投诉处理" size="420px">
@@ -77,6 +90,7 @@ const loading = ref(false)
 const submitting = ref(false)
 const keyword = ref('')
 const status = ref('')
+const total = ref(0)
 const feedbackDrawer = ref(false)
 const detailVisible = ref(false)
 const complaints = ref<ComplaintRecord[]>([])
@@ -91,6 +105,11 @@ const filters = [
 const feedback = reactive({
   status: 1,
   note: '',
+})
+
+const query = reactive({
+  page: 1,
+  pageSize: 20,
 })
 
 const detailItems = computed(() =>
@@ -115,12 +134,13 @@ async function loadComplaints() {
   loading.value = true
   try {
     const result = await complaintApi.getList({
-      page: 1,
-      pageSize: 20,
+      page: query.page,
+      pageSize: query.pageSize,
       category: keyword.value.trim() || undefined,
       status: status.value ? Number(status.value) : undefined,
     })
     complaints.value = result.records
+    total.value = result.total
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '加载投诉数据失败')
   } finally {
@@ -129,12 +149,25 @@ async function loadComplaints() {
 }
 
 function handleSearch() {
+  query.page = 1
   void loadComplaints()
 }
 
 function handleReset() {
   keyword.value = ''
   status.value = ''
+  query.page = 1
+  void loadComplaints()
+}
+
+function handlePageChange(page: number) {
+  query.page = page
+  void loadComplaints()
+}
+
+function handleSizeChange(size: number) {
+  query.page = 1
+  query.pageSize = size
   void loadComplaints()
 }
 
@@ -202,5 +235,11 @@ function getStatusTone(value: number) {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 </style>

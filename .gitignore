@@ -26,4 +26,8 @@ replay_pid*
 # Frontend build artifacts
 frontend/node_modules/
 frontend/dist/
+frontend/coverage/
 *.tsbuildinfo
+
+# Backend build artifacts
+backend/**/target/
