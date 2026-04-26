@@ -20,13 +20,13 @@ export default defineConfig({
     },
   },
   test: {
-    environment: 'node',
+    environment: 'happy-dom',
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'html', 'lcov'],
       reportsDirectory: './coverage',
-      include: ['src/**/*.{ts,vue}'],
-      exclude: ['src/main.ts', 'src/vite-env.d.ts'],
+      include: ['src/components/**/*.vue', 'src/services/http.ts', 'src/utils/format.ts'],
+      exclude: ['src/**/*.test.ts', 'src/vite-env.d.ts', 'src/**/*.d.ts'],
     },
   },
 })
