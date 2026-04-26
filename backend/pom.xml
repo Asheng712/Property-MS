@@ -23,7 +23,7 @@
 
     <properties>
         <mybatis.plus.version>3.5.5</mybatis.plus.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <fastjson.version>2.0.41</fastjson.version>
         <knife4j.version>4.3.0</knife4j.version>
         <jjwt.version>0.9.1</jjwt.version>
@@ -54,6 +54,7 @@
     </dependencyManagement>
 
     <build>
+<<<<<<< HEAD
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -75,5 +76,26 @@
                 </executions>
             </plugin>
         </plugins>
+=======
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <release>17</release>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+>>>>>>> e8c43fe (后端相关代码修改以及单元测试代码和api测试代码上传)
     </build>
 </project>

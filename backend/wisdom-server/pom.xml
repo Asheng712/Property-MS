@@ -48,6 +48,16 @@
             <artifactId>wisdom-pojo</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -55,6 +65,74 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>com.wisdom.*</include>
+                                <include>com.wisdom.*.*</include>
+                                <include>com.wisdom.*.*.*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>com/wisdom/controller/AuthController*</include>
+                                <include>com/wisdom/controller/NoticeController*</include>
+                                <include>com/wisdom/controller/ComplaintController*</include>
+                                <include>com/wisdom/service/impl/UserServiceImpl*</include>
+                                <include>com/wisdom/service/impl/NoticeServiceImpl*</include>
+                                <include>com/wisdom/service/impl/ComplaintServiceImpl*</include>
+                                <include>com/wisdom/handler/GlobalExceptionHandler*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>CLASS</element>
+                                    <includes>
+                                        <include>com.wisdom.controller.AuthController</include>
+                                        <include>com.wisdom.controller.NoticeController</include>
+                                        <include>com.wisdom.controller.ComplaintController</include>
+                                        <include>com.wisdom.service.impl.UserServiceImpl</include>
+                                        <include>com.wisdom.service.impl.NoticeServiceImpl</include>
+                                        <include>com.wisdom.service.impl.ComplaintServiceImpl</include>
+                                        <include>com.wisdom.handler.GlobalExceptionHandler</include>
+                                    </includes>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.60</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

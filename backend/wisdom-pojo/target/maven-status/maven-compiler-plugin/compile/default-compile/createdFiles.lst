@@ -1,0 +1,11 @@
+com\wisdom\entity\Bill.class
+com\wisdom\entity\FileTask.class
+com\wisdom\entity\House.class
+com\wisdom\entity\Contract.class
+com\wisdom\entity\BillBatch.class
+com\wisdom\entity\PaymentRecord.class
+com\wisdom\entity\Role.class
+com\wisdom\entity\User.class
+com\wisdom\entity\Complaint.class
+com\wisdom\entity\Repair.class
+com\wisdom\entity\Notice.class

@@ -1,0 +1,5 @@
+com\wisdom\ai\RepairAnalysisResult.class
+com\wisdom\result\Result.class
+com\wisdom\context\BaseContext.class
+com\wisdom\ai\AIService.class
+com\wisdom\result\PageResult.class
