@@ -1,0 +1,25 @@
+coverage:
+  status:
+    project:
+      default:
+        default: false
+      backend-core:
+        flags:
+          - backend
+        target: 60%
+        threshold: 1%
+
+comment:
+  layout: "header, diff, flags, files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+flags:
+  backend:
+    paths:
+      - wisdom-server/src/main/java/com/wisdom/controller/AuthController.java
+      - wisdom-server/src/main/java/com/wisdom/service/impl/UserServiceImpl.java
+      - wisdom-server/src/main/java/com/wisdom/handler/GlobalExceptionHandler.java
+    carryforward: false
