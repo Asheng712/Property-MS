@@ -1,5 +1,6 @@
-![Codecov](https://codecov.io/gh/Asheng712/Property-MS/branch/main/graph/badge.svg)
-![Codecov Workflow](https://github.com/Asheng712/Property-MS/actions/workflows/codecov.yml/badge.svg)
+[![Backend Coverage](https://codecov.io/gh/Asheng712/Property-MS/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/Asheng712/Property-MS)
+[![Frontend Coverage](https://codecov.io/gh/Asheng712/Property-MS/branch/main/graph/badge.svg?flag=frontend)](https://codecov.io/gh/Asheng712/Property-MS)
+[![Codecov Workflow](https://github.com/Asheng712/Property-MS/actions/workflows/codecov.yml/badge.svg)](https://github.com/Asheng712/Property-MS/actions/workflows/codecov.yml)
 
 ##### 物业管理系统 (Property Management System)
 

@@ -114,17 +114,14 @@
       </template>
     </el-dialog>
 
-    <el-drawer v-model="detailVisible" title="资产详情" size="420px">
-      <InfoList v-if="activeAsset" :items="detailItems" />
-    </el-drawer>
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useRouter } from 'vue-router'
 import DataToolbar from '@/components/DataToolbar.vue'
-import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
@@ -133,16 +130,15 @@ import { formatArea } from '@/utils/format'
 import type { AssetRecord, AssetTreeNode } from '@/types'
 
 const loading = ref(false)
+const router = useRouter()
 const submitting = ref(false)
 const dialogVisible = ref(false)
-const detailVisible = ref(false)
 const keyword = ref('')
 const status = ref('')
 const total = ref(0)
 const selectedTreeNodeId = ref<number | null>(null)
 const assets = ref<AssetRecord[]>([])
 const assetTree = ref<AssetTreeNode[]>([])
-const activeAsset = ref<AssetRecord | null>(null)
 
 const query = reactive({
   page: 1,
@@ -174,22 +170,6 @@ const statusFilters = [
   { label: '空置', value: 'vacant' },
   { label: '已售', value: 'sold' },
 ]
-
-const detailItems = computed(() =>
-  activeAsset.value
-    ? [
-        { label: 'ID', value: String(activeAsset.value.id) },
-        { label: '上级资产 ID', value: activeAsset.value.parentId ? String(activeAsset.value.parentId) : '-' },
-        { label: '资产名称', value: activeAsset.value.name },
-        { label: '资产类型', value: getTypeText(activeAsset.value.type) },
-        { label: '建筑面积', value: formatArea(Number(activeAsset.value.area)) },
-        { label: '资产状态', value: getStatusText(activeAsset.value.status) },
-        { label: '业主姓名', value: activeAsset.value.ownerName || '-' },
-        { label: '业主电话', value: activeAsset.value.ownerPhone || '-' },
-        { label: '创建时间', value: activeAsset.value.createTime || '-' },
-      ]
-    : [],
-)
 
 onMounted(() => {
   void Promise.all([loadTree(), loadAssets()])
@@ -273,8 +253,7 @@ function openEdit(asset: AssetRecord) {
 }
 
 function openDetail(asset: AssetRecord) {
-  activeAsset.value = asset
-  detailVisible.value = true
+  router.push(`/assets/${asset.id}`)
 }
 
 async function saveAsset() {
@@ -345,6 +324,7 @@ function resetDraft() {
 }
 
 function getTypeText(value: string) {
+  const normalized = value.trim().toUpperCase()
   const mapping: Record<string, string> = {
     BUILDING: '楼栋',
     UNIT: '单元',
@@ -352,27 +332,29 @@ function getTypeText(value: string) {
     SHOP: '商铺',
   }
 
-  return mapping[value] || value
+  return mapping[normalized] || value
 }
 
 function getStatusText(value: string) {
+  const normalized = value.trim().toLowerCase()
   const mapping: Record<string, string> = {
     occupied: '已入住',
     vacant: '空置',
     sold: '已售',
   }
 
-  return mapping[value] || value
+  return mapping[normalized] || value
 }
 
 function getStatusTone(value: string) {
+  const normalized = value.trim().toLowerCase()
   const mapping: Record<string, 'success' | 'warning' | 'info'> = {
     occupied: 'success',
     vacant: 'warning',
     sold: 'info',
   }
 
-  return mapping[value] || 'info'
+  return mapping[normalized] || 'info'
 }
 </script>
 

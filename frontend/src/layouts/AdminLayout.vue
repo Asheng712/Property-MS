@@ -77,6 +77,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item disabled>{{ appStore.currentUser }} 当前在线</el-dropdown-item>
+                <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                 <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 <el-dropdown-item command="register">前往注册</el-dropdown-item>
               </el-dropdown-menu>
@@ -191,6 +192,11 @@ function handleNoticeSoundChange(value: boolean | string | number) {
 function handleUserCommand(command: string) {
   if (command === 'logout') {
     logout()
+    return
+  }
+
+  if (command === 'profile') {
+    router.push('/profile')
     return
   }
 
