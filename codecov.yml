@@ -1,0 +1,32 @@
+coverage:
+  status:
+    project:
+      default:
+        default: false
+      backend:
+        flags:
+          - backend
+        target: 60%
+        threshold: 1%
+      frontend:
+        flags:
+          - frontend
+        target: 60%
+        threshold: 1%
+
+comment:
+  layout: "header, diff, flags, files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+flags:
+  backend:
+    paths:
+      - backend/wisdom-server/src/main/java
+    carryforward: false
+  frontend:
+    paths:
+      - frontend/src
+    carryforward: false
