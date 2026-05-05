@@ -35,5 +35,8 @@
     "vitest": "3.2.4",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^2.2.8"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.60.0"
   }
 }
