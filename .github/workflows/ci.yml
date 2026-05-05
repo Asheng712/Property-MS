@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   backend:
@@ -36,9 +37,9 @@ jobs:
         run: mvn -B -pl wisdom-server -am verify
 
       - name: Upload backend coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: backend/wisdom-server/target/site/jacoco/jacoco.xml
           flags: backend
           name: backend-coverage
@@ -74,9 +75,9 @@ jobs:
         run: npm test
 
       - name: Upload frontend coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: frontend/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
