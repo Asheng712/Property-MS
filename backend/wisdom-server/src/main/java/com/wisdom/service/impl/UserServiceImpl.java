@@ -8,6 +8,7 @@ import com.wisdom.service.UserService;
 import com.wisdom.vo.UserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,13 +17,16 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     @Override
     public String login(UserLoginDTO userLoginDTO) {
         User user = userMapper.selectByUsername(userLoginDTO.getUsername());
         if (user == null) {
             throw new RuntimeException("USER_NOT_FOUND");
         }
-        if (!user.getPassword().equals(userLoginDTO.getPassword())) {
+        if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
             throw new RuntimeException("PASSWORD_ERROR");
         }
         return "token";
@@ -36,7 +40,7 @@ public class UserServiceImpl implements UserService {
         }
         User user = new User();
         BeanUtils.copyProperties(userRegisterDTO, user);
-        user.setPassword(userRegisterDTO.getPassword());
+        user.setPassword(passwordEncoder.encode(userRegisterDTO.getPassword()));
         user.setStatus(1);
         userMapper.insert(user);
     }
