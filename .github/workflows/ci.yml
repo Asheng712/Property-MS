@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   backend:
@@ -36,9 +37,9 @@ jobs:
         run: mvn -B -pl wisdom-server -am verify
 
       - name: Upload backend coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: backend/wisdom-server/target/site/jacoco/jacoco.xml
           flags: backend
           name: backend-coverage
@@ -60,7 +61,7 @@ jobs:
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "20.19.0"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -71,12 +72,12 @@ jobs:
         run: npm run lint
 
       - name: Run frontend tests with coverage
-        run: npm run coverage
+        run: npm test
 
       - name: Upload frontend coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           files: frontend/coverage/lcov.info
           flags: frontend
           name: frontend-coverage

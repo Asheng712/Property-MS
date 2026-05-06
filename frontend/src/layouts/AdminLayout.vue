@@ -178,15 +178,16 @@ function goTo(path: string) {
 }
 
 function handleCompactChange(value: boolean | string | number) {
-  const shouldCollapse = Boolean(value)
+  const shouldCollapse = value === true || value === 'true' || value === 1
   if (appStore.sidebarCollapsed !== shouldCollapse) {
     appStore.toggleSidebar()
   }
 }
 
 function handleNoticeSoundChange(value: boolean | string | number) {
-  appStore.toggleNoticeSound(Boolean(value))
-  ElMessage.success(Boolean(value) ? '已开启消息提示音' : '已关闭消息提示音')
+  const enabled = value === true || value === 'true' || value === 1
+  appStore.toggleNoticeSound(enabled)
+  ElMessage.success(enabled ? '已开启消息提示音' : '已关闭消息提示音')
 }
 
 function handleUserCommand(command: string) {
