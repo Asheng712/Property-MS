@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,6 +28,9 @@ class UserServiceImplTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private BCryptPasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -38,9 +42,10 @@ class UserServiceImplTest {
 
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("123456");
+        user.setPassword("$2a$10$hashedPassword");
 
         when(userMapper.selectByUsername("admin")).thenReturn(user);
+        when(passwordEncoder.matches("123456", "$2a$10$hashedPassword")).thenReturn(true);
 
         String token = userService.login(dto);
 
@@ -68,9 +73,10 @@ class UserServiceImplTest {
 
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("123456");
+        user.setPassword("$2a$10$hashedPassword");
 
         when(userMapper.selectByUsername("admin")).thenReturn(user);
+        when(passwordEncoder.matches("wrong", "$2a$10$hashedPassword")).thenReturn(false);
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.login(dto));
 
@@ -89,6 +95,7 @@ class UserServiceImplTest {
         dto.setRoleId(2L);
 
         when(userMapper.selectByUsername("newUser")).thenReturn(null);
+        when(passwordEncoder.encode("123456")).thenReturn("$2a$10$encodedPassword");
 
         userService.register(dto);
 
@@ -97,7 +104,7 @@ class UserServiceImplTest {
 
         User savedUser = captor.getValue();
         assertEquals("newUser", savedUser.getUsername());
-        assertEquals("123456", savedUser.getPassword());
+        assertEquals("$2a$10$encodedPassword", savedUser.getPassword());
         assertEquals("Test User", savedUser.getRealName());
         assertEquals("13800000000", savedUser.getPhone());
         assertEquals("test@example.com", savedUser.getEmail());
@@ -166,6 +173,7 @@ class UserServiceImplTest {
         dto.setPassword("123456");
 
         when(userMapper.selectByUsername("orderedUser")).thenReturn(null);
+        when(passwordEncoder.encode("123456")).thenReturn("$2a$10$orderedHash");
 
         userService.register(dto);
 
