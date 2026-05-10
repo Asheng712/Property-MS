@@ -28,7 +28,7 @@ function loadState() {
     isAuthenticated: boolean
     compactMode: boolean
     noticeSound: boolean
-  }>(window.localStorage.getItem(STORAGE_KEY))
+  }>(window.sessionStorage.getItem(STORAGE_KEY))
 }
 
 function loadProfile() {
@@ -36,7 +36,7 @@ function loadProfile() {
     return null
   }
 
-  return safeParse<UserInfo>(window.localStorage.getItem(PROFILE_KEY))
+  return safeParse<UserInfo>(window.sessionStorage.getItem(PROFILE_KEY))
 }
 
 export const useAppStore = defineStore('app', () => {
@@ -62,7 +62,8 @@ export const useAppStore = defineStore('app', () => {
       return
     }
 
-    window.localStorage.setItem(
+    window.localStorage.removeItem(STORAGE_KEY)
+    window.sessionStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
         isAuthenticated: isAuthenticated.value,
@@ -78,11 +79,13 @@ export const useAppStore = defineStore('app', () => {
     }
 
     if (!currentUserProfile.value) {
+      window.sessionStorage.removeItem(PROFILE_KEY)
       window.localStorage.removeItem(PROFILE_KEY)
       return
     }
 
-    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(currentUserProfile.value))
+    window.localStorage.removeItem(PROFILE_KEY)
+    window.sessionStorage.setItem(PROFILE_KEY, JSON.stringify(currentUserProfile.value))
   }
 
   function toggleSidebar() {

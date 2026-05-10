@@ -9,24 +9,35 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
 }
 
 const TOKEN_KEY = 'wisdompm-token'
+const AUTH_EXPIRED_CODES = new Set([401, 403])
 
 export function getToken() {
   if (typeof window === 'undefined') {
     return ''
   }
 
-  return window.localStorage.getItem(TOKEN_KEY) || ''
+  return window.sessionStorage.getItem(TOKEN_KEY) || ''
 }
 
 export function setToken(token: string) {
   if (typeof window !== 'undefined') {
-    window.localStorage.setItem(TOKEN_KEY, token)
+    window.localStorage.removeItem(TOKEN_KEY)
+    window.sessionStorage.setItem(TOKEN_KEY, token)
   }
 }
 
 export function clearToken() {
   if (typeof window !== 'undefined') {
+    window.sessionStorage.removeItem(TOKEN_KEY)
     window.localStorage.removeItem(TOKEN_KEY)
+  }
+}
+
+function handleAuthExpired() {
+  clearToken()
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('wisdompm:auth-expired'))
   }
 }
 
@@ -71,6 +82,10 @@ export async function request<T>(path: string, options: RequestOptions = {}) {
           : JSON.stringify(body),
   })
 
+  if (AUTH_EXPIRED_CODES.has(response.status)) {
+    handleAuthExpired()
+  }
+
   if (!response.ok) {
     throw new Error(`请求失败: ${response.status}`)
   }
@@ -78,6 +93,10 @@ export async function request<T>(path: string, options: RequestOptions = {}) {
   const result = (await response.json()) as ApiResponse<T>
 
   if (result.code !== 200) {
+    if (AUTH_EXPIRED_CODES.has(result.code)) {
+      handleAuthExpired()
+    }
+
     throw new Error(result.msg || '接口返回异常')
   }
 

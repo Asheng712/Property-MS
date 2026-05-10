@@ -15,20 +15,25 @@ function mockJsonResponse<T>(payload: T, init: ResponseInit = {}) {
 describe('http request client', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    window.sessionStorage.clear()
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
     window.localStorage.clear()
+    window.sessionStorage.clear()
   })
 
-  it('stores, reads, and clears the auth token', () => {
+  it('stores, reads, and clears the auth token in session storage', () => {
     setToken('token-123')
     expect(getToken()).toBe('token-123')
+    expect(window.localStorage.getItem('wisdompm-token')).toBeNull()
+    expect(window.sessionStorage.getItem('wisdompm-token')).toBe('token-123')
 
     clearToken()
     expect(getToken()).toBe('')
+    expect(window.sessionStorage.getItem('wisdompm-token')).toBeNull()
   })
 
   it('sends query params, authorization header, and returns response data', async () => {
@@ -94,7 +99,7 @@ describe('http request client', () => {
         mockJsonResponse(
           {
             code: 500,
-            msg: '服务器异常',
+            msg: 'Server error',
             data: null,
           },
           { status: 500 },
@@ -105,18 +110,25 @@ describe('http request client', () => {
     await expect(request('/api/v1/assets', { method: 'GET' })).rejects.toThrow('500')
   })
 
-  it('throws when the API business code is not successful', async () => {
+  it('clears auth state when the API reports an expired login', async () => {
+    const authExpiredListener = vi.fn()
+    window.addEventListener('wisdompm:auth-expired', authExpiredListener)
+    setToken('token-123')
+
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
         mockJsonResponse({
           code: 401,
-          msg: '登录已过期',
+          msg: 'Login expired',
           data: null,
         }),
       ),
     )
 
-    await expect(request('/api/v1/auth/info', { method: 'GET' })).rejects.toThrow('登录已过期')
+    await expect(request('/api/v1/auth/info', { method: 'GET' })).rejects.toThrow('Login expired')
+    expect(getToken()).toBe('')
+    expect(authExpiredListener).toHaveBeenCalledTimes(1)
+    window.removeEventListener('wisdompm:auth-expired', authExpiredListener)
   })
 })
