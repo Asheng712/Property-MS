@@ -1,10 +1,14 @@
 package com.wisdom.service.impl;
 
+import com.wisdom.context.BaseContext;
 import com.wisdom.dto.UserLoginDTO;
 import com.wisdom.dto.UserRegisterDTO;
 import com.wisdom.entity.User;
 import com.wisdom.mapper.UserMapper;
+import com.wisdom.util.JwtTokenUtil;
 import com.wisdom.vo.UserVO;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,8 +37,21 @@ class UserServiceImplTest {
     @Mock
     private BCryptPasswordEncoder passwordEncoder;
 
+    @Mock
+    private JwtTokenUtil jwtTokenUtil;
+
     @InjectMocks
     private UserServiceImpl userService;
+
+    @BeforeEach
+    void setUp() {
+        BaseContext.setCurrentId(1L);
+    }
+
+    @AfterEach
+    void tearDown() {
+        BaseContext.removeCurrentId();
+    }
 
     @Test
     void loginShouldReturnTokenWhenCredentialsAreCorrect() {
@@ -41,15 +60,17 @@ class UserServiceImplTest {
         dto.setPassword("123456");
 
         User user = new User();
+        user.setId(1L);
         user.setUsername("admin");
         user.setPassword("$2a$10$hashedPassword");
 
         when(userMapper.selectByUsername("admin")).thenReturn(user);
         when(passwordEncoder.matches("123456", "$2a$10$hashedPassword")).thenReturn(true);
+        when(jwtTokenUtil.generateToken(1L, "admin")).thenReturn("test-token");
 
         String token = userService.login(dto);
 
-        assertEquals("token", token);
+        assertEquals("test-token", token);
     }
 
     @Test
