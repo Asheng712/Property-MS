@@ -10,21 +10,21 @@ import com.wisdom.service.UserService;
 import com.wisdom.util.JwtTokenUtil;
 import com.wisdom.vo.UserVO;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtTokenUtil jwtTokenUtil;
+    public UserServiceImpl(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil) {
+        this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenUtil = jwtTokenUtil;
+    }
 
     @Override
     public String login(UserLoginDTO userLoginDTO) {

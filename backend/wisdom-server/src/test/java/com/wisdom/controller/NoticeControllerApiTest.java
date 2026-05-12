@@ -89,7 +89,7 @@ class NoticeControllerApiTest {
         mockMvc.perform(get("/api/v1/notices"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(500))
-                .andExpect(jsonPath("$.msg").value("SERVER_BUSY"));
+                .andExpect(jsonPath("$.msg").value("NOTICE_QUERY_FAILED"));
     }
 
     @Test
@@ -125,6 +125,6 @@ class NoticeControllerApiTest {
                         .content(objectMapper.writeValueAsString(noticeDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(500))
-                .andExpect(jsonPath("$.msg").value("SERVER_BUSY"));
+                .andExpect(jsonPath("$.msg").value("NOTICE_SAVE_FAILED"));
     }
 }

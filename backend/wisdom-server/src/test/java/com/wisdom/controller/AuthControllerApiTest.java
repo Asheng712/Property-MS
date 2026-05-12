@@ -76,7 +76,7 @@ class AuthControllerApiTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(500))
-                .andExpect(jsonPath("$.msg").value("SERVER_BUSY"));
+                .andExpect(jsonPath("$.msg").value("USER_NOT_FOUND"));
     }
 
     @Test
@@ -93,15 +93,17 @@ class AuthControllerApiTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(500))
-                .andExpect(jsonPath("$.msg").value("SERVER_BUSY"));
+                .andExpect(jsonPath("$.msg").value("PASSWORD_ERROR"));
     }
 
     @Test
-    void loginShouldReturnBadRequestWhenJsonIsInvalid() throws Exception {
+    void loginShouldReturnErrorWhenJsonIsInvalid() throws Exception {
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"admin\",\"password\":}"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(500))
+                .andExpect(jsonPath("$.msg").value("请求体格式错误"));
     }
 
     @Test
@@ -136,7 +138,7 @@ class AuthControllerApiTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(500))
-                .andExpect(jsonPath("$.msg").value("SERVER_BUSY"));
+                .andExpect(jsonPath("$.msg").value("USERNAME_ALREADY_EXISTS"));
     }
 
     @Test

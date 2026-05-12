@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,8 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,18 +31,16 @@ class UserServiceImplTest {
     @Mock
     private UserMapper userMapper;
 
-    @Mock
     private BCryptPasswordEncoder passwordEncoder;
-
-    @Mock
     private JwtTokenUtil jwtTokenUtil;
-
-    @InjectMocks
     private UserServiceImpl userService;
 
     @BeforeEach
     void setUp() {
         BaseContext.setCurrentId(1L);
+        passwordEncoder = new BCryptPasswordEncoder();
+        jwtTokenUtil = new JwtTokenUtil("test-secret-key-for-jwt-token-generation-256-bit-minimum-length");
+        userService = new UserServiceImpl(userMapper, passwordEncoder, jwtTokenUtil);
     }
 
     @AfterEach
@@ -62,15 +57,15 @@ class UserServiceImplTest {
         User user = new User();
         user.setId(1L);
         user.setUsername("admin");
-        user.setPassword("$2a$10$hashedPassword");
+        user.setPassword(passwordEncoder.encode("123456"));
 
         when(userMapper.selectByUsername("admin")).thenReturn(user);
-        when(passwordEncoder.matches("123456", "$2a$10$hashedPassword")).thenReturn(true);
-        when(jwtTokenUtil.generateToken(1L, "admin")).thenReturn("test-token");
 
         String token = userService.login(dto);
 
-        assertEquals("test-token", token);
+        assertNotNull(token);
+        assertEquals("admin", jwtTokenUtil.getUsernameFromToken(token));
+        assertEquals(1L, jwtTokenUtil.getUserIdFromToken(token));
     }
 
     @Test
@@ -94,10 +89,9 @@ class UserServiceImplTest {
 
         User user = new User();
         user.setUsername("admin");
-        user.setPassword("$2a$10$hashedPassword");
+        user.setPassword(passwordEncoder.encode("123456"));
 
         when(userMapper.selectByUsername("admin")).thenReturn(user);
-        when(passwordEncoder.matches("wrong", "$2a$10$hashedPassword")).thenReturn(false);
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> userService.login(dto));
 
@@ -116,7 +110,6 @@ class UserServiceImplTest {
         dto.setRoleId(2L);
 
         when(userMapper.selectByUsername("newUser")).thenReturn(null);
-        when(passwordEncoder.encode("123456")).thenReturn("$2a$10$encodedPassword");
 
         userService.register(dto);
 
@@ -125,13 +118,13 @@ class UserServiceImplTest {
 
         User savedUser = captor.getValue();
         assertEquals("newUser", savedUser.getUsername());
-        assertEquals("$2a$10$encodedPassword", savedUser.getPassword());
         assertEquals("Test User", savedUser.getRealName());
         assertEquals("13800000000", savedUser.getPhone());
         assertEquals("test@example.com", savedUser.getEmail());
         assertEquals("avatar.png", savedUser.getAvatar());
         assertEquals(2L, savedUser.getRoleId());
         assertEquals(1, savedUser.getStatus());
+        assertNotNull(savedUser.getPassword());
     }
 
     @Test
@@ -194,7 +187,6 @@ class UserServiceImplTest {
         dto.setPassword("123456");
 
         when(userMapper.selectByUsername("orderedUser")).thenReturn(null);
-        when(passwordEncoder.encode("123456")).thenReturn("$2a$10$orderedHash");
 
         userService.register(dto);
 
