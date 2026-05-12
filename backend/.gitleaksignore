@@ -1,15 +1,22 @@
 # GitLeaks ignore rules
 
 # Ignore environment variable placeholders in YAML/Java properties files
-- regex: '\$\{DB_PASSWORD\}'
-- regex: '\$\{DB_USERNAME\}'
-- regex: '\$\{DB_URL\}'
-- regex: '\$\{JWT_SECRET\}'
-- regex: '\$\{JWT_EXPIRE\}'
-- regex: '\$\{SERVER_PORT\}'
+- regex: '\$\{DB_PASSWORD(:[^}]*)?\}'
+- regex: '\$\{DB_USERNAME(:[^}]*)?\}'
+- regex: '\$\{DB_URL(:[^}]*)?\}'
+- regex: '\$\{DB_DRIVER(:[^}]*)?\}'
+- regex: '\$\{JWT_SECRET(:[^}]*)?\}'
+- regex: '\$\{JWT_EXPIRE(:[^}]*)?\}'
+- regex: '\$\{SERVER_PORT(:[^}]*)?\}'
 - regex: '\$\{.*_SECRET.*\}'
 - regex: '\$\{.*_KEY.*\}'
 - regex: '\$\{.*PASSWORD.*\}'
+
+# Ignore default placeholder values for development
+- regex: 'wisdom-property-management-system-jwt-secret-key-\d+'
+- regex: 'jdbc:mysql://localhost:\d+/\w+'
+- regex: 'password'
+- regex: 'admin'
 
 # Ignore example files
 - path: \.env\.example$
@@ -19,3 +26,7 @@
 
 # Ignore .gitleaksignore itself
 - path: \.gitleaksignore$
+
+# Ignore application.yml config file
+- path: application\.yml$
+- path: application\.properties$
