@@ -22,3 +22,6 @@ knife4j:
       default:
         group-name: 业务接口
         api-package: com.wisdom.controller
+
+jwt:
+  secret: ${JWT_SECRET}

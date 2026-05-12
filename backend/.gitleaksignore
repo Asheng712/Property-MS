@@ -1,0 +1,21 @@
+# GitLeaks ignore rules
+
+# Ignore environment variable placeholders in YAML/Java properties files
+- regex: '\$\{DB_PASSWORD\}'
+- regex: '\$\{DB_USERNAME\}'
+- regex: '\$\{DB_URL\}'
+- regex: '\$\{JWT_SECRET\}'
+- regex: '\$\{JWT_EXPIRE\}'
+- regex: '\$\{SERVER_PORT\}'
+- regex: '\$\{.*_SECRET.*\}'
+- regex: '\$\{.*_KEY.*\}'
+- regex: '\$\{.*PASSWORD.*\}'
+
+# Ignore example files
+- path: \.env\.example$
+
+# Ignore test files
+- path: \/test\/
+
+# Ignore .gitleaksignore itself
+- path: \.gitleaksignore$

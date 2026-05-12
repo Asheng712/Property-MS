@@ -2,6 +2,7 @@ package com.wisdom.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,9 +14,12 @@ import java.util.Map;
 @Component
 public class JwtTokenUtil {
 
-    private static final String SECRET_KEY_STRING = "wisdom-property-management-system-jwt-secret-key-2026";
-    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET_KEY_STRING.getBytes(StandardCharsets.UTF_8));
+    private final SecretKey secretKey;
     private static final long EXPIRATION = 86400000L;
+
+    public JwtTokenUtil(@Value("${jwt.secret}") String secret) {
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String generateToken(Long userId, String username) {
         Map<String, Object> claims = new HashMap<>();
@@ -25,14 +29,14 @@ public class JwtTokenUtil {
                 .claims(claims)
                 .subject(username)
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SECRET_KEY)
+                .signWith(secretKey)
                 .compact();
     }
 
     public Long getUserIdFromToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                    .verifyWith(SECRET_KEY)
+                    .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
@@ -45,7 +49,7 @@ public class JwtTokenUtil {
     public String getUsernameFromToken(String token) {
         try {
             Claims claims = Jwts.parser()
-                    .verifyWith(SECRET_KEY)
+                    .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
@@ -58,7 +62,7 @@ public class JwtTokenUtil {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(SECRET_KEY)
+                    .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token);
             return true;
