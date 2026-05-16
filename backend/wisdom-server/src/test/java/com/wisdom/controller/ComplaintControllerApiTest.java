@@ -3,6 +3,7 @@ package com.wisdom.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wisdom.dto.ComplaintHandleDTO;
 import com.wisdom.dto.ComplaintPageQueryDTO;
+import com.wisdom.exception.BusinessException;
 import com.wisdom.handler.GlobalExceptionHandler;
 import com.wisdom.result.PageResult;
 import com.wisdom.service.ComplaintService;
@@ -88,7 +89,7 @@ class ComplaintControllerApiTest {
     @Test
     void getComplaintListShouldReturnErrorWhenServiceThrowsException() throws Exception {
         when(complaintService.getComplaintList(any(ComplaintPageQueryDTO.class)))
-                .thenThrow(new RuntimeException("COMPLAINT_QUERY_FAILED"));
+                .thenThrow(new BusinessException("COMPLAINT_QUERY_FAILED"));
 
         mockMvc.perform(get("/api/v1/complaints"))
                 .andExpect(status().isOk())
@@ -119,7 +120,7 @@ class ComplaintControllerApiTest {
         complaintHandleDTO.setId(8L);
         complaintHandleDTO.setStatus(2);
 
-        doThrow(new RuntimeException("COMPLAINT_HANDLE_FAILED"))
+        doThrow(new BusinessException("COMPLAINT_HANDLE_FAILED"))
                 .when(complaintService)
                 .handleComplaint(any(ComplaintHandleDTO.class));
 

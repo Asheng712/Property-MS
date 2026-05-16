@@ -19,9 +19,13 @@
         <module name="wisdom-server" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="wisdom-client" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="wisdom-client" options="-parameters" />
       <module name="wisdom-common" options="-parameters" />
       <module name="wisdom-pojo" options="-parameters" />
       <module name="wisdom-server" options="-parameters" />

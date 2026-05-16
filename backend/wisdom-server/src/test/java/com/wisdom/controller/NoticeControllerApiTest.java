@@ -3,6 +3,7 @@ package com.wisdom.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wisdom.dto.NoticeDTO;
 import com.wisdom.dto.NoticePageQueryDTO;
+import com.wisdom.exception.BusinessException;
 import com.wisdom.handler.GlobalExceptionHandler;
 import com.wisdom.result.PageResult;
 import com.wisdom.service.NoticeService;
@@ -84,7 +85,7 @@ class NoticeControllerApiTest {
     @Test
     void getNoticeListShouldReturnErrorWhenServiceThrowsException() throws Exception {
         when(noticeService.getNoticeList(any(NoticePageQueryDTO.class)))
-                .thenThrow(new RuntimeException("NOTICE_QUERY_FAILED"));
+                .thenThrow(new BusinessException("NOTICE_QUERY_FAILED"));
 
         mockMvc.perform(get("/api/v1/notices"))
                 .andExpect(status().isOk())
@@ -116,7 +117,7 @@ class NoticeControllerApiTest {
         noticeDTO.setTitle("Elevator maintenance");
         noticeDTO.setContent("Maintenance will start tomorrow.");
 
-        doThrow(new RuntimeException("NOTICE_SAVE_FAILED"))
+        doThrow(new BusinessException("NOTICE_SAVE_FAILED"))
                 .when(noticeService)
                 .saveNotice(any(NoticeDTO.class));
 

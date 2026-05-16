@@ -3,6 +3,7 @@ package com.wisdom.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wisdom.dto.UserLoginDTO;
 import com.wisdom.dto.UserRegisterDTO;
+import com.wisdom.exception.BusinessException;
 import com.wisdom.handler.GlobalExceptionHandler;
 import com.wisdom.service.UserService;
 import com.wisdom.vo.UserVO;
@@ -69,7 +70,7 @@ class AuthControllerApiTest {
         dto.setPassword("123456");
 
         when(userService.login(any(UserLoginDTO.class)))
-                .thenThrow(new RuntimeException("USER_NOT_FOUND"));
+                .thenThrow(BusinessException.notFound("USER_NOT_FOUND"));
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,7 +87,7 @@ class AuthControllerApiTest {
         dto.setPassword("bad-password");
 
         when(userService.login(any(UserLoginDTO.class)))
-                .thenThrow(new RuntimeException("PASSWORD_ERROR"));
+                .thenThrow(BusinessException.badRequest("PASSWORD_ERROR"));
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -129,7 +130,7 @@ class AuthControllerApiTest {
         dto.setUsername("admin");
         dto.setPassword("123456");
 
-        doThrow(new RuntimeException("USERNAME_ALREADY_EXISTS"))
+        doThrow(BusinessException.badRequest("USERNAME_ALREADY_EXISTS"))
                 .when(userService)
                 .register(any(UserRegisterDTO.class));
 

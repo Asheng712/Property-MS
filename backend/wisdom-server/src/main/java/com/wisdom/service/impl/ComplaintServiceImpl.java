@@ -10,6 +10,7 @@ import com.wisdom.mapper.ComplaintMapper;
 import com.wisdom.result.PageResult;
 import com.wisdom.service.ComplaintService;
 import com.wisdom.vo.ComplaintVO;
+import com.wisdom.exception.BusinessException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ public class ComplaintServiceImpl implements ComplaintService {
     public void handleComplaint(ComplaintHandleDTO complaintHandleDTO) {
         Complaint complaint = complaintMapper.selectById(complaintHandleDTO.getId());
         if (complaint == null) {
-            throw new RuntimeException("投诉不存在");
+            throw BusinessException.notFound("投诉不存在");
         }
         complaint.setStatus(complaintHandleDTO.getStatus());
         complaintMapper.updateById(complaint);
