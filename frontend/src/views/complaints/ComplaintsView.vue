@@ -1,7 +1,8 @@
 <template>
   <PageContainer title="投诉建议闭环" description="已接入投诉分页查询与处理反馈接口。">
     <template #actions>
-      <el-button type="primary" class="btn-primary-gradient" @click="openFeedback()">快速处理</el-button>
+      <el-button plain @click="openFeedback()">处理最新投诉</el-button>
+      <el-button type="primary" class="btn-primary-gradient" @click="createDrawer = true">新建投诉</el-button>
     </template>
 
     <DataToolbar
@@ -49,6 +50,33 @@
       </div>
     </PanelCard>
 
+    <el-drawer v-model="createDrawer" title="新建投诉建议" size="420px">
+      <el-form label-position="top" class="dialog-form">
+        <el-form-item label="投诉分类">
+          <el-select v-model="createDraft.category">
+            <el-option label="噪音扰民" value="噪音扰民" />
+            <el-option label="环境卫生" value="环境卫生" />
+            <el-option label="安全隐患" value="安全隐患" />
+            <el-option label="物业服务" value="物业服务" />
+            <el-option label="设施维修" value="设施维修" />
+            <el-option label="其他" value="其他" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="来源">
+          <el-input v-model="createDraft.source" placeholder="APP / 业主姓名 / 前台代录" />
+        </el-form-item>
+        <el-form-item label="投诉内容">
+          <el-input v-model="createDraft.content" type="textarea" rows="6" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="drawer-footer">
+          <el-button @click="createDrawer = false">取消</el-button>
+          <el-button type="primary" :loading="creating" @click="createComplaint">提交投诉</el-button>
+        </div>
+      </template>
+    </el-drawer>
+
     <el-drawer v-model="feedbackDrawer" title="投诉处理" size="420px">
       <el-form label-position="top" class="dialog-form">
         <el-form-item label="处理结果">
@@ -88,9 +116,11 @@ import type { ComplaintRecord } from '@/types'
 
 const loading = ref(false)
 const submitting = ref(false)
+const creating = ref(false)
 const keyword = ref('')
 const status = ref('')
 const total = ref(0)
+const createDrawer = ref(false)
 const feedbackDrawer = ref(false)
 const detailVisible = ref(false)
 const complaints = ref<ComplaintRecord[]>([])
@@ -105,6 +135,12 @@ const filters = [
 const feedback = reactive({
   status: 1,
   note: '',
+})
+
+const createDraft = reactive({
+  category: '物业服务',
+  content: '',
+  source: '前台代录',
 })
 
 const query = reactive({
@@ -173,6 +209,11 @@ function handleSizeChange(size: number) {
 
 function openFeedback(complaint?: ComplaintRecord) {
   activeComplaint.value = complaint || complaints.value[0] || null
+  if (!activeComplaint.value) {
+    ElMessage.warning('暂无可处理的投诉记录')
+    return
+  }
+
   feedback.status = activeComplaint.value?.status === 2 ? 2 : 1
   feedback.note = activeComplaint.value?.handleResult || ''
   feedbackDrawer.value = true
@@ -202,6 +243,33 @@ async function submitFeedback() {
     ElMessage.error(error instanceof Error ? error.message : '处理投诉失败')
   } finally {
     submitting.value = false
+  }
+}
+
+async function createComplaint() {
+  if (!createDraft.content.trim()) {
+    ElMessage.warning('请输入投诉内容')
+    return
+  }
+
+  creating.value = true
+  try {
+    await complaintApi.create({
+      category: createDraft.category,
+      content: createDraft.content.trim(),
+      source: createDraft.source.trim() || '前台代录',
+    })
+    ElMessage.success('投诉已提交')
+    createDrawer.value = false
+    createDraft.category = '物业服务'
+    createDraft.content = ''
+    createDraft.source = '前台代录'
+    query.page = 1
+    await loadComplaints()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '提交投诉失败')
+  } finally {
+    creating.value = false
   }
 }
 

@@ -32,40 +32,38 @@ import { ElMessage } from 'element-plus'
 import PageContainer from '@/components/PageContainer.vue'
 import PieLegendCard from '@/components/PieLegendCard.vue'
 import StatCard from '@/components/StatCard.vue'
-import { assetApi, complaintApi, financeApi, repairApi } from '@/services/api'
-import type { AssetRecord, BillRecord, ChartSegment, ComplaintRecord, QuickStat, RepairKanban } from '@/types'
-
-const PAGE_SIZE = 1000
+import { dashboardApi } from '@/services/api'
+import type { ChartSegment, DashboardData, DashboardRentalStatus, QuickStat } from '@/types'
 
 const loading = ref(false)
 const errorMessage = ref('')
-const bills = ref<BillRecord[]>([])
-const assets = ref<AssetRecord[]>([])
-const complaints = ref<ComplaintRecord[]>([])
-const repairKanban = ref<RepairKanban>({
-  pending: [],
-  processing: [],
-  completed: [],
+const dashboard = ref<DashboardData>({
+  pendingChargeCount: 0,
+  pendingChargeAmount: 0,
+  overdueCount: 0,
+  overdueAmount: 0,
+  todayComplaintCount: 0,
+  pendingComplaintCount: 0,
+  todayRepairCount: 0,
+  pendingRepairCount: 0,
+  shopRentalStatus: {
+    vacantRate: 0,
+    rentedRate: 0,
+    soldRate: 0,
+  },
+  parkingRentalStatus: {
+    vacantRate: 0,
+    rentedRate: 0,
+    soldRate: 0,
+  },
 })
 
 const stats = computed<QuickStat[]>(() => {
-  const unpaidBills = bills.value.filter((bill) => bill.payStatus === 0)
-  const overdueBills = unpaidBills.filter((bill) => isBeforeToday(bill.deadline))
-  const todayComplaints = complaints.value.filter((complaint) => isToday(complaint.createTime))
-  const pendingComplaints = complaints.value.filter((complaint) => complaint.status !== 2)
-  const repairs = [
-    ...repairKanban.value.pending,
-    ...repairKanban.value.processing,
-    ...repairKanban.value.completed,
-  ]
-  const todayRepairs = repairs.filter((repair) => isToday(repair.createTime))
-  const pendingRepairs = [...repairKanban.value.pending, ...repairKanban.value.processing]
-
   return [
     {
       id: 'unpaid-count',
       label: '待收费数据',
-      value: unpaidBills.length,
+      value: dashboard.value.pendingChargeCount,
       unit: '条',
       color: '#a855f7',
       accent: '#f3e8ff',
@@ -74,7 +72,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'unpaid-amount',
       label: '待收费金额',
-      value: sumBillAmount(unpaidBills),
+      value: formatMoney(dashboard.value.pendingChargeAmount),
       unit: '元',
       color: '#2563eb',
       accent: '#dbeafe',
@@ -83,7 +81,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'overdue-count',
       label: '欠费数据',
-      value: overdueBills.length,
+      value: dashboard.value.overdueCount,
       unit: '条',
       color: '#f97316',
       accent: '#ffedd5',
@@ -92,7 +90,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'overdue-amount',
       label: '欠费金额',
-      value: sumBillAmount(overdueBills),
+      value: formatMoney(dashboard.value.overdueAmount),
       unit: '元',
       color: '#ef4444',
       accent: '#fee2e2',
@@ -101,7 +99,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'today-complaints',
       label: '今日投诉',
-      value: todayComplaints.length,
+      value: dashboard.value.todayComplaintCount,
       unit: '件',
       color: '#16a34a',
       accent: '#dcfce7',
@@ -110,7 +108,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'pending-complaints',
       label: '投诉待办',
-      value: pendingComplaints.length,
+      value: dashboard.value.pendingComplaintCount,
       unit: '件',
       color: '#ec4899',
       accent: '#fce7f3',
@@ -119,7 +117,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'today-repairs',
       label: '今日报修',
-      value: todayRepairs.length,
+      value: dashboard.value.todayRepairCount,
       unit: '件',
       color: '#e11d48',
       accent: '#ffe4e6',
@@ -128,7 +126,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'pending-repairs',
       label: '报修待办',
-      value: pendingRepairs.length,
+      value: dashboard.value.pendingRepairCount,
       unit: '件',
       color: '#14b8a6',
       accent: '#ccfbf1',
@@ -137,8 +135,8 @@ const stats = computed<QuickStat[]>(() => {
   ]
 })
 
-const rentalChart = computed<ChartSegment[]>(() => buildAssetSegments(isShopAsset))
-const parkingChart = computed<ChartSegment[]>(() => buildAssetSegments(isParkingAsset))
+const rentalChart = computed<ChartSegment[]>(() => buildRentalSegments(dashboard.value.shopRentalStatus))
+const parkingChart = computed<ChartSegment[]>(() => buildRentalSegments(dashboard.value.parkingRentalStatus))
 
 onMounted(() => {
   void loadDashboard()
@@ -149,17 +147,7 @@ async function loadDashboard() {
   errorMessage.value = ''
 
   try {
-    const [billResult, assetResult, complaintResult, repairResult] = await Promise.all([
-      financeApi.getBills({ page: 1, pageSize: PAGE_SIZE }),
-      assetApi.getList({ page: 1, pageSize: PAGE_SIZE }),
-      complaintApi.getList({ page: 1, pageSize: PAGE_SIZE }),
-      repairApi.getKanban(),
-    ])
-
-    bills.value = billResult.records
-    assets.value = assetResult.records
-    complaints.value = complaintResult.records
-    repairKanban.value = repairResult
+    dashboard.value = await dashboardApi.getData()
   } catch (error) {
     const message = error instanceof Error ? error.message : '加载管理员看板数据失败'
     errorMessage.value = message
@@ -169,94 +157,27 @@ async function loadDashboard() {
   }
 }
 
-function sumBillAmount(records: BillRecord[]) {
-  return records
-    .reduce((sum, bill) => sum + Number(bill.amount || 0), 0)
-    .toLocaleString('zh-CN', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-}
-
-function isToday(value?: string | null) {
-  if (!value) {
-    return false
-  }
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return false
-  }
-
-  const now = new Date()
-  return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate()
-}
-
-function isBeforeToday(value?: string | null) {
-  if (!value) {
-    return false
-  }
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return false
-  }
-
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  date.setHours(0, 0, 0, 0)
-  return date < today
-}
-
-function buildAssetSegments(predicate: (asset: AssetRecord) => boolean): ChartSegment[] {
-  const scopedAssets = assets.value.filter(predicate)
-  const total = scopedAssets.length
-  const vacant = scopedAssets.filter((asset) => normalizeStatus(asset.status) === 'vacant').length
-  const rented = scopedAssets.filter((asset) => normalizeStatus(asset.status) === 'occupied').length
-  const sold = scopedAssets.filter((asset) => normalizeStatus(asset.status) === 'sold').length
-
+function buildRentalSegments(status: DashboardRentalStatus): ChartSegment[] {
   return [
-    { label: '空置', value: toPercent(vacant, total), color: '#3b82f6' },
-    { label: '已出租', value: toPercent(rented, total), color: '#10b981' },
-    { label: '已出售', value: toPercent(sold, total), color: '#f59e0b' },
+    { label: '空置', value: normalizeRate(status.vacantRate), color: '#3b82f6' },
+    { label: '已出租', value: normalizeRate(status.rentedRate), color: '#10b981' },
+    { label: '已出售', value: normalizeRate(status.soldRate), color: '#f59e0b' },
   ]
 }
 
-function toPercent(value: number, total: number) {
-  if (total === 0) {
+function normalizeRate(value?: number) {
+  if (!value) {
     return 0
   }
 
-  return Math.round((value / total) * 100)
+  return Math.round(value > 1 ? value : value * 100)
 }
 
-function isShopAsset(asset: AssetRecord) {
-  return normalizeType(asset.type) === 'shop'
-}
-
-function isParkingAsset(asset: AssetRecord) {
-  return ['parking', 'parking_space', 'garage', 'carport'].includes(normalizeType(asset.type))
-}
-
-function normalizeType(value: string) {
-  return value.trim().toLowerCase()
-}
-
-function normalizeStatus(value: string) {
-  const normalized = value.trim().toLowerCase()
-  const mapping: Record<string, 'occupied' | 'vacant' | 'sold'> = {
-    rented: 'occupied',
-    rent: 'occupied',
-    leased: 'occupied',
-    occupied: 'occupied',
-    vacant: 'vacant',
-    empty: 'vacant',
-    idle: 'vacant',
-    sold: 'sold',
-    sale: 'sold',
-  }
-
-  return mapping[normalized] ?? normalized
+function formatMoney(value?: number) {
+  return Number(value || 0).toLocaleString('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
 }
 </script>
 

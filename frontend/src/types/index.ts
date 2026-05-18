@@ -242,6 +242,12 @@ export interface ComplaintHandlePayload {
   handleResult: string
 }
 
+export interface ComplaintCreatePayload {
+  category: string
+  content: string
+  source: string
+}
+
 export interface NoticeRecord {
   id: number
   title: string
@@ -292,6 +298,45 @@ export interface ReportExportPayload {
   startDate: string
   endDate: string
   reportType: string
+}
+
+export interface DashboardRentalStatus {
+  vacantRate: number
+  rentedRate: number
+  soldRate: number
+}
+
+export interface DashboardData {
+  pendingChargeCount: number
+  pendingChargeAmount: number
+  overdueCount: number
+  overdueAmount: number
+  todayComplaintCount: number
+  pendingComplaintCount: number
+  todayRepairCount: number
+  pendingRepairCount: number
+  shopRentalStatus: DashboardRentalStatus
+  parkingRentalStatus: DashboardRentalStatus
+}
+
+export interface NoticeGeneratePayload {
+  topic: string
+  content: string
+}
+
+export interface FinanceAnalyzePayload {
+  reportData: string
+}
+
+export interface RepairAnalyzePayload {
+  description: string
+}
+
+export interface RepairAnalysisResult {
+  category?: string
+  priority?: number
+  suggestion?: string
+  riskLevel?: string
 }
 
 export interface QuickStat {

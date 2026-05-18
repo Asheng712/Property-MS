@@ -8,14 +8,14 @@
       <PanelCard v-for="notice in notices" :key="notice.id" class="announcement-card">
         <template #header>
           <div class="announcement-card__status">
-            <StatusBadge :label="notice.status" :tone="notice.status === 'published' ? 'success' : 'info'" />
+            <StatusBadge :label="getStatusText(notice.status)" :tone="getStatusTone(notice.status)" />
             <span class="muted-text">{{ notice.createTime || '-' }}</span>
           </div>
         </template>
         <h3>{{ notice.title }}</h3>
         <p>{{ notice.content }}</p>
         <footer>
-          <span>投递对象: {{ notice.targetType }}</span>
+          <span>投递对象: {{ getTargetText(notice.targetType) }}</span>
           <div>
             <el-button link type="primary" @click="openEdit(notice)">编辑</el-button>
             <el-button link type="primary" @click="openDetail(notice)">详情</el-button>
@@ -41,6 +41,12 @@
       <el-form label-position="top" class="dialog-form">
         <el-form-item label="公告标题">
           <el-input v-model="draft.title" />
+        </el-form-item>
+        <el-form-item label="AI 辅助">
+          <div class="ai-assist-row">
+            <el-input v-model="aiTopic" placeholder="输入生成主题，如停水通知、消防演练" />
+            <el-button plain :loading="generatingNotice" @click="generateNotice">生成</el-button>
+          </div>
         </el-form-item>
         <el-form-item label="推送对象">
           <el-select v-model="draft.targetType">
@@ -78,16 +84,18 @@ import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { noticeApi } from '@/services/api'
+import { aiApi, noticeApi } from '@/services/api'
 import type { NoticeRecord } from '@/types'
 
 const loading = ref(false)
 const submitting = ref(false)
+const generatingNotice = ref(false)
 const dialogVisible = ref(false)
 const detailVisible = ref(false)
 const total = ref(0)
 const notices = ref<NoticeRecord[]>([])
 const activeNotice = ref<NoticeRecord | null>(null)
+const aiTopic = ref('')
 
 const draft = reactive({
   id: undefined as number | undefined,
@@ -106,8 +114,8 @@ const detailItems = computed(() =>
   activeNotice.value
     ? [
         { label: '公告标题', value: activeNotice.value.title },
-        { label: '推送对象', value: activeNotice.value.targetType },
-        { label: '公告状态', value: activeNotice.value.status },
+        { label: '推送对象', value: getTargetText(activeNotice.value.targetType) },
+        { label: '公告状态', value: getStatusText(activeNotice.value.status) },
         { label: '浏览量', value: String(activeNotice.value.viewCount) },
         { label: '发布时间', value: activeNotice.value.createTime || '-' },
         { label: '公告内容', value: activeNotice.value.content },
@@ -191,12 +199,61 @@ async function saveNotice() {
   }
 }
 
+async function generateNotice() {
+  const topic = aiTopic.value.trim() || draft.title.trim()
+  if (!topic) {
+    ElMessage.warning('请输入公告主题或标题')
+    return
+  }
+
+  generatingNotice.value = true
+  try {
+    const content = await aiApi.generateNotice({
+      topic,
+      content: draft.content.trim() || '请生成一份面向社区业主的正式公告，语言清晰、信息完整。',
+    })
+    draft.content = content
+    if (!draft.title.trim()) {
+      draft.title = topic
+    }
+    ElMessage.success('AI 公告内容已生成')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '生成公告失败')
+  } finally {
+    generatingNotice.value = false
+  }
+}
+
 function resetDraft() {
   draft.id = undefined
   draft.title = ''
   draft.targetType = 'ALL'
   draft.status = 'draft'
   draft.content = ''
+  aiTopic.value = ''
+}
+
+function getTargetText(value: string) {
+  const mapping: Record<string, string> = {
+    ALL: '全体业主',
+    RESIDENT: '住户',
+    TENANT: '商铺租户',
+  }
+
+  return mapping[value] ?? value
+}
+
+function getStatusText(value: string) {
+  const mapping: Record<string, string> = {
+    draft: '草稿',
+    published: '已发布',
+  }
+
+  return mapping[value] ?? value
+}
+
+function getStatusTone(value: string) {
+  return value === 'published' ? 'success' : 'info'
 }
 </script>
 
@@ -217,6 +274,10 @@ function resetDraft() {
   min-height: 54px;
   margin: 0 0 16px;
   color: #7f90aa;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .announcement-card footer,
@@ -227,6 +288,13 @@ function resetDraft() {
   gap: 12px;
 }
 
+.ai-assist-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  width: 100%;
+}
+
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
@@ -235,6 +303,10 @@ function resetDraft() {
 
 @media (max-width: 900px) {
   .announcement-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-assist-row {
     grid-template-columns: 1fr;
   }
 }

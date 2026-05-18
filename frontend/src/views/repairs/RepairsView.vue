@@ -40,6 +40,10 @@
         </el-form-item>
         <el-form-item label="报修内容">
           <el-input v-model="ticketDraft.content" type="textarea" rows="4" />
+          <div class="repair-ai-row">
+            <el-button plain :loading="analyzingRepair" @click="analyzeRepair">AI 分析故障</el-button>
+            <span v-if="repairSuggestion">{{ repairSuggestion }}</span>
+          </div>
         </el-form-item>
         <el-form-item label="报修人">
           <el-input v-model="ticketDraft.reporter" />
@@ -81,11 +85,12 @@ import { ElMessage } from 'element-plus'
 import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
-import { repairApi } from '@/services/api'
+import { aiApi, repairApi } from '@/services/api'
 import type { RepairRecord } from '@/types'
 
 const loading = ref(false)
 const submitting = ref(false)
+const analyzingRepair = ref(false)
 const ticketDialogVisible = ref(false)
 const assignDialogVisible = ref(false)
 const detailVisible = ref(false)
@@ -96,6 +101,7 @@ const kanban = reactive({
   completed: [] as RepairRecord[],
 })
 const activeTicket = ref<RepairRecord | null>(null)
+const repairSuggestion = ref('')
 
 const ticketDraft = reactive({
   houseId: 1,
@@ -210,11 +216,33 @@ async function createTicket() {
     ticketDraft.content = ''
     ticketDraft.reporter = ''
     ticketDraft.priority = 1
+    repairSuggestion.value = ''
     await loadKanban()
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '录入工单失败')
   } finally {
     submitting.value = false
+  }
+}
+
+async function analyzeRepair() {
+  if (!ticketDraft.content.trim()) {
+    ElMessage.warning('请先输入报修内容')
+    return
+  }
+
+  analyzingRepair.value = true
+  try {
+    const result = await aiApi.analyzeRepair({ description: ticketDraft.content.trim() })
+    if (typeof result.priority === 'number') {
+      ticketDraft.priority = result.priority >= 2 ? 2 : 1
+    }
+    repairSuggestion.value = result.suggestion || result.category || result.riskLevel || '已完成故障分析'
+    ElMessage.success('AI 故障分析已完成')
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : 'AI 分析故障失败')
+  } finally {
+    analyzingRepair.value = false
   }
 }
 </script>
@@ -274,8 +302,13 @@ async function createTicket() {
 
 .kanban-ticket h3 {
   margin: 14px 0 10px;
-  font-size: 24px;
+  font-size: 18px;
+  line-height: 1.45;
   color: #22304a;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .kanban-ticket p {
@@ -298,9 +331,30 @@ async function createTicket() {
   width: 100%;
 }
 
+.repair-ai-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+  color: #6f8198;
+  font-size: 13px;
+}
+
 @media (max-width: 1200px) {
   .kanban-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .kanban-ticket__top,
+  .kanban-ticket footer,
+  .repair-ai-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
   }
 }
 </style>
