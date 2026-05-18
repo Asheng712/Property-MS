@@ -3,6 +3,7 @@ package com.wisdom.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wisdom.dto.ComplaintCreateDTO;
 import com.wisdom.dto.ComplaintHandleDTO;
 import com.wisdom.dto.ComplaintPageQueryDTO;
 import com.wisdom.entity.Complaint;
@@ -15,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,6 +67,19 @@ public class ComplaintServiceImpl implements ComplaintService {
             throw BusinessException.notFound("投诉不存在");
         }
         complaint.setStatus(complaintHandleDTO.getStatus());
+        complaint.setHandleResult(complaintHandleDTO.getHandleResult());
         complaintMapper.updateById(complaint);
+    }
+
+    @Override
+    public void createComplaint(ComplaintCreateDTO complaintCreateDTO) {
+        Complaint complaint = new Complaint();
+        complaint.setComplaintNo("CMP-" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        complaint.setCategory(complaintCreateDTO.getCategory());
+        complaint.setContent(complaintCreateDTO.getContent());
+        complaint.setSource(complaintCreateDTO.getSource());
+        complaint.setStatus(0);
+        complaint.setCreateTime(LocalDateTime.now());
+        complaintMapper.insert(complaint);
     }
 }

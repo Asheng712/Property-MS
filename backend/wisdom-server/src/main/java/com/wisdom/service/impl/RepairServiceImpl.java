@@ -40,16 +40,27 @@ public class RepairServiceImpl implements RepairService {
 
     @Override
     public RepairKanbanVO getRepairKanban() {
+        return getRepairKanban(null);
+    }
+
+    @Override
+    public RepairKanbanVO getRepairKanban(String reporter) {
         List<Repair> allRepairs = repairMapper.selectList(null);
-        List<RepairVO> pending = allRepairs.stream()
+        List<Repair> filtered = allRepairs;
+        if (reporter != null && !reporter.isEmpty()) {
+            filtered = allRepairs.stream()
+                    .filter(repair -> reporter.equals(repair.getReporter()))
+                    .collect(Collectors.toList());
+        }
+        List<RepairVO> pending = filtered.stream()
                 .filter(repair -> repair.getStatus() == 0)
                 .map(this::convertToRepairVO)
                 .collect(Collectors.toList());
-        List<RepairVO> processing = allRepairs.stream()
+        List<RepairVO> processing = filtered.stream()
                 .filter(repair -> repair.getStatus() == 1)
                 .map(this::convertToRepairVO)
                 .collect(Collectors.toList());
-        List<RepairVO> completed = allRepairs.stream()
+        List<RepairVO> completed = filtered.stream()
                 .filter(repair -> repair.getStatus() == 2)
                 .map(this::convertToRepairVO)
                 .collect(Collectors.toList());

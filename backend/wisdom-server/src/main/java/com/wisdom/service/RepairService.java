@@ -7,6 +7,7 @@ import com.wisdom.vo.RepairKanbanVO;
 
 public interface RepairService {
     RepairKanbanVO getRepairKanban();
+    RepairKanbanVO getRepairKanban(String reporter);
     void addRepair(RepairDTO repairDTO);
     void dispatchRepair(RepairDispatchDTO repairDispatchDTO);
     void updateRepairStatus(RepairStatusUpdateDTO repairStatusUpdateDTO);

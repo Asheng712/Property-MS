@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npx vue-tsc *)",
+      "Bash(npx vite *)",
+      "Bash(mvn compile *)",
+      "Bash(where mvn *)",
+      "Bash(find /c -name \"mvn.cmd\" -type f)",
+      "Bash(fuser -k \"F:/Git/Property-MS/property-mobile\")",
+      "Bash(cmd //c \"tasklist 2>nul | findstr /I node\")",
+      "Bash(taskkill //F //IM node.exe)"
+    ]
+  }
+}

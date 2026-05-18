@@ -19,8 +19,11 @@ public class RepairController {
     private RepairService repairService;
 
     @GetMapping("/kanban")
-    @Operation(summary = "获取报修看板数据")
-    public Result<?> getRepairKanban() {
+    @Operation(summary = "获取报修看板数据（可选按报修人过滤）")
+    public Result<?> getRepairKanban(@RequestParam(required = false) String reporter) {
+        if (reporter != null && !reporter.isEmpty()) {
+            return Result.success(repairService.getRepairKanban(reporter));
+        }
         return Result.success(repairService.getRepairKanban());
     }
 

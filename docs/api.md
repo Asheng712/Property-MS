@@ -56,6 +56,7 @@
 | 批量生成月度账单  | `POST` | `/bills/batch-generate` | `BillGenerateDTO`     | `BatchRecordVO`             |
 | 查询账单批处理历史 | `GET`  | `/bills/batch-logs`     | `PageQueryDTO`        | `PageResult<BatchRecordVO>` |
 | 分页查询账单明细  | `GET`  | `/bills`                | `BillPageQueryDTO`    | `PageResult<BillVO>`        |
+| 业主在线缴费    | `POST` | `/finance/payments`     | `PaymentCreateDTO`    | `PaymentVO`                 |
 | 财务流水核销确认  | `PUT`  | `/finance/audit/{id}`   | `PaymentAuditDTO`     | -                           |
 | 分页查询缴费流水  | `GET`  | `/finance/payments`     | `PaymentPageQueryDTO` | `PageResult<PaymentVO>`     |
 
@@ -65,11 +66,12 @@
 
 | 功能        | 方法     | 路径                   | DTO (入参)                | VO (出参)                   |
 |:--------- |:------ |:-------------------- |:----------------------- |:------------------------- |
-| 获取报修看板数据  | `GET`  | `/repairs/kanban`    | -                       | `RepairKanbanVO`          |
+| 获取报修看板数据  | `GET`  | `/repairs/kanban`    | `?reporter` (可选)       | `RepairKanbanVO`          |
 | 录入/代录工单   | `POST` | `/repairs`           | `RepairDTO`             | -                         |
 | 派发工单/指派师傅 | `PUT`  | `/repairs/dispatch`  | `RepairDispatchDTO`     | -                         |
 | 更新工单状态    | `PUT`  | `/repairs/status`    | `RepairStatusUpdateDTO` | -                         |
 | 分页查询投诉建议  | `GET`  | `/complaints`        | `ComplaintPageQueryDTO` | `PageResult<ComplaintVO>` |
+| 提交投诉建议    | `POST` | `/complaints`        | `ComplaintCreateDTO`    | -                         |
 | 处理并反馈投诉   | `PUT`  | `/complaints/handle` | `ComplaintHandleDTO`    | -                         |
 
 ---
@@ -111,6 +113,20 @@
 ### 3.1 DTO (接收参数)
 
 ```typescript
+// ComplaintCreateDTO (业主提交投诉)
+{
+  category: string;    // 分类: 噪音扰民/环境卫生/安全隐患/物业服务/设施维修/其他
+  content: string;     // 投诉内容
+  source: string;      // 来源: APP / 业主用户名
+}
+
+// PaymentCreateDTO (业主模拟缴费)
+{
+  billId: number;      // 账单ID
+  payType: string;     // 支付方式: 微信支付/支付宝/银行卡
+  payAmount: number;   // 支付金额
+}
+
 // AssetPageQueryDTO
 {
   page: number;

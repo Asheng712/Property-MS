@@ -136,6 +136,7 @@
 | content | TEXT | NOT NULL | 投诉详细详情 |
 | source | VARCHAR(100) | - | 来源区域或匿名状态 |
 | status | TINYINT | DEFAULT 0 | 0-待处理, 1-处理中, 2-已办结 |
+| handle_result | VARCHAR(500) | - | 处理反馈结果 |
 | create_time | DATETIME | DEFAULT NOW | 提起时间 |
 
 ---

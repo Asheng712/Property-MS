@@ -7,6 +7,7 @@ import com.wisdom.dto.BillGenerateDTO;
 import com.wisdom.dto.BillPageQueryDTO;
 import com.wisdom.dto.PageQueryDTO;
 import com.wisdom.dto.PaymentAuditDTO;
+import com.wisdom.dto.PaymentCreateDTO;
 import com.wisdom.dto.PaymentPageQueryDTO;
 import com.wisdom.entity.Bill;
 import com.wisdom.entity.BillBatch;
@@ -17,6 +18,7 @@ import com.wisdom.mapper.BillBatchMapper;
 import com.wisdom.mapper.BillMapper;
 import com.wisdom.mapper.PaymentRecordMapper;
 import com.wisdom.result.PageResult;
+import com.wisdom.exception.BusinessException;
 import com.wisdom.service.FinanceService;
 import com.wisdom.vo.BatchRecordVO;
 import com.wisdom.vo.BillVO;
@@ -154,6 +156,40 @@ public class FinanceServiceImpl implements FinanceService {
             bill.setPayStatus(1);
             billMapper.updateById(bill);
         }
+    }
+
+    @Override
+    public PaymentVO createPayment(PaymentCreateDTO paymentCreateDTO) {
+        Bill bill = billMapper.selectById(paymentCreateDTO.getBillId());
+        if (bill == null) {
+            throw BusinessException.notFound("账单不存在");
+        }
+        if (bill.getPayStatus() == 1) {
+            throw BusinessException.badRequest("该账单已缴费");
+        }
+
+        PaymentRecord paymentRecord = new PaymentRecord();
+        paymentRecord.setTrxNo("TRX-" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        paymentRecord.setBillId(bill.getId());
+        paymentRecord.setHouseId(bill.getHouseId());
+        paymentRecord.setPayAmount(paymentCreateDTO.getPayAmount());
+        paymentRecord.setPayType(paymentCreateDTO.getPayType());
+        paymentRecord.setStatus(0);
+        paymentRecord.setPayTime(LocalDateTime.now());
+        paymentRecordMapper.insert(paymentRecord);
+
+        bill.setPayStatus(1);
+        billMapper.updateById(bill);
+
+        PaymentVO paymentVO = new PaymentVO();
+        BeanUtils.copyProperties(paymentRecord, paymentVO);
+        House house = assetMapper.selectById(bill.getHouseId());
+        if (house != null) {
+            paymentVO.setHouseName(house.getName());
+        }
+        paymentVO.setBillNo(bill.getBillNo());
+        paymentVO.setStatusText("待核销");
+        return paymentVO;
     }
 
     @Override

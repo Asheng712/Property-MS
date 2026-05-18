@@ -4,17 +4,20 @@ import com.wisdom.dto.BillGenerateDTO;
 import com.wisdom.dto.BillPageQueryDTO;
 import com.wisdom.dto.PageQueryDTO;
 import com.wisdom.dto.PaymentAuditDTO;
+import com.wisdom.dto.PaymentCreateDTO;
 import com.wisdom.dto.PaymentPageQueryDTO;
 import com.wisdom.result.Result;
 import com.wisdom.service.FinanceService;
+import com.wisdom.vo.PaymentVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1")
-@Tag(name = "财务与计费模块", description = "账单生成、财务流水核销等接口")
+@Tag(name = "财务与计费模块", description = "账单生成、在线缴费、财务流水核销等接口")
 public class FinanceController {
 
     @Autowired
@@ -36,6 +39,13 @@ public class FinanceController {
     @Operation(summary = "分页查询账单明细")
     public Result<?> getBillList(BillPageQueryDTO billPageQueryDTO) {
         return Result.success(financeService.getBillList(billPageQueryDTO));
+    }
+
+    @PostMapping("/finance/payments")
+    @Operation(summary = "业主在线缴费")
+    public Result<PaymentVO> createPayment(@Valid @RequestBody PaymentCreateDTO paymentCreateDTO) {
+        PaymentVO paymentVO = financeService.createPayment(paymentCreateDTO);
+        return Result.success(paymentVO);
     }
 
     @PutMapping("/finance/audit/{id}")

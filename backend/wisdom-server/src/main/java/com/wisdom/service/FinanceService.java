@@ -4,6 +4,7 @@ import com.wisdom.dto.BillGenerateDTO;
 import com.wisdom.dto.BillPageQueryDTO;
 import com.wisdom.dto.PageQueryDTO;
 import com.wisdom.dto.PaymentAuditDTO;
+import com.wisdom.dto.PaymentCreateDTO;
 import com.wisdom.dto.PaymentPageQueryDTO;
 import com.wisdom.result.PageResult;
 import com.wisdom.vo.BatchRecordVO;
@@ -16,4 +17,5 @@ public interface FinanceService {
     PageResult<BillVO> getBillList(BillPageQueryDTO billPageQueryDTO);
     void auditPayment(Long id, PaymentAuditDTO paymentAuditDTO);
     PageResult<PaymentVO> getPaymentList(PaymentPageQueryDTO paymentPageQueryDTO);
+    PaymentVO createPayment(PaymentCreateDTO paymentCreateDTO);
 }
