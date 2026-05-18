@@ -4,9 +4,11 @@
 
 ## 审查范围
 
-- 前端请求封装：`frontend/src/services/http.ts`
-- 前端认证状态：`frontend/src/stores/app.ts`
-- 前端入口鉴权失效处理：`frontend/src/main.ts`
+- PC管理端请求封装：`frontend/src/services/http.ts`
+- PC管理端认证状态：`frontend/src/stores/app.ts`
+- PC管理端入口鉴权失效处理：`frontend/src/main.ts`
+- 移动端请求封装：`frontend-mobile/src/services/http.ts`（Axios + 同等安全策略）
+- 移动端认证状态：`frontend-mobile/src/stores/user.ts`（sessionStorage Token）
 - 前端依赖与 CI：`frontend/package-lock.json`、`.github/workflows/security.yml`
 
 ## AI 辅助审查发现
@@ -65,6 +67,13 @@
 ### 依赖安全
 
 - [x] 运行依赖扫描：`npm audit --audit-level=high` 已通过，当前 0 vulnerabilities。
+
+## 移动端安全 (frontend-mobile/)
+
+- Token 存储：`sessionStorage`，key: `wisdompm-mobile-token`
+- 请求封装：Axios 拦截器统一附加 `Authorization: Bearer`，401/403 自动跳转登录
+- 登录流程：Pinia userStore 管理状态，登出清理 token 和用户信息
+- 未发现 `v-html`、`innerHTML`、`eval` 等危险渲染
 
 ## CI 安全扫描
 

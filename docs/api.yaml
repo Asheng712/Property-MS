@@ -183,6 +183,22 @@ paths:
       responses:
         '200':
           description: 成功
+    post:
+      tags:
+        - 3. 财务与计费模块
+      summary: 业主在线缴费（模拟支付）
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                billId: { type: integer, format: int64, description: "账单ID" }
+                payType: { type: string, description: "支付方式: 微信支付/支付宝/银行卡" }
+                payAmount: { type: number, description: "支付金额" }
+      responses:
+        '200':
+          description: 缴费成功，返回 PaymentVO
 
   /finance/audit/{id}:
     put:
@@ -203,7 +219,13 @@ paths:
     get:
       tags:
         - 4. 服务模块 (报修/投诉)
-      summary: 获取报修调度看板数据 (待处理/处理中/已办结)
+      summary: 获取报修调度看板数据 (待处理/处理中/已办结)，可选按报修人过滤
+      parameters:
+        - name: reporter
+          in: query
+          required: false
+          description: 报修人姓名（可选，用于业主端过滤个人报修）
+          schema: { type: string }
       responses:
         '200':
           description: 成功
@@ -225,6 +247,40 @@ paths:
       responses:
         '200':
           description: 录入成功
+
+  /complaints:
+    get:
+      tags:
+        - 4. 服务模块 (报修/投诉)
+      summary: 分页查询投诉建议列表
+      responses:
+        '200':
+          description: 成功
+    post:
+      tags:
+        - 4. 服务模块 (报修/投诉)
+      summary: 业主提交投诉建议
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category: { type: string, description: "分类: 噪音扰民/环境卫生/安全隐患/物业服务/设施维修/其他" }
+                content: { type: string, description: "投诉内容" }
+                source: { type: string, description: "来源: APP / 业主用户名" }
+      responses:
+        '200':
+          description: 提交成功
+
+  /complaints/handle:
+    put:
+      tags:
+        - 4. 服务模块 (报修/投诉)
+      summary: 管理员处理投诉并填写反馈结果
+      responses:
+        '200':
+          description: 处理成功
 
   # 5. 公告与系统模块
   /notices:
