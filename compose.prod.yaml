@@ -1,0 +1,72 @@
+services:
+  frontend:
+    build: ./frontend
+    image: wisdompm/frontend:${VERSION:-latest}
+    container_name: wisdom-frontend
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    depends_on:
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  backend:
+    build: ./backend
+    image: wisdompm/backend:${VERSION:-latest}
+    container_name: wisdom-backend
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://db:3306/property_ms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+      DB_USERNAME: ${DB_USERNAME:-wisdom}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  db:
+    image: mysql:8.4
+    container_name: wisdom-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: property_ms
+      MYSQL_USER: ${DB_USERNAME:-wisdom}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    secrets:
+      - db_password
+      - mysql_root_password
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$$(cat /run/secrets/db_password) --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+volumes:
+  mysql_prod_data:
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  mysql_root_password:
+    file: ./secrets/mysql_root_password.txt
