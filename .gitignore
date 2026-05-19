@@ -38,6 +38,7 @@ backend/local-maven-settings.xml
 .env
 .env.*
 !.env.example
+!.env.secrets.example
 !frontend/.env.example
 
 # Local Docker secrets

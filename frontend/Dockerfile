@@ -1,7 +1,8 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install --registry=https://registry.npmmirror.com && \
+    npm install @rollup/rollup-linux-x64-musl@$(node -e "console.log(require('./node_modules/rollup/package.json').version)") --registry=https://registry.npmmirror.com
 RUN chown -R node:node /app
 
 FROM deps AS dev
@@ -12,7 +13,7 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 FROM deps AS build
 COPY . .
-RUN npm run build
+RUN npm --registry=https://registry.npmmirror.com run build
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
 COPY nginx.conf /etc/nginx/conf.d/default.conf

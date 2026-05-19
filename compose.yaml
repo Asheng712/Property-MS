@@ -1,31 +1,44 @@
+# ============================================
+# 开发环境 — 热重载 + 源码挂载
+# 启动: docker compose up -d --build
+# 停止: docker compose down
+# ============================================
+
 services:
   frontend:
     build:
       context: ./frontend
       target: dev
     container_name: wisdom-frontend-dev
+    restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:5173"
     environment:
       VITE_API_URL: http://backend:8080
     volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - ./frontend:/app               # 源码挂载 → Vite HMR 热更新
+      - /app/node_modules             # 保留容器内依赖，不被宿主机覆盖
     depends_on:
       backend:
         condition: service_started
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: dev                     # 使用 dev 阶段（mvn spring-boot:run + DevTools）
     container_name: wisdom-backend-dev
+    restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:8080"
     environment:
-      SERVER_PORT: 8080
+      SERVER_PORT: "8080"
       DB_URL: jdbc:mysql://db:3306/property_ms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
       DB_USERNAME: ${DB_USERNAME:-wisdom}
       DB_PASSWORD: ${DB_PASSWORD:-wisdom_dev123}
       JWT_SECRET: ${JWT_SECRET:-wisdom-dev-secret-change-me}
+    volumes:
+      - ./backend:/app                # 源码挂载 → DevTools 检测 class 变化自动重启
+      - maven-repo:/root/.m2          # Maven 本地仓库缓存，加速重复构建
     depends_on:
       db:
         condition: service_healthy
@@ -33,15 +46,17 @@ services:
   db:
     image: mysql:8.4
     container_name: wisdom-mysql-dev
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: property_ms
       MYSQL_USER: ${DB_USERNAME:-wisdom}
       MYSQL_PASSWORD: ${DB_PASSWORD:-wisdom_dev123}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_dev123}
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql_dev_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
       interval: 5s
@@ -49,5 +64,5 @@ services:
       retries: 20
 
 volumes:
-  frontend_node_modules:
-  mysql_data:
+  mysql_dev_data:
+  maven-repo:

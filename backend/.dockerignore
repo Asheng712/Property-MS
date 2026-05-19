@@ -1,0 +1,9 @@
+target
+*.class
+*.jar
+*.log
+.git
+.idea
+.env
+Dockerfile
+.dockerignore

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker info *)",
+      "Bash(docker pull *)",
+      "Bash(read -t 1 dummy)",
+      "Bash(docker compose *)",
+      "Bash(netstat -ano)",
+      "Bash(docker volume rm *)",
+      "Bash(docker run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/doc.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
+    ]
+  }
+}

@@ -10,7 +10,22 @@
       "Bash(find /c -name \"mvn.cmd\" -type f)",
       "Bash(fuser -k \"F:/Git/Property-MS/property-mobile\")",
       "Bash(cmd //c \"tasklist 2>nul | findstr /I node\")",
-      "Bash(taskkill //F //IM node.exe)"
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(ipconfig)",
+      "Bash(npm run *)",
+      "Bash(docker compose *)",
+      "Bash(where docker *)",
+      "Bash(docker --version)",
+      "Bash(start \"\" \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\")",
+      "Bash(docker build *)",
+      "Bash(wsl -e cat /etc/docker/daemon.json)",
+      "Bash(taskkill /IM \"Docker Desktop.exe\" /F)",
+      "Bash(docker info *)",
+      "Bash(docker pull alpine:latest *)",
+      "Bash(curl -sI \"https://docker.1ms.run/v2/\")",
+      "Bash(wsl -l -q)",
+      "Bash(wsl -d docker-desktop cat /etc/docker/daemon.json)",
+      "Bash(wsl *)"
     ]
   }
 }

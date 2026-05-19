@@ -1,0 +1,56 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 部署环境
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Verify
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Deploy
+    needs: test
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -e
+
+            cd /opt/wisdom-pm 2>/dev/null && git pull || \
+              git clone https://github.com/${{ github.repository }}.git /opt/wisdom-pm
+
+            cd /opt/wisdom-pm
+            git checkout main && git pull
+
+            # 生产部署
+            docker compose -f compose.prod.yaml up -d --build --remove-orphans
+
+            # 健康检查
+            sleep 15
+            curl -f http://localhost:80/health || echo "[WARN] Health check failed"
