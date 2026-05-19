@@ -123,13 +123,6 @@
         </div>
         <div class="settings-item">
           <div>
-            <strong>消息提示音</strong>
-            <p>用于报修、收费等业务提醒</p>
-          </div>
-          <el-switch :model-value="appStore.noticeSoundEnabled" @change="handleNoticeSoundChange" />
-        </div>
-        <div class="settings-item">
-          <div>
             <strong>返回登录页</strong>
             <p>退出当前登录并跳转到登录页</p>
           </div>
@@ -143,7 +136,6 @@
 <script setup lang="ts">
 import { ArrowDown, Fold, House, Menu, Search, Setting } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import BrandLogo from '@/components/BrandLogo.vue'
 import { navigationItems } from '@/mock/data'
@@ -182,12 +174,6 @@ function handleCompactChange(value: boolean | string | number) {
   if (appStore.sidebarCollapsed !== shouldCollapse) {
     appStore.toggleSidebar()
   }
-}
-
-function handleNoticeSoundChange(value: boolean | string | number) {
-  const enabled = value === true || value === 'true' || value === 1
-  appStore.toggleNoticeSound(enabled)
-  ElMessage.success(enabled ? '已开启消息提示音' : '已关闭消息提示音')
 }
 
 function handleUserCommand(command: string) {

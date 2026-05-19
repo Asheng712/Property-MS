@@ -15,7 +15,7 @@
     />
 
     <div v-loading="loading" class="detail-grid">
-      <PanelCard title="基础资料" description="数据来自资产分页接口。">
+      <PanelCard title="基础资料">
         <InfoList v-if="asset" :items="baseItems" />
         <el-empty v-else description="暂无资产数据" />
       </PanelCard>

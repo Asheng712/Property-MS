@@ -27,13 +27,6 @@
             </div>
             <el-switch :model-value="appStore.sidebarCollapsed" @change="handleCompactChange" />
           </div>
-          <div class="preference-item">
-            <div>
-              <strong>消息提示音</strong>
-              <p>报修、投诉和收费待办变化时提示</p>
-            </div>
-            <el-switch :model-value="appStore.noticeSoundEnabled" @change="handleNoticeSoundChange" />
-          </div>
         </div>
       </PanelCard>
     </div>
@@ -81,12 +74,6 @@ function handleCompactChange(value: boolean | string | number) {
   if (appStore.sidebarCollapsed !== shouldCollapse) {
     appStore.toggleSidebar()
   }
-}
-
-function handleNoticeSoundChange(value: boolean | string | number) {
-  const enabled = value === true || value === 'true' || value === 1
-  appStore.toggleNoticeSound(enabled)
-  ElMessage.success(enabled ? '已开启消息提示音' : '已关闭消息提示音')
 }
 
 function logout() {

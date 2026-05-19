@@ -283,23 +283,6 @@ export interface RolePermPayload {
   permissions: string
 }
 
-export interface FileTaskRecord {
-  id: number
-  taskType: string
-  fileName: string
-  operator?: string | null
-  dataCount?: number | null
-  status: string
-  fileUrl?: string | null
-  createTime?: string | null
-}
-
-export interface ReportExportPayload {
-  startDate: string
-  endDate: string
-  reportType: string
-}
-
 export interface DashboardRentalStatus {
   vacantRate: number
   rentedRate: number
@@ -317,26 +300,6 @@ export interface DashboardData {
   pendingRepairCount: number
   shopRentalStatus: DashboardRentalStatus
   parkingRentalStatus: DashboardRentalStatus
-}
-
-export interface NoticeGeneratePayload {
-  topic: string
-  content: string
-}
-
-export interface FinanceAnalyzePayload {
-  reportData: string
-}
-
-export interface RepairAnalyzePayload {
-  description: string
-}
-
-export interface RepairAnalysisResult {
-  category?: string
-  priority?: number
-  suggestion?: string
-  riskLevel?: string
 }
 
 export interface QuickStat {
@@ -444,14 +407,6 @@ export interface LegacyRoleRecord {
   description: string
   locked?: boolean
   permissionGroups: PermissionGroup[]
-}
-
-export interface ReportCard {
-  id: string
-  title: string
-  subtitle: string
-  progress: number
-  metric: string
 }
 
 export interface NavigationItem {

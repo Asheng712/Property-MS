@@ -3,11 +3,7 @@
     <div class="register-panel glass-card">
       <div class="register-panel__copy">
         <h1>创建物业管理账号</h1>
-        <p>当前注册页已接入后端 `POST /api/v1/auth/register` 接口，注册成功后可直接跳回登录页。</p>
-        <ul>
-          <li>用户名必须唯一</li>
-          <li>角色 ID 需要和后端角色表数据对应</li>
-        </ul>
+        <p>填写基础资料后即可创建账号。</p>
       </div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="register-form" @submit.prevent>
         <el-form-item label="用户名" prop="username">

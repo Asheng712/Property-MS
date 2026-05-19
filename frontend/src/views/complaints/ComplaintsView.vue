@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="投诉建议闭环" description="已接入投诉分页查询与处理反馈接口。">
+  <PageContainer title="投诉建议闭环" description="记录投诉建议并跟进处理结果。">
     <template #actions>
       <el-button plain @click="openFeedback()">处理最新投诉</el-button>
       <el-button type="primary" class="btn-primary-gradient" @click="createDrawer = true">新建投诉</el-button>

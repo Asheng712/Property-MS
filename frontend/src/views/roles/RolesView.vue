@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="角色权限控制" description="已接入角色分页查询与权限字符串更新接口。">
+  <PageContainer title="角色权限控制" description="查看角色列表并维护权限标识。">
     <div class="roles-layout">
       <PanelCard title="系统角色列表" class="role-list">
         <button
@@ -20,7 +20,7 @@
           <div class="permission-panel__header">
             <div>
               <h3>{{ activeRole?.roleName || '未选择角色' }}</h3>
-              <p>后端当前以字符串形式存储权限，多个权限建议使用英文逗号分隔。</p>
+              <p>多个权限标识请使用英文逗号分隔。</p>
             </div>
             <el-button type="primary" :loading="submitting" @click="savePermissions">保存配置</el-button>
           </div>

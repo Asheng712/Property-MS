@@ -11,11 +11,7 @@
         </div>
         <div class="auth-copy">
           <h1>智慧物业管理平台</h1>
-          <p>基于最新后端接口完成登录、台账、缴费、工单、公告等模块联调。</p>
-          <ul class="auth-tips">
-            <li>登录接口：`POST /api/v1/auth/login`</li>
-            <li>用户信息接口：`GET /api/v1/auth/info`</li>
-          </ul>
+          <p>统一管理资产、收费、工单、投诉和公告。</p>
         </div>
       </div>
     </section>
@@ -24,7 +20,7 @@
       <div class="auth-form glass-card">
         <div>
           <h2>欢迎登录</h2>
-          <p>请输入后端数据库中已存在的用户名和密码。</p>
+          <p>请输入用户名和密码进入系统。</p>
         </div>
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent>
           <el-form-item label="用户名" prop="username">

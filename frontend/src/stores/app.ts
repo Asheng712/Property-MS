@@ -27,7 +27,6 @@ function loadState() {
   return safeParse<{
     isAuthenticated: boolean
     compactMode: boolean
-    noticeSound: boolean
   }>(window.sessionStorage.getItem(STORAGE_KEY))
 }
 
@@ -46,7 +45,6 @@ export const useAppStore = defineStore('app', () => {
   const sidebarCollapsed = ref(savedState?.compactMode ?? false)
   const sidebarDrawerOpen = ref(false)
   const isAuthenticated = ref(savedState?.isAuthenticated ?? false)
-  const noticeSoundEnabled = ref(savedState?.noticeSound ?? true)
   const currentUserProfile = ref<UserInfo | null>(savedProfile)
 
   const sidebarWidth = computed(() => (sidebarCollapsed.value ? '88px' : '236px'))
@@ -68,7 +66,6 @@ export const useAppStore = defineStore('app', () => {
       JSON.stringify({
         isAuthenticated: isAuthenticated.value,
         compactMode: sidebarCollapsed.value,
-        noticeSound: noticeSoundEnabled.value,
       }),
     )
   }
@@ -130,15 +127,6 @@ export const useAppStore = defineStore('app', () => {
     persistState()
   }
 
-  function switchUser(_userId: string) {
-    // 最新后端尚未提供切换用户接口，保留方法避免布局组件报错。
-  }
-
-  function toggleNoticeSound(value?: boolean) {
-    noticeSoundEnabled.value = typeof value === 'boolean' ? value : !noticeSoundEnabled.value
-    persistState()
-  }
-
   return {
     users,
     currentUser,
@@ -146,7 +134,6 @@ export const useAppStore = defineStore('app', () => {
     currentUserId,
     currentUserProfile,
     isAuthenticated,
-    noticeSoundEnabled,
     sidebarCollapsed,
     sidebarDrawerOpen,
     sidebarWidth,
@@ -156,8 +143,6 @@ export const useAppStore = defineStore('app', () => {
     loginByCredential,
     fetchCurrentUser,
     logout,
-    switchUser,
-    toggleNoticeSound,
     registerUser,
   }
 })

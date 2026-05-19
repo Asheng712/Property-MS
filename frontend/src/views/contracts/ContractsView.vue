@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="合同管理" description="已接入最新后端合同分页查询与新增/编辑接口。">
+  <PageContainer title="合同管理" description="管理租户合同、租期、租金和合同状态。">
     <template #actions>
       <el-button type="primary" class="btn-primary-gradient" @click="openCreate">新增合同</el-button>
     </template>

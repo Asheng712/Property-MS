@@ -1,10 +1,6 @@
 import {
   Bell,
   Coin,
-  CreditCard,
-  DataAnalysis,
-  DocumentCopy,
-  Files,
   House,
   MagicStick,
   Monitor,
@@ -26,20 +22,18 @@ import type {
   NavigationItem,
   QuickStat,
   RepairTicket,
-  ReportCard,
 } from '@/types'
 
 export const navigationItems: NavigationItem[] = [
   { path: '/dashboard', label: '管理员运营看板', icon: Monitor },
   { path: '/assets', label: '资产全景管理', icon: House },
   { path: '/contracts', label: '商业合同管理', icon: OfficeBuilding },
-  { path: '/billing', label: '智能账单引擎', icon: MagicStick },
+  { path: '/billing', label: '账单管理', icon: MagicStick },
   { path: '/payments', label: '缴费流水与核销', icon: Coin },
   { path: '/repairs', label: '报修工单调度', icon: Service },
   { path: '/complaints', label: '投诉建议闭环', icon: Opportunity },
   { path: '/announcements', label: '定向公告发布', icon: Bell },
   { path: '/roles', label: '角色权限控制', icon: SetUp },
-  { path: '/reports', label: '报表导出与导入', icon: Files },
 ]
 
 export const dashboardStats: QuickStat[] = [
@@ -136,7 +130,7 @@ export const roleRecords: LegacyRoleRecord[] = [
     locked: true,
     permissionGroups: [
       { id: 'asset', title: '资产全景管理', permissions: ['查看资产树', '新增/编辑资产', '删除资产'] },
-      { id: 'finance', title: '财务与收费管理', permissions: ['查看智能账单', '生成批处理账单', '财务核销确认', '导出财务报表'] },
+      { id: 'finance', title: '财务与收费管理', permissions: ['查看账单', '生成批处理账单', '财务核销确认'] },
       { id: 'service', title: '服务与工单流转', permissions: ['查看报修单', '派发工单', '修改工单状态', '处理投诉建议'] },
     ],
   },
@@ -145,7 +139,7 @@ export const roleRecords: LegacyRoleRecord[] = [
     name: '财务经理',
     description: '仅管理收费与账单',
     permissionGroups: [
-      { id: 'finance', title: '财务与收费管理', permissions: ['查看智能账单', '生成批处理账单', '财务核销确认', '导出财务报表'] },
+      { id: 'finance', title: '财务与收费管理', permissions: ['查看账单', '生成批处理账单', '财务核销确认'] },
     ],
   },
   {
@@ -166,14 +160,3 @@ export const roleRecords: LegacyRoleRecord[] = [
   },
 ]
 
-export const reportCards: ReportCard[] = [
-  { id: '1', title: '收费日报', subtitle: '近 24 小时收费统计', progress: 76, metric: '已生成 12 份' },
-  { id: '2', title: '资产台账导入', subtitle: '支持 Excel/CSV 模板', progress: 52, metric: '待校验 87 行' },
-  { id: '3', title: '维修工单周报', subtitle: '自动汇总工单 SLA', progress: 91, metric: '8:00 自动推送' },
-]
-
-export const reportActions = [
-  { id: 'export-income', title: '导出本月收入报表', icon: DocumentCopy },
-  { id: 'export-assets', title: '导出资产台账', icon: DataAnalysis },
-  { id: 'import-assets', title: '导入资产模板', icon: CreditCard },
-]

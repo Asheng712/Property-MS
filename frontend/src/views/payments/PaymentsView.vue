@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="缴费流水与核销" description="已接入缴费流水分页查询与人工核销接口。">
+  <PageContainer title="缴费流水与核销" description="查看缴费流水并处理待核销记录。">
     <DataToolbar
       v-model:keyword="keyword"
       v-model:status="status"

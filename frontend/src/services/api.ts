@@ -16,10 +16,7 @@ import type {
   ContractQuery,
   ContractRecord,
   DashboardData,
-  FileTaskRecord,
-  FinanceAnalyzePayload,
   LoginPayload,
-  NoticeGeneratePayload,
   NoticePayload,
   NoticeQuery,
   NoticeRecord,
@@ -29,13 +26,10 @@ import type {
   PaymentQuery,
   PaymentRecord,
   RegisterPayload,
-  RepairAnalysisResult,
-  RepairAnalyzePayload,
   RepairDispatchPayload,
   RepairKanban,
   RepairPayload,
   RepairStatusPayload,
-  ReportExportPayload,
   RolePermPayload,
   RoleRecord,
   UserInfo,
@@ -212,65 +206,5 @@ export const roleApi = {
 export const dashboardApi = {
   getData() {
     return request<DashboardData>('/api/v1/dashboard/data', { method: 'GET' })
-  },
-}
-
-export const systemApi = {
-  getTasks(query: PageQuery) {
-    return request<PageResult<FileTaskRecord>>('/api/v1/system/tasks', {
-      method: 'GET',
-      query,
-    })
-  },
-  exportFinance(payload: ReportExportPayload) {
-    return request<null>('/api/v1/system/export/finance', {
-      method: 'GET',
-      query: payload,
-    })
-  },
-  importAssets(file: File) {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    return request<null>('/api/v1/system/import/assets', {
-      method: 'POST',
-      body: formData,
-      skipJson: true,
-    })
-  },
-}
-
-function toFormQuery(payload: object) {
-  const params = new URLSearchParams()
-  Object.entries(payload as Record<string, string | number | boolean | null | undefined>).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      params.set(key, String(value))
-    }
-  })
-
-  return params
-}
-
-export const aiApi = {
-  generateNotice(payload: NoticeGeneratePayload) {
-    return request<string>('/api/v1/ai/notice/generate', {
-      method: 'POST',
-      body: toFormQuery(payload),
-      skipJson: true,
-    })
-  },
-  analyzeFinance(payload: FinanceAnalyzePayload) {
-    return request<string>('/api/v1/ai/finance/analyze', {
-      method: 'POST',
-      body: toFormQuery(payload),
-      skipJson: true,
-    })
-  },
-  analyzeRepair(payload: RepairAnalyzePayload) {
-    return request<RepairAnalysisResult>('/api/v1/ai/repair/analyze', {
-      method: 'POST',
-      body: toFormQuery(payload),
-      skipJson: true,
-    })
   },
 }

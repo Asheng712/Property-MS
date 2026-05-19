@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="定向公告发布" description="已接入公告列表与发布接口。">
+  <PageContainer title="定向公告发布" description="维护面向业主、住户和商户的公告内容。">
     <template #actions>
       <el-button type="primary" class="btn-primary-gradient" @click="openCreate">新建公告</el-button>
     </template>
@@ -42,12 +42,6 @@
         <el-form-item label="公告标题">
           <el-input v-model="draft.title" />
         </el-form-item>
-        <el-form-item label="AI 辅助">
-          <div class="ai-assist-row">
-            <el-input v-model="aiTopic" placeholder="输入生成主题，如停水通知、消防演练" />
-            <el-button plain :loading="generatingNotice" @click="generateNotice">生成</el-button>
-          </div>
-        </el-form-item>
         <el-form-item label="推送对象">
           <el-select v-model="draft.targetType">
             <el-option label="全体业主" value="ALL" />
@@ -84,18 +78,16 @@ import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { aiApi, noticeApi } from '@/services/api'
+import { noticeApi } from '@/services/api'
 import type { NoticeRecord } from '@/types'
 
 const loading = ref(false)
 const submitting = ref(false)
-const generatingNotice = ref(false)
 const dialogVisible = ref(false)
 const detailVisible = ref(false)
 const total = ref(0)
 const notices = ref<NoticeRecord[]>([])
 const activeNotice = ref<NoticeRecord | null>(null)
-const aiTopic = ref('')
 
 const draft = reactive({
   id: undefined as number | undefined,
@@ -199,38 +191,12 @@ async function saveNotice() {
   }
 }
 
-async function generateNotice() {
-  const topic = aiTopic.value.trim() || draft.title.trim()
-  if (!topic) {
-    ElMessage.warning('请输入公告主题或标题')
-    return
-  }
-
-  generatingNotice.value = true
-  try {
-    const content = await aiApi.generateNotice({
-      topic,
-      content: draft.content.trim() || '请生成一份面向社区业主的正式公告，语言清晰、信息完整。',
-    })
-    draft.content = content
-    if (!draft.title.trim()) {
-      draft.title = topic
-    }
-    ElMessage.success('AI 公告内容已生成')
-  } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '生成公告失败')
-  } finally {
-    generatingNotice.value = false
-  }
-}
-
 function resetDraft() {
   draft.id = undefined
   draft.title = ''
   draft.targetType = 'ALL'
   draft.status = 'draft'
   draft.content = ''
-  aiTopic.value = ''
 }
 
 function getTargetText(value: string) {
@@ -288,13 +254,6 @@ function getStatusTone(value: string) {
   gap: 12px;
 }
 
-.ai-assist-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-  width: 100%;
-}
-
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
@@ -306,8 +265,5 @@ function getStatusTone(value: string) {
     grid-template-columns: 1fr;
   }
 
-  .ai-assist-row {
-    grid-template-columns: 1fr;
-  }
 }
 </style>

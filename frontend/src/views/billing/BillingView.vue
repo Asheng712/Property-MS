@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="智能账单引擎" description="已接入批量生成账单、批次记录和账单明细接口。">
+  <PageContainer title="账单管理" description="生成账单批次并查看账单明细。">
     <template #actions>
       <el-button type="primary" class="btn-primary-gradient" :loading="generating" @click="generateMonthlyBills">生成本月账单</el-button>
     </template>

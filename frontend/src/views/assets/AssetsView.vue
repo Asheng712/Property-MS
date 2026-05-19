@@ -1,5 +1,5 @@
 <template>
-  <PageContainer title="资产管理" description="已接入最新后端资产树、分页查询、新增、编辑和删除接口。">
+  <PageContainer title="资产管理" description="维护楼栋、房屋和商铺等基础资产信息。">
     <template #actions>
       <el-button type="primary" class="btn-primary-gradient" @click="openCreateDialog">新增资产</el-button>
     </template>
