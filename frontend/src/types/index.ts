@@ -283,10 +283,18 @@ export interface RolePermPayload {
   permissions: string
 }
 
-export interface DashboardRentalStatus {
+export interface AssetRentalStatus {
+  type: string
+  typeName: string
+  totalCount: number
+  vacantCount: number
+  rentedCount: number
+  soldCount: number
+  occupiedCount: number
   vacantRate: number
   rentedRate: number
   soldRate: number
+  occupiedRate: number
 }
 
 export interface DashboardData {
@@ -298,8 +306,7 @@ export interface DashboardData {
   pendingComplaintCount: number
   todayRepairCount: number
   pendingRepairCount: number
-  shopRentalStatus: DashboardRentalStatus
-  parkingRentalStatus: DashboardRentalStatus
+  assetRentalList: AssetRentalStatus[]
 }
 
 export interface QuickStat {

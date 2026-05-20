@@ -18,9 +18,23 @@
         <StatCard v-for="stat in stats" :key="stat.id" :stat="stat" />
       </div>
 
-      <div class="chart-grid">
-        <PieLegendCard title="商铺租售情况" center-label="商铺租售比率" :segments="rentalChart" />
-        <PieLegendCard title="车位租售情况" center-label="车位租售比率" :segments="parkingChart" />
+      <div class="section-header">
+        <h3>各类型资产租售分布</h3>
+        <span class="section-sub">单位：%</span>
+      </div>
+
+      <div v-if="rentalCharts.length === 0" class="empty-chart">
+        暂无资产数据，请先在「资产管理」中添加资产
+      </div>
+
+      <div class="chart-grid" :style="{ gridTemplateColumns: `repeat(${Math.min(rentalCharts.length, 2)}, minmax(0, 1fr))` }">
+        <PieLegendCard
+          v-for="chart in rentalCharts"
+          :key="chart.type"
+          :title="chart.typeName + '租售情况'"
+          :center-label="'共 ' + chart.totalCount + ' 项'"
+          :segments="chart.segments"
+        />
       </div>
     </div>
   </PageContainer>
@@ -33,7 +47,7 @@ import PageContainer from '@/components/PageContainer.vue'
 import PieLegendCard from '@/components/PieLegendCard.vue'
 import StatCard from '@/components/StatCard.vue'
 import { dashboardApi } from '@/services/api'
-import type { ChartSegment, DashboardData, DashboardRentalStatus, QuickStat } from '@/types'
+import type { AssetRentalStatus, ChartSegment, DashboardData, QuickStat } from '@/types'
 
 const loading = ref(false)
 const errorMessage = ref('')
@@ -46,16 +60,7 @@ const dashboard = ref<DashboardData>({
   pendingComplaintCount: 0,
   todayRepairCount: 0,
   pendingRepairCount: 0,
-  shopRentalStatus: {
-    vacantRate: 0,
-    rentedRate: 0,
-    soldRate: 0,
-  },
-  parkingRentalStatus: {
-    vacantRate: 0,
-    rentedRate: 0,
-    soldRate: 0,
-  },
+  assetRentalList: [],
 })
 
 const stats = computed<QuickStat[]>(() => {
@@ -135,8 +140,23 @@ const stats = computed<QuickStat[]>(() => {
   ]
 })
 
-const rentalChart = computed<ChartSegment[]>(() => buildRentalSegments(dashboard.value.shopRentalStatus))
-const parkingChart = computed<ChartSegment[]>(() => buildRentalSegments(dashboard.value.parkingRentalStatus))
+interface RentalChartData {
+  type: string
+  typeName: string
+  totalCount: number
+  segments: ChartSegment[]
+}
+
+const rentalCharts = computed<RentalChartData[]>(() => {
+  return (dashboard.value.assetRentalList || [])
+    .filter(item => item.totalCount > 0)
+    .map(item => ({
+      type: item.type,
+      typeName: item.typeName,
+      totalCount: item.totalCount,
+      segments: buildRentalSegments(item),
+    }))
+})
 
 onMounted(() => {
   void loadDashboard()
@@ -157,20 +177,13 @@ async function loadDashboard() {
   }
 }
 
-function buildRentalSegments(status: DashboardRentalStatus): ChartSegment[] {
+function buildRentalSegments(status: AssetRentalStatus): ChartSegment[] {
   return [
-    { label: '空置', value: normalizeRate(status.vacantRate), color: '#3b82f6' },
-    { label: '已出租', value: normalizeRate(status.rentedRate), color: '#10b981' },
-    { label: '已出售', value: normalizeRate(status.soldRate), color: '#f59e0b' },
-  ]
-}
-
-function normalizeRate(value?: number) {
-  if (!value) {
-    return 0
-  }
-
-  return Math.round(value > 1 ? value : value * 100)
+    { label: '已入住', value: Math.round(status.occupiedRate || 0), color: '#2563eb' },
+    { label: '已出租', value: Math.round(status.rentedRate || 0), color: '#10b981' },
+    { label: '已出售', value: Math.round(status.soldRate || 0), color: '#f59e0b' },
+    { label: '空置',   value: Math.round(status.vacantRate || 0), color: '#94a3b8' },
+  ].filter(s => s.value > 0)
 }
 
 function formatMoney(value?: number) {
@@ -196,20 +209,38 @@ function formatMoney(value?: number) {
   gap: 20px;
 }
 
-.chart-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 28px 0 18px;
 }
 
-@media (max-width: 1200px) {
+.section-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--text-heading);
+}
+
+.section-sub {
+  color: var(--text-subtle);
+  font-size: 14px;
+}
+
+.empty-chart {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-subtle);
+}
+
+.chart-grid {
+  display: grid;
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
   .dashboard-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .chart-grid {
-    grid-template-columns: 1fr;
   }
 }
 

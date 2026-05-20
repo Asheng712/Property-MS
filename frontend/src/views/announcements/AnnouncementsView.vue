@@ -239,7 +239,7 @@ function getStatusTone(value: string) {
 .announcement-card p {
   min-height: 54px;
   margin: 0 0 16px;
-  color: #7f90aa;
+  color: var(--text-subtle);
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -260,7 +260,7 @@ function getStatusTone(value: string) {
   margin-top: 16px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .announcement-grid {
     grid-template-columns: 1fr;
   }

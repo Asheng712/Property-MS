@@ -139,36 +139,36 @@ public class SystemServiceImpl implements SystemService {
         pendingRepairWrapper.eq(Repair::getStatus, 0);
         dashboardVO.setPendingRepairCount(repairMapper.selectCount(pendingRepairWrapper).intValue());
         
-        // 获取商铺租售情况
-        DashboardVO.ShopRentalStatus shopRentalStatus = new DashboardVO.ShopRentalStatus();
-        LambdaQueryWrapper<House> shopWrapper = new LambdaQueryWrapper<>();
-        shopWrapper.eq(House::getType, "SHOP");
-        List<House> shops = assetMapper.selectList(shopWrapper);
-        int shopTotal = shops.size();
-        int shopVacant = (int) shops.stream().filter(shop -> "VACANT".equals(shop.getStatus())).count();
-        int shopRented = (int) shops.stream().filter(shop -> "RENTING".equals(shop.getStatus())).count();
-        int shopSold = (int) shops.stream().filter(shop -> "SOLD".equals(shop.getStatus())).count();
-        
-        shopRentalStatus.setVacantRate(shopTotal > 0 ? (double) shopVacant / shopTotal * 100 : 0);
-        shopRentalStatus.setRentedRate(shopTotal > 0 ? (double) shopRented / shopTotal * 100 : 0);
-        shopRentalStatus.setSoldRate(shopTotal > 0 ? (double) shopSold / shopTotal * 100 : 0);
-        dashboardVO.setShopRentalStatus(shopRentalStatus);
-        
-        // 获取车位租售情况（假设车位也是House的一种类型）
-        DashboardVO.ParkingRentalStatus parkingRentalStatus = new DashboardVO.ParkingRentalStatus();
-        LambdaQueryWrapper<House> parkingWrapper = new LambdaQueryWrapper<>();
-        parkingWrapper.eq(House::getType, "PARKING");
-        List<House> parkings = assetMapper.selectList(parkingWrapper);
-        int parkingTotal = parkings.size();
-        int parkingVacant = (int) parkings.stream().filter(parking -> "VACANT".equals(parking.getStatus())).count();
-        int parkingRented = (int) parkings.stream().filter(parking -> "RENTING".equals(parking.getStatus())).count();
-        int parkingSold = (int) parkings.stream().filter(parking -> "SOLD".equals(parking.getStatus())).count();
-        
-        parkingRentalStatus.setVacantRate(parkingTotal > 0 ? (double) parkingVacant / parkingTotal * 100 : 0);
-        parkingRentalStatus.setRentedRate(parkingTotal > 0 ? (double) parkingRented / parkingTotal * 100 : 0);
-        parkingRentalStatus.setSoldRate(parkingTotal > 0 ? (double) parkingSold / parkingTotal * 100 : 0);
-        dashboardVO.setParkingRentalStatus(parkingRentalStatus);
-        
+        // 获取每种资产类型的租售占比
+        List<House> allHouses = assetMapper.selectList(null);
+        java.util.Map<String, String> typeNameMap = java.util.Map.of(
+            "SHOP", "商铺",
+            "RESIDENTIAL", "住宅",
+            "BUILDING", "楼栋",
+            "UNIT", "单元"
+        );
+        java.util.List<DashboardVO.AssetRentalStatus> assetRentalList = new java.util.ArrayList<>();
+        for (String type : java.util.List.of("SHOP", "RESIDENTIAL", "BUILDING", "UNIT")) {
+            java.util.List<House> typeHouses = allHouses.stream()
+                .filter(h -> type.equals(h.getType()))
+                .collect(java.util.stream.Collectors.toList());
+            DashboardVO.AssetRentalStatus status = new DashboardVO.AssetRentalStatus();
+            status.setType(type);
+            status.setTypeName(typeNameMap.getOrDefault(type, type));
+            status.setTotalCount(typeHouses.size());
+            status.setVacantCount((int) typeHouses.stream().filter(h -> "VACANT".equals(h.getStatus())).count());
+            status.setRentedCount((int) typeHouses.stream().filter(h -> "RENTING".equals(h.getStatus())).count());
+            status.setSoldCount((int) typeHouses.stream().filter(h -> "SOLD".equals(h.getStatus())).count());
+            status.setOccupiedCount((int) typeHouses.stream().filter(h -> "OCCUPIED".equals(h.getStatus())).count());
+            int total = status.getTotalCount();
+            status.setVacantRate(total > 0 ? (double) status.getVacantCount() / total * 100 : 0);
+            status.setRentedRate(total > 0 ? (double) status.getRentedCount() / total * 100 : 0);
+            status.setSoldRate(total > 0 ? (double) status.getSoldCount() / total * 100 : 0);
+            status.setOccupiedRate(total > 0 ? (double) status.getOccupiedCount() / total * 100 : 0);
+            assetRentalList.add(status);
+        }
+        dashboardVO.setAssetRentalList(assetRentalList);
+
         return dashboardVO;
     }
 }

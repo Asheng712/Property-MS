@@ -9,7 +9,7 @@
           :collapse="appStore.sidebarCollapsed"
           :default-active="route.path"
           background-color="#0f172a"
-          text-color="#8ca0bd"
+          text-color="var(--text-subtle)"
           active-text-color="#ffffff"
           router
         >
@@ -86,7 +86,11 @@
         </div>
       </header>
       <main class="main-content">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </main>
     </div>
 
@@ -267,11 +271,11 @@ function logout() {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #93a1b7;
+  color: var(--text-subtle);
 }
 
 .topbar__breadcrumb strong {
-  color: #24344e;
+  color: var(--text-heading);
 }
 
 .topbar__user {
@@ -279,7 +283,7 @@ function logout() {
   align-items: center;
   gap: 10px;
   padding-left: 6px;
-  color: #5f6f89;
+  color: var(--text-subtle);
 }
 
 .topbar__user-btn {
@@ -294,8 +298,8 @@ function logout() {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #dbeafe;
-  color: #2563eb;
+  background: var(--info-bg);
+  color: var(--brand);
   font-weight: 700;
 }
 
@@ -323,14 +327,14 @@ function logout() {
   justify-content: space-between;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid #e8eef6;
+  border: 1px solid var(--border-light);
   border-radius: 14px;
-  background: #fbfdff;
+  background: var(--bg-stripe);
   cursor: pointer;
 }
 
 .search-result__item small {
-  color: #93a1b7;
+  color: var(--text-subtle);
 }
 
 .settings-list {
@@ -344,16 +348,16 @@ function logout() {
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #edf1f7;
+  border-bottom: 1px solid var(--border-card);
 }
 
 .settings-item strong {
-  color: #24344e;
+  color: var(--text-heading);
 }
 
 .settings-item p {
   margin: 6px 0 0;
-  color: #8ea0b8;
+  color: var(--text-subtle);
 }
 
 @media (max-width: 1024px) {

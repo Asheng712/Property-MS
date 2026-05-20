@@ -207,7 +207,7 @@ async function generateMonthlyBills() {
 }
 
 .billing-summary__card span {
-  color: #8ea0b9;
+  color: var(--text-subtle);
 }
 
 .billing-summary__icon {

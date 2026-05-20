@@ -256,7 +256,7 @@ async function createTicket() {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  color: #5c6c84;
+  color: var(--text-main);
   background: #f3f7fc;
 }
 
@@ -286,25 +286,25 @@ async function createTicket() {
 
 .kanban-ticket p {
   margin: 0 0 16px;
-  color: #8192ab;
+  color: var(--text-subtle);
 }
 
 .ticket-id {
   padding: 8px 12px;
   border-radius: 12px;
   background: #eef4ff;
-  color: #6b87b4;
+  color: var(--brand-light);
 }
 
 .ticket-age {
-  color: #8ea0b8;
+  color: var(--text-subtle);
 }
 
 .full-width {
   width: 100%;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .kanban-grid {
     grid-template-columns: 1fr;
   }

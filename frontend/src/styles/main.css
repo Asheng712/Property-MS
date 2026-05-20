@@ -1,26 +1,70 @@
+/* ============================================
+   WisdomPM Design System — 全局样式 & CSS 变量
+   ============================================ */
+
 :root {
+  /* ---- 品牌色 ---- */
+  --brand:          #2563eb;
+  --brand-strong:   #1d4ed8;
+  --brand-dark:     #1e40af;
+  --brand-light:    #4674ee;
+  --brand-glow:     rgba(37, 99, 235, 0.22);
+
+  /* ---- 背景 ---- */
+  --bg-page:        #f5f7fb;
+  --bg-card:        #ffffff;
+  --bg-sidebar:     #0f172a;
+  --bg-hover:       #f5f9ff;
+  --bg-stripe:      #f8fbff;
+
+  /* ---- 文字 ---- */
+  --text-main:      #23324a;
+  --text-heading:   #20304b;
+  --text-subtle:    #90a0ba;
+  --text-muted:     #8b9ab2;
+
+  /* ---- 边框 ---- */
+  --border-light:   #e9eef5;
+  --border-card:    #edf1f7;
+
+  /* ---- 状态色 ---- */
+  --success-bg:     #ddfbea;
+  --success-fg:     #1d9d61;
+  --warning-bg:     #fff0db;
+  --warning-fg:     #f58b1f;
+  --info-bg:        #dbe8ff;
+  --info-fg:        #4674ee;
+  --danger-bg:      #ffe4e6;
+  --danger-fg:      #e11d48;
+
+  /* ---- 圆角 ---- */
+  --radius-sm:      10px;
+  --radius-md:      12px;
+  --radius-lg:      18px;
+  --radius-xl:      22px;
+  --radius-2xl:     24px;
+
+  /* ---- 阴影 ---- */
+  --shadow-soft:    0 16px 40px rgba(15, 23, 42, 0.08);
+  --shadow-card:    0 12px 28px rgba(37, 99, 235, 0.22);
+
+  /* 基础设置 */
   color-scheme: light;
   font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #22304a;
-  background: #f5f7fb;
+  color: var(--text-main);
+  background: var(--bg-page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --bg-page: #f5f7fb;
-  --bg-card: #ffffff;
-  --bg-sidebar: #0f172a;
-  --border-light: #e9eef5;
-  --text-main: #23324a;
-  --text-subtle: #90a0ba;
-  --brand: #2563eb;
-  --brand-strong: #1d4ed8;
-  --shadow-soft: 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
-* {
+/* ---- 重置 ---- */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -40,6 +84,7 @@ a {
   text-decoration: none;
 }
 
+/* ---- 页面布局 ---- */
 .page-shell {
   padding: 24px;
 }
@@ -56,27 +101,32 @@ a {
   margin: 0;
   font-size: 34px;
   line-height: 1.1;
-  color: #20304b;
+  color: var(--text-heading);
 }
 
 .page-description {
   margin: 10px 0 0;
-  color: #8b9ab2;
+  color: var(--text-muted);
   font-size: 15px;
 }
 
-.glass-card,
+/* ---- 卡片 ---- */
 .surface-card {
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--border-light);
-  border-radius: 22px;
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-soft);
-}
-
-.surface-card {
   padding: 20px;
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---- 区块标题 ---- */
 .section-title {
   display: flex;
   align-items: center;
@@ -88,95 +138,93 @@ a {
 .section-title h3 {
   margin: 0;
   font-size: 18px;
-  color: #22304a;
+  color: var(--text-main);
 }
 
+/* ---- 工具类 ---- */
 .muted-text {
-  color: #91a0b7;
+  color: var(--text-subtle);
 }
 
+/* ---- 状态标签 ---- */
 .status-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 74px;
   padding: 6px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
 }
 
-.status-pill.success {
-  background: #ddfbea;
-  color: #1d9d61;
-}
+.status-pill.success  { background: var(--success-bg); color: var(--success-fg); }
+.status-pill.warning  { background: var(--warning-bg); color: var(--warning-fg); }
+.status-pill.info     { background: var(--info-bg);    color: var(--info-fg); }
+.status-pill.danger   { background: var(--danger-bg);  color: var(--danger-fg); }
 
-.status-pill.warning {
-  background: #fff0db;
-  color: #f58b1f;
-}
-
-.status-pill.info {
-  background: #dbe8ff;
-  color: #4674ee;
-}
-
-.status-pill.danger {
-  background: #ffe4e6;
-  color: #e11d48;
-}
-
+/* ---- 数据网格 ---- */
 .data-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 20px;
 }
 
+/* ---- 按钮 ---- */
 .btn-primary-gradient {
-  background: linear-gradient(135deg, #2f6bff, #2456db);
+  background: linear-gradient(135deg, var(--brand), var(--brand-strong));
   border: none;
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
+  box-shadow: var(--shadow-card);
 }
 
+/* ---- 对话表单 ---- */
 .dialog-form .el-form-item {
   margin-bottom: 18px;
 }
 
+/* ---- 路由过渡动画 ---- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ---- Element Plus 全局覆盖 ---- */
 .el-button {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 
 .el-card {
-  border-radius: 22px;
+  border-radius: var(--radius-xl);
   border-color: var(--border-light);
 }
 
 .el-table {
-  --el-table-border-color: #edf1f7;
-  --el-table-header-bg-color: #f8fbff;
-  --el-table-row-hover-bg-color: #f5f9ff;
-  border-radius: 18px;
+  --el-table-border-color: var(--border-card);
+  --el-table-header-bg-color: var(--bg-stripe);
+  --el-table-row-hover-bg-color: var(--bg-hover);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .el-input__wrapper,
 .el-select__wrapper,
 .el-textarea__inner {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 
 .el-drawer {
-  border-radius: 24px 0 0 24px;
+  border-radius: var(--radius-2xl) 0 0 var(--radius-2xl);
 }
 
+/* ---- 响应式 ---- */
 @media (max-width: 1024px) {
-  .page-shell {
-    padding: 18px;
-  }
-
-  .page-title {
-    font-size: 28px;
-  }
+  .page-shell  { padding: 18px; }
+  .page-title  { font-size: 28px; }
 }
 
 @media (max-width: 768px) {
@@ -184,7 +232,6 @@ a {
     flex-direction: column;
     align-items: stretch;
   }
-
   .data-grid {
     grid-template-columns: 1fr;
   }

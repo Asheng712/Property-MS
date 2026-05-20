@@ -108,7 +108,7 @@ const pieBackground = computed(() => {
   border-radius: 50%;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
   .pie-card__body {
     grid-template-columns: 1fr;
   }

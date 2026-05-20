@@ -164,7 +164,7 @@ function getStatusTone(value: string) {
 }
 
 .metric-item span {
-  color: #8ea0b8;
+  color: var(--text-subtle);
 }
 
 .metric-item strong {

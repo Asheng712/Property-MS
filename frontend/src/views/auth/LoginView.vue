@@ -243,7 +243,7 @@ async function handleLogin() {
 }
 
 .auth-redirect {
-  color: #8fa0b7;
+  color: var(--text-subtle);
   font-size: 13px;
 }
 

@@ -128,7 +128,7 @@ async function savePermissions() {
 }
 
 .role-list__item span {
-  color: #8fa0b7;
+  color: var(--text-subtle);
 }
 
 .role-list__item.active {
@@ -151,7 +151,7 @@ async function savePermissions() {
 
 .permission-panel__header p {
   margin: 0;
-  color: #8ea0b8;
+  color: var(--text-subtle);
 }
 
 @media (max-width: 1024px) {

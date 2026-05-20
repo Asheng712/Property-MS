@@ -117,7 +117,7 @@ function logout() {
 
 .profile-hero p {
   margin: 8px 0 0;
-  color: #8ea0b8;
+  color: var(--text-subtle);
 }
 
 .preference-list {
@@ -131,7 +131,7 @@ function logout() {
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #edf1f7;
+  border-bottom: 1px solid var(--border-card);
 }
 
 .preference-item:last-child {
@@ -140,12 +140,12 @@ function logout() {
 }
 
 .preference-item strong {
-  color: #24344e;
+  color: var(--text-heading);
 }
 
 .preference-item p {
   margin: 6px 0 0;
-  color: #8ea0b8;
+  color: var(--text-subtle);
 }
 
 @media (max-width: 1024px) {

@@ -30,7 +30,7 @@ defineProps<{
   justify-content: space-between;
   gap: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #edf1f7;
+  border-bottom: 1px solid var(--border-card);
 }
 
 .info-list__item:last-child {
@@ -39,10 +39,10 @@ defineProps<{
 }
 
 .info-list__item span {
-  color: #8da0b8;
+  color: var(--text-subtle);
 }
 
 .info-list__item strong {
-  color: #23324a;
+  color: var(--text-main);
 }
 </style>
