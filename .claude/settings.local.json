@@ -9,7 +9,20 @@
       "Bash(docker volume rm *)",
       "Bash(docker run *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/doc.html)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(docker --version)",
+      "Bash(docker-compose version *)",
+      "Read(//c/Users/86178/.docker/**)",
+      "Read(//c/ProgramData/Docker/config/**)",
+      "Bash(curl *)",
+      "Bash(findstr \":8080\")",
+      "Bash(tasklist //FI \"PID eq 34364\")",
+      "Bash(tasklist //FI \"PID eq 15228\")",
+      "Bash(docker exec *)",
+      "Bash(break)",
+      "Bash(python3 -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'123456', bcrypt.gensalt\\(10\\)\\).decode\\(\\)\\)\")",
+      "Bash(pip3 install *)",
+      "Bash(python *)"
     ]
   }
 }
