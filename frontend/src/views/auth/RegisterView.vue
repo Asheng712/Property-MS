@@ -156,7 +156,7 @@ async function handleRegister() {
 
 .register-panel__copy {
   padding: 24px;
-  border-radius: 24px;
+  border-radius: var(--radius-card);
   background: linear-gradient(180deg, #245ef5, #153aa8);
   color: #fff;
 }
@@ -198,12 +198,30 @@ async function handleRegister() {
 }
 
 @media (max-width: 768px) {
+  .register-shell {
+    align-items: start;
+    padding: 16px;
+  }
+
   .register-panel {
     grid-template-columns: 1fr;
+    padding: 18px;
   }
 
   .register-actions {
     grid-template-columns: 1fr;
+  }
+
+  .register-panel__copy {
+    padding: 20px;
+  }
+
+  .register-panel__copy h1 {
+    font-size: 28px;
+  }
+
+  .register-form {
+    padding: 4px;
   }
 }
 </style>

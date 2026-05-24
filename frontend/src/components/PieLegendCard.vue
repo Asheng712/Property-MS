@@ -46,7 +46,7 @@ const pieBackground = computed(() => {
 <style scoped>
 .pie-card__body {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 220px;
+  grid-template-columns: minmax(220px, 1fr) 220px;
   gap: 16px;
   align-items: center;
   min-height: 280px;
@@ -95,7 +95,7 @@ const pieBackground = computed(() => {
   gap: 12px;
   padding: 12px 14px;
   background: #f8fbff;
-  border-radius: 16px;
+  border-radius: var(--radius-control);
 }
 
 .pie-card__legend-item strong {
@@ -111,6 +111,27 @@ const pieBackground = computed(() => {
 @media (max-width: 1024px) {
   .pie-card__body {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .pie-card__body {
+    min-height: 0;
+  }
+
+  .pie-card__circle {
+    width: 180px;
+    height: 180px;
+  }
+
+  .pie-card__circle::after {
+    inset: 30px;
+  }
+
+  .pie-card__center {
+    padding: 0 40px;
+    text-align: center;
+    font-size: 15px;
   }
 }
 </style>

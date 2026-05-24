@@ -43,6 +43,8 @@
   --radius-lg:      18px;
   --radius-xl:      22px;
   --radius-2xl:     24px;
+  --radius-card:    14px;
+  --radius-control: 10px;
 
   /* ---- 阴影 ---- */
   --shadow-soft:    0 16px 40px rgba(15, 23, 42, 0.08);
@@ -87,6 +89,8 @@ a {
 /* ---- 页面布局 ---- */
 .page-shell {
   padding: 24px;
+  max-width: 1500px;
+  margin: 0 auto;
 }
 
 .page-header {
@@ -99,7 +103,7 @@ a {
 
 .page-title {
   margin: 0;
-  font-size: 34px;
+  font-size: 30px;
   line-height: 1.1;
   color: var(--text-heading);
 }
@@ -114,7 +118,7 @@ a {
 .surface-card {
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-soft);
   padding: 20px;
 }
@@ -195,11 +199,11 @@ a {
 
 /* ---- Element Plus 全局覆盖 ---- */
 .el-button {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
 }
 
 .el-card {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-card);
   border-color: var(--border-light);
 }
 
@@ -207,24 +211,29 @@ a {
   --el-table-border-color: var(--border-card);
   --el-table-header-bg-color: var(--bg-stripe);
   --el-table-row-hover-bg-color: var(--bg-hover);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
 .el-input__wrapper,
 .el-select__wrapper,
 .el-textarea__inner {
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
 }
 
 .el-drawer {
-  border-radius: var(--radius-2xl) 0 0 var(--radius-2xl);
+  border-radius: var(--radius-card) 0 0 var(--radius-card);
 }
 
 /* ---- 响应式 ---- */
 @media (max-width: 1024px) {
-  .page-shell  { padding: 18px; }
-  .page-title  { font-size: 28px; }
+  .page-shell {
+    padding: 18px;
+  }
+
+  .page-title {
+    font-size: 26px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -234,5 +243,23 @@ a {
   }
   .data-grid {
     grid-template-columns: 1fr;
+  }
+
+  .surface-card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-shell {
+    padding: 14px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-description {
+    font-size: 14px;
   }
 }

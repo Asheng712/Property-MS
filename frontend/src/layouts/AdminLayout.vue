@@ -257,7 +257,7 @@ function logout() {
   min-height: 86px;
   margin: 18px 18px 0;
   padding: 0 24px;
-  border-radius: 22px;
+  border-radius: var(--radius-card);
 }
 
 .topbar__left,
@@ -265,6 +265,7 @@ function logout() {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 }
 
 .topbar__breadcrumb {
@@ -272,10 +273,14 @@ function logout() {
   align-items: center;
   gap: 8px;
   color: var(--text-subtle);
+  min-width: 0;
 }
 
 .topbar__breadcrumb strong {
   color: var(--text-heading);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .topbar__user {
@@ -284,12 +289,19 @@ function logout() {
   gap: 10px;
   padding-left: 6px;
   color: var(--text-subtle);
+  max-width: 220px;
 }
 
 .topbar__user-btn {
   border: none;
   background: transparent;
   cursor: pointer;
+}
+
+.topbar__user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .avatar {
@@ -328,7 +340,7 @@ function logout() {
   gap: 12px;
   padding: 14px 16px;
   border: 1px solid var(--border-light);
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   background: var(--bg-stripe);
   cursor: pointer;
 }
@@ -376,6 +388,7 @@ function logout() {
   .topbar {
     margin: 12px 12px 0;
     padding: 0 16px;
+    min-height: 72px;
   }
 
   .topbar__breadcrumb {
@@ -390,6 +403,35 @@ function logout() {
 
   .topbar__user span {
     display: none;
+  }
+
+  .topbar {
+    gap: 10px;
+  }
+
+  .topbar__left,
+  .topbar__right {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar__breadcrumb span:first-child,
+  .topbar__breadcrumb span:nth-child(2) {
+    display: none;
+  }
+
+  :deep(.el-dialog) {
+    width: calc(100vw - 28px) !important;
+  }
+
+  :deep(.el-drawer) {
+    width: min(100vw, 360px) !important;
+  }
+
+  .search-result__item {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

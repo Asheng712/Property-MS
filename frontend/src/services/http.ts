@@ -1,4 +1,5 @@
 import type { ApiResponse } from '@/types'
+import { getPreviewData, isPreviewMode } from '@/mock/preview'
 
 type Primitive = string | number | boolean
 
@@ -58,6 +59,13 @@ function buildUrl(path: string, query?: RequestOptions['query']) {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}) {
+  if (isPreviewMode()) {
+    const previewData = getPreviewData<T>(path)
+    if (previewData !== null) {
+      return previewData
+    }
+  }
+
   const { body, headers, query, skipJson, ...rest } = options
   const token = getToken()
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData

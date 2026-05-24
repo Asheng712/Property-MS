@@ -23,7 +23,6 @@
           <div class="preference-item">
             <div>
               <strong>紧凑侧边栏</strong>
-              <p>在较小屏幕上保留更多业务操作空间</p>
             </div>
             <el-switch :model-value="appStore.sidebarCollapsed" @change="handleCompactChange" />
           </div>
@@ -141,11 +140,6 @@ function logout() {
 
 .preference-item strong {
   color: var(--text-heading);
-}
-
-.preference-item p {
-  margin: 6px 0 0;
-  color: var(--text-subtle);
 }
 
 @media (max-width: 1024px) {

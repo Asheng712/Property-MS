@@ -127,6 +127,26 @@ export const useAppStore = defineStore('app', () => {
     persistState()
   }
 
+  function enablePreviewSession() {
+    if (!import.meta.env.DEV) {
+      return
+    }
+
+    isAuthenticated.value = true
+    currentUserProfile.value = {
+      id: 1,
+      username: 'preview',
+      realName: '预览管理员',
+      phone: '13800000000',
+      email: 'preview@wisdompm.local',
+      status: 1,
+      roleId: 1,
+      roleName: '超级管理员',
+    }
+    persistProfile()
+    persistState()
+  }
+
   return {
     users,
     currentUser,
@@ -142,6 +162,7 @@ export const useAppStore = defineStore('app', () => {
     closeSidebarDrawer,
     loginByCredential,
     fetchCurrentUser,
+    enablePreviewSession,
     logout,
     registerUser,
   }

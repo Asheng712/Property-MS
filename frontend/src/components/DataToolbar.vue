@@ -70,11 +70,13 @@ const statusModel = computed({
   display: flex;
   gap: 12px;
   flex: 1;
+  min-width: 0;
 }
 
 .toolbar__left .el-input,
 .toolbar__left .el-select {
   max-width: 360px;
+  min-width: 180px;
 }
 
 .toolbar__actions {
@@ -91,6 +93,16 @@ const statusModel = computed({
 
   .toolbar__left {
     flex-direction: column;
+  }
+
+  .toolbar__left .el-input,
+  .toolbar__left .el-select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .toolbar__actions :deep(.el-button) {
+    flex: 1;
   }
 }
 </style>

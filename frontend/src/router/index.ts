@@ -47,6 +47,12 @@ const router = createRouter({
 router.beforeEach((to) => {
   const appStore = useAppStore()
   const isAuthPage = to.path === '/login' || to.path === '/register'
+  const previewEnabled = import.meta.env.DEV && to.query.preview === '1'
+
+  if (previewEnabled) {
+    window.sessionStorage.setItem('wisdompm-preview-mode', '1')
+    appStore.enablePreviewSession()
+  }
 
   if (!appStore.isAuthenticated && !isAuthPage) {
     return { path: '/login', query: { redirect: to.fullPath } }

@@ -28,10 +28,7 @@
           </el-form-item>
           <el-form-item prop="password">
             <template #label>
-              <div class="auth-label">
-                <span>登录密码</span>
-                <router-link to="/register">去注册</router-link>
-              </div>
+              <span>登录密码</span>
             </template>
             <el-input
               v-model="form.password"
@@ -41,9 +38,11 @@
               @keyup.enter="handleLogin"
             />
           </el-form-item>
+          <div class="auth-form__links">
+            <router-link to="/register">没有账号？立即注册</router-link>
+          </div>
           <div class="auth-remember">
             <el-checkbox v-model="form.remember">记住登录状态</el-checkbox>
-            <span v-if="redirectText" class="auth-redirect">{{ redirectText }}</span>
           </div>
           <el-button
             type="primary"
@@ -61,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
@@ -82,10 +81,6 @@ const rules: FormRules<typeof form> = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入登录密码', trigger: 'blur' }],
 }
-
-const redirectText = computed(() =>
-  route.query.redirect ? `登录后将跳转到 ${String(route.query.redirect)}` : '',
-)
 
 async function handleLogin() {
   const valid = await formRef.value?.validate().catch(() => false)
@@ -222,14 +217,14 @@ async function handleLogin() {
   color: #91a0b8;
 }
 
-.auth-label {
+.auth-form__links {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+  justify-content: flex-end;
+  margin: -8px 0 14px;
+  font-size: 14px;
 }
 
-.auth-label a {
+.auth-form__links a {
   color: #2563eb;
   font-weight: 600;
 }
@@ -240,11 +235,6 @@ async function handleLogin() {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 18px;
-}
-
-.auth-redirect {
-  color: var(--text-subtle);
-  font-size: 13px;
 }
 
 .auth-submit {
@@ -259,7 +249,7 @@ async function handleLogin() {
   }
 
   .auth-hero {
-    min-height: 420px;
+    min-height: 320px;
   }
 
   .auth-copy h1 {
@@ -272,6 +262,14 @@ async function handleLogin() {
 }
 
 @media (max-width: 768px) {
+  .auth-shell {
+    min-height: 100dvh;
+  }
+
+  .auth-hero {
+    min-height: 300px;
+  }
+
   .auth-hero__content,
   .auth-form {
     padding: 28px;
@@ -284,6 +282,44 @@ async function handleLogin() {
   .auth-remember {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-hero {
+    min-height: 260px;
+  }
+
+  .auth-hero__content {
+    padding: 28px;
+  }
+
+  .auth-brand {
+    font-size: 20px;
+  }
+
+  .auth-copy h1 {
+    font-size: 30px;
+    line-height: 1.14;
+    margin-bottom: 12px;
+  }
+
+  .auth-copy p {
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .auth-panel {
+    align-items: start;
+    padding: 20px 14px 28px;
+  }
+
+  .auth-form {
+    padding: 28px;
+  }
+
+  .auth-form h2 {
+    font-size: 34px;
   }
 }
 </style>
