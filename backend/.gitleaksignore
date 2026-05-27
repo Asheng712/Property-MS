@@ -1,32 +1,28 @@
 # GitLeaks ignore rules
+# WARNING: Keep rules specific. Broad patterns can hide real secrets.
 
-# Ignore environment variable placeholders in YAML/Java properties files
-- regex: '\$\{DB_PASSWORD(:[^}]*)?\}'
-- regex: '\$\{DB_USERNAME(:[^}]*)?\}'
-- regex: '\$\{DB_URL(:[^}]*)?\}'
-- regex: '\$\{DB_DRIVER(:[^}]*)?\}'
-- regex: '\$\{JWT_SECRET(:[^}]*)?\}'
-- regex: '\$\{JWT_EXPIRE(:[^}]*)?\}'
-- regex: '\$\{SERVER_PORT(:[^}]*)?\}'
-- regex: '\$\{.*_SECRET.*\}'
-- regex: '\$\{.*_KEY.*\}'
-- regex: '\$\{.*PASSWORD.*\}'
+# Environment variable placeholder references (these reference env vars, not hardcoded secrets)
+- regex: '\$\{DB_PASSWORD\}'
+- regex: '\$\{DB_USERNAME\}'
+- regex: '\$\{DB_URL\}'
+- regex: '\$\{DB_DRIVER\}'
+- regex: '\$\{JWT_SECRET\}'
+- regex: '\$\{JWT_EXPIRE\}'
+- regex: '\$\{SERVER_PORT\}'
+- regex: '\$\{MYSQL_ROOT_PASSWORD\}'
+- regex: '\$\{MYSQL_PASSWORD\}'
+- regex: '\$\{FRONTEND_PORT\}'
+- regex: '\$\{BACKEND_PORT\}'
+- regex: '\$\{MOBILE_PORT\}'
+- regex: '\$\{MYSQL_PORT\}'
+- regex: '\$\{VERSION\}'
 
-# Ignore default placeholder values for development
-- regex: 'wisdom-property-management-system-jwt-secret-key-\d+'
-- regex: 'jdbc:mysql://localhost:\d+/\w+'
-- regex: 'password'
-- regex: 'admin'
-
-# Ignore example files
+# Example files (template values are not production secrets)
 - path: \.env\.example$
+- path: \.env\.secrets\.example$
 
-# Ignore test files
-- path: \/test\/
-
-# Ignore .gitleaksignore itself
+# This file itself
 - path: \.gitleaksignore$
 
-# Ignore application.yml config file
-- path: application\.yml$
-- path: application\.properties$
+# Test JWT key (only matches the test-specific line, not real secrets)
+- regex: 'test-secret-key-for-jwt-token-generation-256-bit-minimum-length'

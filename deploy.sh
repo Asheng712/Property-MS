@@ -138,7 +138,7 @@ cmd_status() {
 cmd_backup() {
     local backup_file="backup_$(date +%Y%m%d_%H%M%S).sql"
     log "备份数据库到 $backup_file ..."
-    docker exec wisdom-mysql mysqldump -u root -p"${MYSQL_ROOT_PASSWORD:-root_dev123}" \
+    docker exec wisdom-mysql mysqldump -u root -p"${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD not set}" \
         --single-transaction --routines --triggers property_ms > "$backup_file"
     log "备份完成: $backup_file ($(du -h "$backup_file" | cut -f1))"
 }

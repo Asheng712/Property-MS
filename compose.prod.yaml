@@ -47,7 +47,7 @@ services:
     environment:
       SERVER_PORT: "8080"
       DB_URL: jdbc:mysql://db:3306/property_ms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
-      DB_USERNAME: ${DB_USERNAME:-wisdom}
+      DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
     env_file:

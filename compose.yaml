@@ -1,6 +1,6 @@
 # ============================================
 # 开发环境 — 热重载 + 源码挂载
-# 启动: docker compose up -d --build
+# 启动: cp .env.example .env && docker compose up -d --build
 # 停止: docker compose down
 # ============================================
 
@@ -16,8 +16,8 @@ services:
     environment:
       VITE_API_URL: http://backend:8080
     volumes:
-      - ./frontend:/app               # 源码挂载 → Vite HMR 热更新
-      - /app/node_modules             # 保留容器内依赖，不被宿主机覆盖
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       backend:
         condition: service_started
@@ -42,20 +42,22 @@ services:
   backend:
     build:
       context: ./backend
-      target: dev                     # 使用 dev 阶段（mvn spring-boot:run + DevTools）
+      target: dev
     container_name: wisdom-backend-dev
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8080}:8080"
+    env_file:
+      - .env
     environment:
       SERVER_PORT: "8080"
       DB_URL: jdbc:mysql://db:3306/property_ms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8
-      DB_USERNAME: ${DB_USERNAME:-wisdom}
-      DB_PASSWORD: ${DB_PASSWORD:-wisdom_dev123}
-      JWT_SECRET: ${JWT_SECRET:-wisdom-dev-secret-change-me}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
-      - ./backend:/app                # 源码挂载 → DevTools 检测 class 变化自动重启
-      - maven-repo:/root/.m2          # Maven 本地仓库缓存，加速重复构建
+      - ./backend:/app
+      - maven-repo:/root/.m2
     depends_on:
       db:
         condition: service_healthy
@@ -64,11 +66,13 @@ services:
     image: mysql:8.4
     container_name: wisdom-mysql-dev
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       MYSQL_DATABASE: property_ms
-      MYSQL_USER: ${DB_USERNAME:-wisdom}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-wisdom_dev123}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_dev123}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "${MYSQL_PORT:-3307}:3306"
     volumes:
