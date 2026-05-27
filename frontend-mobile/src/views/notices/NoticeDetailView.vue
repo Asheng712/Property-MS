@@ -34,12 +34,23 @@ onMounted(async () => {
       </van-cell-group>
 
       <van-cell-group title="正文" style="margin-top: 12px">
-        <div style="padding: 16px; font-size: 14px; line-height: 1.8; white-space: pre-wrap">
-          {{ notice.content }}
-        </div>
+        <div class="notice-body" v-html="notice.content" />
       </van-cell-group>
     </div>
 
     <EmptyState v-else description="未找到公告" />
   </div>
 </template>
+
+<style scoped>
+.notice-body {
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #334155;
+}
+
+.notice-body :deep(p) {
+  margin: 0 0 10px;
+}
+</style>

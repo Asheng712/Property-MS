@@ -17,18 +17,18 @@
       </PanelCard>
 
       <section class="asset-main">
-        <DataToolbar
-          v-model:keyword="keyword"
-          v-model:status="status"
-          placeholder="搜索资产名称"
-          select-placeholder="筛选资产状态"
-          :filters="statusFilters"
-        >
-          <el-button @click="handleReset">重置</el-button>
+        <div class="search-bar">
+          <el-input v-model="keyword" placeholder="搜索资产名称" clearable class="search-input">
+            <template #prefix><el-icon><Search /></el-icon></template>
+          </el-input>
+          <el-select v-model="status" clearable placeholder="筛选资产状态" class="search-select">
+            <el-option v-for="item in statusFilters" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
           <el-button type="primary" @click="handleSearch">查询</el-button>
-        </DataToolbar>
+          <el-button @click="handleReset">重置</el-button>
+        </div>
 
-        <PanelCard title="资产台账" description="数据来自 /api/v1/assets。">
+        <PanelCard title="资产台账">
           <el-table v-loading="loading" :data="assets">
             <el-table-column prop="id" label="ID" width="90" />
             <el-table-column prop="name" label="资产名称" min-width="180" />
@@ -120,8 +120,8 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import DataToolbar from '@/components/DataToolbar.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
@@ -384,9 +384,40 @@ function getStatusTone(value: string) {
   width: 100%;
 }
 
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #edf1f7;
+  border-radius: 16px;
+}
+
+.search-input {
+  max-width: 280px;
+}
+
+.search-select {
+  max-width: 180px;
+}
+
 @media (max-width: 1024px) {
   .asset-layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-bar {
+    flex-wrap: wrap;
+  }
+
+  .search-input,
+  .search-select {
+    max-width: none;
+    flex: 1;
+    min-width: 140px;
   }
 }
 </style>

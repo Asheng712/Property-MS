@@ -13,7 +13,7 @@
           </div>
         </template>
         <h3>{{ notice.title }}</h3>
-        <p>{{ notice.content }}</p>
+        <p class="content-preview">{{ stripHtml(notice.content) }}</p>
         <footer>
           <span>投递对象: {{ getTargetText(notice.targetType) }}</span>
           <div>
@@ -56,7 +56,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="公告内容">
-          <el-input v-model="draft.content" type="textarea" rows="6" />
+          <el-input v-model="draft.content" type="textarea" rows="8" placeholder="支持HTML格式：<p>段落</p> <b>加粗</b> <br>换行 <ul><li>列表</li></ul>" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -65,8 +65,11 @@
       </template>
     </el-dialog>
 
-    <el-drawer v-model="detailVisible" title="公告详情" size="420px">
-      <InfoList v-if="activeNotice" :items="detailItems" />
+    <el-drawer v-model="detailVisible" title="公告详情" size="500px">
+      <template v-if="activeNotice">
+        <InfoList :items="detailItems" />
+        <div class="content-html" v-html="activeNotice.content" />
+      </template>
     </el-drawer>
   </PageContainer>
 </template>
@@ -110,7 +113,6 @@ const detailItems = computed(() =>
         { label: '公告状态', value: getStatusText(activeNotice.value.status) },
         { label: '浏览量', value: String(activeNotice.value.viewCount) },
         { label: '发布时间', value: activeNotice.value.createTime || '-' },
-        { label: '公告内容', value: activeNotice.value.content },
       ]
     : [],
 )
@@ -221,6 +223,12 @@ function getStatusText(value: string) {
 function getStatusTone(value: string) {
   return value === 'published' ? 'success' : 'info'
 }
+
+function stripHtml(html: string) {
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return (div.textContent || '').slice(0, 120)
+}
 </script>
 
 <style scoped>
@@ -236,7 +244,7 @@ function getStatusTone(value: string) {
   color: #22304a;
 }
 
-.announcement-card p {
+.announcement-card .content-preview {
   min-height: 54px;
   margin: 0 0 16px;
   color: var(--text-subtle);
@@ -244,6 +252,24 @@ function getStatusTone(value: string) {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+.content-html {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8fbff;
+  border: 1px solid #edf1f7;
+  border-radius: 12px;
+  line-height: 1.8;
+  color: #334155;
+}
+
+.content-html :deep(p) {
+  margin: 0 0 10px;
+}
+
+.content-html :deep(ul) {
+  padding-left: 20px;
 }
 
 .announcement-card footer,

@@ -45,7 +45,7 @@
       </div>
     </PanelCard>
 
-    <PanelCard title="账单明细" description="数据来自 /api/v1/bills。">
+    <PanelCard title="账单明细">
       <el-table v-loading="loadingBills" :data="bills">
         <el-table-column prop="billNo" label="账单号" min-width="170" />
         <el-table-column prop="houseName" label="资产名称" min-width="160">
