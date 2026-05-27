@@ -14,4 +14,5 @@ public interface AssetService {
     PageResult<AssetVO> getAssetList(AssetPageQueryDTO assetPageQueryDTO);
     void saveOrUpdateAsset(AssetDTO assetDTO);
     void deleteAsset(Long id);
+    List<AssetVO> getOwnedHouses();
 }

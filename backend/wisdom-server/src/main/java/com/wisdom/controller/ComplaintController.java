@@ -1,5 +1,6 @@
 package com.wisdom.controller;
 
+import com.wisdom.annotation.LoginRequired;
 import com.wisdom.dto.ComplaintCreateDTO;
 import com.wisdom.dto.ComplaintHandleDTO;
 import com.wisdom.dto.ComplaintPageQueryDTO;
@@ -21,12 +22,14 @@ public class ComplaintController {
 
     @GetMapping
     @Operation(summary = "分页查询投诉建议")
+    @LoginRequired
     public Result<?> getComplaintList(ComplaintPageQueryDTO complaintPageQueryDTO) {
         return Result.success(complaintService.getComplaintList(complaintPageQueryDTO));
     }
 
     @PostMapping
     @Operation(summary = "提交投诉建议")
+    @LoginRequired
     public Result<Void> createComplaint(@Valid @RequestBody ComplaintCreateDTO complaintCreateDTO) {
         complaintService.createComplaint(complaintCreateDTO);
         return Result.success(null);

@@ -1,5 +1,6 @@
 package com.wisdom.controller;
 
+import com.wisdom.annotation.LoginRequired;
 import com.wisdom.dto.BillGenerateDTO;
 import com.wisdom.dto.BillPageQueryDTO;
 import com.wisdom.dto.PageQueryDTO;
@@ -37,12 +38,14 @@ public class FinanceController {
 
     @GetMapping("/bills")
     @Operation(summary = "分页查询账单明细")
+    @LoginRequired
     public Result<?> getBillList(BillPageQueryDTO billPageQueryDTO) {
         return Result.success(financeService.getBillList(billPageQueryDTO));
     }
 
     @PostMapping("/finance/payments")
     @Operation(summary = "业主在线缴费")
+    @LoginRequired
     public Result<PaymentVO> createPayment(@Valid @RequestBody PaymentCreateDTO paymentCreateDTO) {
         PaymentVO paymentVO = financeService.createPayment(paymentCreateDTO);
         return Result.success(paymentVO);
@@ -57,6 +60,7 @@ public class FinanceController {
 
     @GetMapping("/finance/payments")
     @Operation(summary = "分页查询缴费流水")
+    @LoginRequired
     public Result<?> getPaymentList(PaymentPageQueryDTO paymentPageQueryDTO) {
         return Result.success(financeService.getPaymentList(paymentPageQueryDTO));
     }

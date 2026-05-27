@@ -2,12 +2,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { contractApi } from '@/services/api'
-import { useUserStore } from '@/stores/user'
 import { formatCurrency } from '@/utils/format'
 import type { ContractRecord } from '@/types'
 
 const router = useRouter()
-const userStore = useUserStore()
 
 const contracts = ref<ContractRecord[]>([])
 const loading = ref(false)
@@ -21,7 +19,6 @@ onMounted(async () => {
     const result = await contractApi.getList({
       page: 1,
       pageSize: 100,
-      tenantName: userStore.userInfo?.realName || '',
     })
     contracts.value = result.records
   } finally {

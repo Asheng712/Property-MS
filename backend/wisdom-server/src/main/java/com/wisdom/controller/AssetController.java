@@ -1,5 +1,6 @@
 package com.wisdom.controller;
 
+import com.wisdom.annotation.LoginRequired;
 import com.wisdom.dto.AssetDTO;
 import com.wisdom.dto.AssetPageQueryDTO;
 import com.wisdom.result.Result;
@@ -16,6 +17,13 @@ public class AssetController {
 
     @Autowired
     private AssetService assetService;
+
+    @GetMapping("/my-houses")
+    @Operation(summary = "获取当前登录用户拥有的房屋列表")
+    @LoginRequired
+    public Result<?> getMyHouses() {
+        return Result.success(assetService.getOwnedHouses());
+    }
 
     @GetMapping("/tree")
     @Operation(summary = "获取资产空间树")

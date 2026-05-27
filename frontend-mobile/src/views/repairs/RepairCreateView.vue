@@ -1,21 +1,45 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRepairStore } from '@/stores/repair'
-import { useUserStore } from '@/stores/user'
+import { assetApi } from '@/services/api'
+import type { AssetRecord } from '@/types'
 
 const router = useRouter()
 const repairStore = useRepairStore()
-const userStore = useUserStore()
+
+const houses = ref<AssetRecord[]>([])
+const showHousePicker = ref(false)
+const selectedHouseName = ref('')
 
 const form = ref({
-  houseId: '',
+  houseId: null as number | null,
   content: '',
-  reporter: userStore.currentUser,
   priority: 1,
 })
 
 const loading = ref(false)
+
+onMounted(async () => {
+  try {
+    houses.value = await assetApi.getMyHouses()
+  } catch {
+    // silently fail
+  }
+})
+
+const housePickerColumns = computed(() =>
+  houses.value.map((h) => ({ text: h.name, id: h.id }))
+)
+
+function onHouseConfirm({ selectedOptions }: any) {
+  const selected = selectedOptions[0]
+  if (selected) {
+    form.value.houseId = selected.id
+    selectedHouseName.value = selected.text
+  }
+  showHousePicker.value = false
+}
 
 async function onSubmit() {
   if (!form.value.houseId || !form.value.content) return
@@ -23,9 +47,8 @@ async function onSubmit() {
   loading.value = true
   try {
     await repairStore.createRepair({
-      houseId: Number(form.value.houseId),
+      houseId: form.value.houseId,
       content: form.value.content.trim(),
-      reporter: form.value.reporter.trim(),
       priority: form.value.priority,
     })
     router.back()
@@ -42,20 +65,23 @@ async function onSubmit() {
     <van-form @submit="onSubmit" style="margin-top: 12px">
       <van-cell-group title="报修信息">
         <van-field
-          v-model="form.houseId"
+          v-model="selectedHouseName"
           name="houseId"
-          label="房屋编号"
-          placeholder="请输入房屋编号"
-          type="number"
-          :rules="[{ required: true, message: '请输入房屋编号' }]"
+          label="房屋"
+          placeholder="请选择房屋"
+          readonly
+          is-link
+          :rules="[{ required: true, message: '请选择房屋' }]"
+          @click="showHousePicker = true"
         />
-        <van-field
-          v-model="form.reporter"
-          name="reporter"
-          label="联系人"
-          placeholder="请输入联系人姓名"
-          :rules="[{ required: true, message: '请输入联系人' }]"
-        />
+        <van-popup v-model:show="showHousePicker" position="bottom" round>
+          <van-picker
+            :columns="housePickerColumns"
+            title="选择房屋"
+            @confirm="onHouseConfirm"
+            @cancel="showHousePicker = false"
+          />
+        </van-popup>
         <van-field
           v-model="form.content"
           name="content"

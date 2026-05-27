@@ -13,6 +13,7 @@ public class Complaint implements Serializable {
     private String category;
     private String content;
     private String source;
+    private Long reporterId;
     private Integer status;
     private String handleResult;
     private LocalDateTime createTime;

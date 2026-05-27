@@ -41,6 +41,14 @@ export interface RegisterPayload {
   roleId: number
 }
 
+export interface AssetRecord {
+  id: number
+  name: string
+  type: string
+  parentId: number
+  status: number
+}
+
 export interface AssetTreeNode {
   id: number
   name: string
@@ -122,7 +130,7 @@ export interface RepairKanban {
 export interface RepairPayload {
   houseId: number
   content: string
-  reporter: string
+  reporter?: string
   priority: number
 }
 

@@ -11,6 +11,7 @@ public class RepairVO {
     private String houseName;
     private String content;
     private String reporter;
+    private Long reporterId;
     private Long workerId;
     private String workerName;
     private Integer status;

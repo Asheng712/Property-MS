@@ -9,4 +9,7 @@ import java.util.List;
 public interface AssetMapper extends BaseMapper<House> {
     @Select("select * from bus_house")
     List<House> selectAllAssets();
+
+    @Select("select * from bus_house where owner_id = #{ownerId}")
+    List<House> selectHousesByOwnerId(Long ownerId);
 }

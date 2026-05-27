@@ -18,6 +18,7 @@ import type {
   NoticeQuery,
   ContractRecord,
   ContractQuery,
+  AssetRecord,
   AssetTreeNode,
   PageResult,
 } from '@/types'
@@ -84,5 +85,8 @@ export const contractApi = {
 export const assetApi = {
   getTree() {
     return http.get<AssetTreeNode[]>('/assets/tree')
+  },
+  getMyHouses() {
+    return http.get<AssetRecord[]>('/assets/my-houses')
   },
 }

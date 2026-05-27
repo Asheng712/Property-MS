@@ -8,5 +8,6 @@ public class RepairDTO {
     private Long houseId;
     private String content;
     private String reporter;
+    private Long reporterId;
     private Integer priority;
 }

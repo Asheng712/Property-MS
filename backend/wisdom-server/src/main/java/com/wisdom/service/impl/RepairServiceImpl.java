@@ -12,7 +12,10 @@ import com.wisdom.mapper.AssetMapper;
 import com.wisdom.mapper.UserMapper;
 import com.wisdom.ai.AIService;
 import com.wisdom.ai.RepairAnalysisResult;
+import com.wisdom.context.BaseContext;
+import com.wisdom.exception.BusinessException;
 import com.wisdom.service.RepairService;
+import com.wisdom.service.UserService;
 import com.wisdom.vo.RepairKanbanVO;
 import com.wisdom.vo.RepairVO;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +41,9 @@ public class RepairServiceImpl implements RepairService {
     @Autowired
     private AIService aiService;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public RepairKanbanVO getRepairKanban() {
         return getRepairKanban(null);
@@ -47,7 +53,13 @@ public class RepairServiceImpl implements RepairService {
     public RepairKanbanVO getRepairKanban(String reporter) {
         List<Repair> allRepairs = repairMapper.selectList(null);
         List<Repair> filtered = allRepairs;
-        if (reporter != null && !reporter.isEmpty()) {
+
+        if (!userService.isCurrentUserAdmin()) {
+            Long currentUserId = userService.getRequiredCurrentUserId();
+            filtered = allRepairs.stream()
+                    .filter(repair -> currentUserId.equals(repair.getReporterId()))
+                    .collect(Collectors.toList());
+        } else if (reporter != null && !reporter.isEmpty()) {
             filtered = allRepairs.stream()
                     .filter(repair -> reporter.equals(repair.getReporter()))
                     .collect(Collectors.toList());
@@ -108,14 +120,25 @@ public class RepairServiceImpl implements RepairService {
     public void addRepair(RepairDTO repairDTO) {
         Repair repair = new Repair();
         BeanUtils.copyProperties(repairDTO, repair);
+
+        Long currentUserId = BaseContext.getCurrentId();
+        if (!userService.isCurrentUserAdmin()) {
+            if (currentUserId == null) {
+                throw BusinessException.unauthorized();
+            }
+            List<Long> ownedHouseIds = userService.getOwnedHouseIds(currentUserId);
+            if (!ownedHouseIds.contains(repairDTO.getHouseId())) {
+                throw BusinessException.badRequest("只能对自己名下的房屋报修");
+            }
+        }
+        repair.setReporterId(currentUserId != null ? currentUserId : repairDTO.getReporterId());
         repair.setRepairNo("REP-" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         repair.setStatus(0);
         repair.setCreateTime(LocalDateTime.now());
-        
-        // 使用AI分析故障级别
+
         RepairAnalysisResult analysisResult = aiService.analyzeRepair(repairDTO.getContent());
         repair.setPriority(analysisResult.getPriority());
-        
+
         repairMapper.insert(repair);
     }
 

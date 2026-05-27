@@ -13,6 +13,7 @@ public class Repair implements Serializable {
     private Long houseId;
     private String content;
     private String reporter;
+    private Long reporterId;
     private Long workerId;
     private Integer status;
     private Integer priority;

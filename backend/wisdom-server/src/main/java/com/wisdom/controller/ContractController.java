@@ -1,5 +1,6 @@
 package com.wisdom.controller;
 
+import com.wisdom.annotation.LoginRequired;
 import com.wisdom.dto.ContractDTO;
 import com.wisdom.dto.ContractPageQueryDTO;
 import com.wisdom.result.Result;
@@ -19,6 +20,7 @@ public class ContractController {
 
     @GetMapping
     @Operation(summary = "分页查询合同")
+    @LoginRequired
     public Result<?> getContractList(ContractPageQueryDTO contractPageQueryDTO) {
         return Result.success(contractService.getContractList(contractPageQueryDTO));
     }

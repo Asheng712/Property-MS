@@ -41,8 +41,11 @@ CREATE TABLE IF NOT EXISTS bus_house (
     status      ENUM('VACANT','SOLD','RENTING','DECORATING','OCCUPIED') DEFAULT 'VACANT',
     owner_name  VARCHAR(50)         DEFAULT '',
     owner_phone VARCHAR(20)         DEFAULT '',
+    owner_id    BIGINT              DEFAULT NULL,
     create_time DATETIME            DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME            DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    update_time DATETIME            DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_house_owner (owner_id),
+    FOREIGN KEY (owner_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资产表';
 
 CREATE TABLE IF NOT EXISTS bus_contract (
@@ -110,13 +113,15 @@ CREATE TABLE IF NOT EXISTS bus_repair (
     house_id    BIGINT          DEFAULT NULL,
     content     TEXT            NOT NULL,
     reporter    VARCHAR(50)     DEFAULT '',
+    reporter_id BIGINT          DEFAULT NULL,
     worker_id   BIGINT          DEFAULT NULL,
     status      TINYINT         DEFAULT 0,
     priority    TINYINT         DEFAULT 1,
     create_time DATETIME        DEFAULT CURRENT_TIMESTAMP,
     finish_time DATETIME        DEFAULT NULL,
     update_time DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (worker_id) REFERENCES sys_user(id)
+    FOREIGN KEY (worker_id) REFERENCES sys_user(id),
+    FOREIGN KEY (reporter_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='报修工单表';
 
 CREATE TABLE IF NOT EXISTS bus_complaint (
@@ -125,10 +130,12 @@ CREATE TABLE IF NOT EXISTS bus_complaint (
     category      VARCHAR(50)   DEFAULT '',
     content       TEXT          NOT NULL,
     source        VARCHAR(100)  DEFAULT '',
+    reporter_id   BIGINT        DEFAULT NULL,
     status        TINYINT       DEFAULT 0,
     handle_result VARCHAR(500)  DEFAULT '',
     create_time   DATETIME      DEFAULT CURRENT_TIMESTAMP,
-    update_time   DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    update_time   DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (reporter_id) REFERENCES sys_user(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='投诉建议表';
 
 -- -------------------------- 2.5 公告与系统模块 --------------------------

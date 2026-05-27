@@ -19,7 +19,9 @@ import com.wisdom.mapper.BillMapper;
 import com.wisdom.mapper.PaymentRecordMapper;
 import com.wisdom.result.PageResult;
 import com.wisdom.exception.BusinessException;
+import com.wisdom.context.BaseContext;
 import com.wisdom.service.FinanceService;
+import com.wisdom.service.UserService;
 import com.wisdom.vo.BatchRecordVO;
 import com.wisdom.vo.BillVO;
 import com.wisdom.vo.PaymentVO;
@@ -47,6 +49,18 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Autowired
     private AssetMapper assetMapper;
+
+    @Autowired
+    private UserService userService;
+
+    private boolean shouldFilterByUser() {
+        return !userService.isCurrentUserAdmin();
+    }
+
+    private List<Long> getOwnedHouseIdsForFilter() {
+        Long userId = userService.getRequiredCurrentUserId();
+        return userService.getOwnedHouseIds(userId);
+    }
 
     @Override
     public BatchRecordVO batchGenerateBills(BillGenerateDTO billGenerateDTO) {
@@ -123,6 +137,13 @@ public class FinanceServiceImpl implements FinanceService {
         }
         if (billPageQueryDTO.getType() != null) {
             queryWrapper.eq(Bill::getType, billPageQueryDTO.getType());
+        }
+        if (shouldFilterByUser()) {
+            List<Long> ownedHouseIds = getOwnedHouseIdsForFilter();
+            if (ownedHouseIds.isEmpty()) {
+                return new PageResult<>(0, java.util.Collections.emptyList());
+            }
+            queryWrapper.in(Bill::getHouseId, ownedHouseIds);
         }
         IPage<Bill> billPage = billMapper.selectPage(page, queryWrapper);
         List<BillVO> billVOList = billPage.getRecords().stream()
@@ -210,6 +231,13 @@ public class FinanceServiceImpl implements FinanceService {
         }
         if (paymentPageQueryDTO.getPayType() != null) {
             queryWrapper.eq(PaymentRecord::getPayType, paymentPageQueryDTO.getPayType());
+        }
+        if (shouldFilterByUser()) {
+            List<Long> ownedHouseIds = getOwnedHouseIdsForFilter();
+            if (ownedHouseIds.isEmpty()) {
+                return new PageResult<>(0, java.util.Collections.emptyList());
+            }
+            queryWrapper.in(PaymentRecord::getHouseId, ownedHouseIds);
         }
         IPage<PaymentRecord> paymentPage = paymentRecordMapper.selectPage(page, queryWrapper);
         List<PaymentVO> paymentVOList = paymentPage.getRecords().stream()

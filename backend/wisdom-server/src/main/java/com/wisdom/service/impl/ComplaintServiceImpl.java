@@ -9,7 +9,9 @@ import com.wisdom.dto.ComplaintPageQueryDTO;
 import com.wisdom.entity.Complaint;
 import com.wisdom.mapper.ComplaintMapper;
 import com.wisdom.result.PageResult;
+import com.wisdom.context.BaseContext;
 import com.wisdom.service.ComplaintService;
+import com.wisdom.service.UserService;
 import com.wisdom.vo.ComplaintVO;
 import com.wisdom.exception.BusinessException;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +28,9 @@ public class ComplaintServiceImpl implements ComplaintService {
     @Autowired
     private ComplaintMapper complaintMapper;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public PageResult<ComplaintVO> getComplaintList(ComplaintPageQueryDTO complaintPageQueryDTO) {
         Page<Complaint> page = new Page<>(
@@ -38,6 +43,10 @@ public class ComplaintServiceImpl implements ComplaintService {
         }
         if (complaintPageQueryDTO.getStatus() != null) {
             queryWrapper.eq(Complaint::getStatus, complaintPageQueryDTO.getStatus());
+        }
+        if (!userService.isCurrentUserAdmin()) {
+            Long currentUserId = userService.getRequiredCurrentUserId();
+            queryWrapper.eq(Complaint::getReporterId, currentUserId);
         }
         IPage<Complaint> complaintPage = complaintMapper.selectPage(page, queryWrapper);
         List<ComplaintVO> complaintVOList = complaintPage.getRecords().stream()
@@ -78,6 +87,7 @@ public class ComplaintServiceImpl implements ComplaintService {
         complaint.setCategory(complaintCreateDTO.getCategory());
         complaint.setContent(complaintCreateDTO.getContent());
         complaint.setSource(complaintCreateDTO.getSource());
+        complaint.setReporterId(BaseContext.getCurrentId());
         complaint.setStatus(0);
         complaint.setCreateTime(LocalDateTime.now());
         complaintMapper.insert(complaint);

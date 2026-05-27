@@ -17,5 +17,6 @@ public class House implements Serializable {
     private String status;
     private String ownerName;
     private String ownerPhone;
+    private Long ownerId;
     private LocalDateTime createTime;
 }

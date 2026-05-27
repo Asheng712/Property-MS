@@ -1,7 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { repairApi } from '@/services/api'
-import { useUserStore } from './user'
 import type { RepairRecord, RepairPayload } from '@/types'
 
 export const useRepairStore = defineStore('repair', () => {
@@ -17,9 +16,7 @@ export const useRepairStore = defineStore('repair', () => {
   async function fetchRepairs() {
     loading.value = true
     try {
-      const userStore = useUserStore()
-      const reporter = userStore.userInfo?.realName || userStore.userInfo?.username || ''
-      const kanban = await repairApi.getKanban(reporter)
+      const kanban = await repairApi.getKanban()
       allRepairs.value = [...kanban.pending, ...kanban.processing, ...kanban.completed]
     } finally {
       loading.value = false

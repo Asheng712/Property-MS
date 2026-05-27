@@ -11,6 +11,7 @@ import com.wisdom.mapper.ContractMapper;
 import com.wisdom.mapper.AssetMapper;
 import com.wisdom.result.PageResult;
 import com.wisdom.service.ContractService;
+import com.wisdom.service.UserService;
 import com.wisdom.vo.ContractVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class ContractServiceImpl implements ContractService {
     @Autowired
     private AssetMapper assetMapper;
 
+    @Autowired
+    private UserService userService;
+
     @Override
     public PageResult<ContractVO> getContractList(ContractPageQueryDTO contractPageQueryDTO) {
         Page<Contract> page = new Page<>(
@@ -40,6 +44,14 @@ public class ContractServiceImpl implements ContractService {
         }
         if (contractPageQueryDTO.getContractStatus() != null) {
             queryWrapper.eq(Contract::getContractStatus, contractPageQueryDTO.getContractStatus());
+        }
+        if (!userService.isCurrentUserAdmin()) {
+            Long currentUserId = userService.getRequiredCurrentUserId();
+            List<Long> ownedHouseIds = userService.getOwnedHouseIds(currentUserId);
+            if (ownedHouseIds.isEmpty()) {
+                return new PageResult<>(0, java.util.Collections.emptyList());
+            }
+            queryWrapper.in(Contract::getHouseId, ownedHouseIds);
         }
         IPage<Contract> contractPage = contractMapper.selectPage(page, queryWrapper);
         List<ContractVO> contractVOList = contractPage.getRecords().stream()

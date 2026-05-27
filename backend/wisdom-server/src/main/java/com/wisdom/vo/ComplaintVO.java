@@ -10,6 +10,7 @@ public class ComplaintVO {
     private String category;
     private String content;
     private String source;
+    private Long reporterId;
     private Integer status;
     private String statusText;
     private String handleResult;

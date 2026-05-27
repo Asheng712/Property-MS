@@ -13,4 +13,5 @@ public class AssetDTO {
     private String status;
     private String ownerName;
     private String ownerPhone;
+    private Long ownerId;
 }

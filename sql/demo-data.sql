@@ -2,28 +2,47 @@
 -- 智慧物业管理系统 — 演示数据
 -- ============================================
 
+-- -------------------------- 演示用户 (密码: 123456) --------------------------
+-- bcrypt hash matches init.sql admin password
+INSERT IGNORE INTO sys_user (id, username, password, real_name, phone, email, role_id, status) VALUES
+(2, 'zhangsan',   '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '张三',   '13800001111', 'zhangsan@test.com',   2, 1),
+(3, 'lisi',       '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '李四',   '13800002222', 'lisi@test.com',       2, 1),
+(4, 'wangwu',     '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '王五',   '13800003333', 'wangwu@test.com',     2, 1),
+(5, 'zhaoliu',    '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '赵六',   '13800004444', 'zhaoliu@test.com',    2, 1),
+(6, 'qianqi',     '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '钱七',   '13800005555', 'qianqi@test.com',     2, 1),
+(7, 'sunba',      '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '孙八',   '13800006666', 'sunba@test.com',      2, 1),
+(8, 'zhoujiu',    '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '周九',   '13800007777', 'zhoujiu@test.com',    2, 1),
+(9, 'wushi',      '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '吴十',   '13800008888', 'wushi@test.com',      2, 1),
+(10,'zhengsy',    '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '郑十一', '13800009999', 'zhengsy@test.com',    2, 1),
+(11,'fengse',     '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '冯十二', '13800010000', 'fengse@test.com',     2, 1),
+(12,'chensan',    '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '陈十三', '13800011111', 'chensan@test.com',    2, 1),
+(13,'chuss',      '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '褚十四', '13800012222', 'chuss@test.com',      2, 1),
+(14,'weissw',     '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '卫十五', '13800013333', 'weissw@test.com',     2, 1),
+(15,'jiangsl',    '$2b$10$ItG3jyKWSusKaDAtcBeOFOwjZLHJg1zj0VtXYw8Xm/NtKkxwMOFc2', '蒋十六', '13800014444', 'jiangsl@test.com',    2, 1);
+
 -- -------------------------- 资产数据 --------------------------
-INSERT IGNORE INTO bus_house (id, parent_id, name, type, area, status, owner_name, owner_phone) VALUES
-(1, 0, 'A栋综合楼',        'BUILDING',    5000.00, 'OCCUPIED', NULL,   NULL),
-(2, 1, '101商铺',          'SHOP',         120.50, 'OCCUPIED', '张三', '13800001111'),
-(3, 1, '102商铺',          'SHOP',          98.00, 'VACANT',   NULL,   NULL),
-(4, 1, '201住宅',          'RESIDENTIAL',   89.50, 'SOLD',     '李四', '13800002222'),
-(5, 0, 'B栋综合楼',        'BUILDING',    3800.00, 'OCCUPIED', NULL,   NULL),
-(6, 5, '101办公楼',        'UNIT',         200.00, 'RENTING',  '王五', '13800003333'),
-(7, 5, '202住宅',          'RESIDENTIAL',   76.00, 'VACANT',   NULL,   NULL),
-(8, 1, '301住宅',          'RESIDENTIAL',   92.00, 'OCCUPIED', '赵六', '13800004444'),
-(9, 1, '302住宅',          'RESIDENTIAL',   88.00, 'RENTING',  '钱七', '13800005555'),
-(10, 1, '401住宅',         'RESIDENTIAL',  105.00, 'SOLD',     '孙八', '13800006666'),
-(11, 5, '103商铺',         'SHOP',          65.00, 'OCCUPIED', '周九', '13800007777'),
-(12, 5, '201办公室',       'UNIT',         150.00, 'RENTING',  '吴十', '13800008888'),
-(13, 0, 'C栋住宅楼',       'BUILDING',    4200.00, 'OCCUPIED', NULL,   NULL),
-(14, 13, '101住宅',        'RESIDENTIAL',   78.00, 'OCCUPIED', '郑十一', '13800009999'),
-(15, 13, '102住宅',        'RESIDENTIAL',   82.00, 'SOLD',     '冯十二', '13800010000'),
-(16, 13, '201住宅',        'RESIDENTIAL',   78.00, 'RENTING',  '陈十三', '13800011111'),
-(17, 13, '301住宅',        'RESIDENTIAL',   95.00, 'OCCUPIED', '褚十四', '13800012222'),
-(18, 0, 'D栋商业楼',       'BUILDING',    3600.00, 'OCCUPIED', NULL,   NULL),
-(19, 18, '101商铺',        'SHOP',         180.00, 'OCCUPIED', '卫十五', '13800013333'),
-(20, 18, '102商铺',        'SHOP',         150.00, 'RENTING',  '蒋十六', '13800014444');
+-- owner_id: NULL for buildings, matched user ID for leaf nodes
+INSERT IGNORE INTO bus_house (id, parent_id, name, type, area, status, owner_name, owner_phone, owner_id) VALUES
+(1, 0, 'A栋综合楼',        'BUILDING',    5000.00, 'OCCUPIED', NULL,   NULL,          NULL),
+(2, 1, '101商铺',          'SHOP',         120.50, 'OCCUPIED', '张三', '13800001111', 2),
+(3, 1, '102商铺',          'SHOP',          98.00, 'VACANT',   NULL,   NULL,          NULL),
+(4, 1, '201住宅',          'RESIDENTIAL',   89.50, 'SOLD',     '李四', '13800002222', 3),
+(5, 0, 'B栋综合楼',        'BUILDING',    3800.00, 'OCCUPIED', NULL,   NULL,          NULL),
+(6, 5, '101办公楼',        'UNIT',         200.00, 'RENTING',  '王五', '13800003333', 4),
+(7, 5, '202住宅',          'RESIDENTIAL',   76.00, 'VACANT',   NULL,   NULL,          NULL),
+(8, 1, '301住宅',          'RESIDENTIAL',   92.00, 'OCCUPIED', '赵六', '13800004444', 5),
+(9, 1, '302住宅',          'RESIDENTIAL',   88.00, 'RENTING',  '钱七', '13800005555', 6),
+(10, 1, '401住宅',         'RESIDENTIAL',  105.00, 'SOLD',     '孙八', '13800006666', 7),
+(11, 5, '103商铺',         'SHOP',          65.00, 'OCCUPIED', '周九', '13800007777', 8),
+(12, 5, '201办公室',       'UNIT',         150.00, 'RENTING',  '吴十', '13800008888', 9),
+(13, 0, 'C栋住宅楼',       'BUILDING',    4200.00, 'OCCUPIED', NULL,   NULL,          NULL),
+(14, 13, '101住宅',        'RESIDENTIAL',   78.00, 'OCCUPIED', '郑十一', '13800009999',10),
+(15, 13, '102住宅',        'RESIDENTIAL',   82.00, 'SOLD',     '冯十二', '13800010000',11),
+(16, 13, '201住宅',        'RESIDENTIAL',   78.00, 'RENTING',  '陈十三', '13800011111',12),
+(17, 13, '301住宅',        'RESIDENTIAL',   95.00, 'OCCUPIED', '褚十四', '13800012222',13),
+(18, 0, 'D栋商业楼',       'BUILDING',    3600.00, 'OCCUPIED', NULL,   NULL,          NULL),
+(19, 18, '101商铺',        'SHOP',         180.00, 'OCCUPIED', '卫十五', '13800013333',14),
+(20, 18, '102商铺',        'SHOP',         150.00, 'RENTING',  '蒋十六', '13800014444',15);
 
 -- -------------------------- 合同数据 --------------------------
 INSERT INTO bus_contract (id, house_id, tenant_name, rent_amount, start_date, end_date, increase_rate, deposit, contract_status) VALUES
@@ -73,24 +92,24 @@ INSERT INTO bus_payment_record (id, trx_no, bill_id, house_id, pay_amount, pay_t
 (6, 'TRX-20260411-001', 14, 6,  12000.00, 'TRANSFER', 1, '2026-04-11 15:30:00', '王五'),
 (7, 'TRX-20260315-001', 16, 2,  8500.00,  'WECHAT',   1, '2026-03-15 10:00:00', '张三');
 
--- -------------------------- 报修工单 --------------------------
-INSERT INTO bus_repair (id, repair_no, house_id, content, reporter, worker_id, status, priority, create_time, finish_time) VALUES
-(1, 'REP-20260501', 2,  '商铺门头灯箱不亮，需要检修。',          '张三', 1, 1, 2, '2026-05-01 09:00:00', '2026-05-02 11:00:00'),
-(2, 'REP-20260510', 8,  '卫生间水管漏水，墙面已出现水渍。',     '赵六', 1, 1, 3, '2026-05-10 14:30:00', '2026-05-11 16:00:00'),
-(3, 'REP-20260515', 14, '空调制冷效果差，需要加氟或检修。',     '郑十一', NULL, 0, 2, '2026-05-15 08:20:00', NULL),
-(4, 'REP-20260518', 19, '商铺卷帘门卡顿，升降不顺畅。',        '卫十五', 1, 0, 1, '2026-05-18 10:00:00', NULL),
-(5, 'REP-20260520', 12, '办公室电路跳闸，怀疑线路老化。',       '吴十', NULL, 0, 3, '2026-05-20 16:45:00', NULL),
-(6, 'REP-20260405', 6,  '中央空调不制热，冬季供暖受影响。',     '王五', 1, 1, 3, '2026-04-05 07:30:00', '2026-04-06 18:00:00'),
-(7, 'REP-20260320', 11, '店铺门口地砖破损，存在安全隐患。',     '周九', 1, 1, 1, '2026-03-20 13:00:00', '2026-03-22 10:00:00');
+-- -------------------------- 报修工单 (reporter_id matched to owner) --------------------------
+INSERT INTO bus_repair (id, repair_no, house_id, content, reporter, reporter_id, worker_id, status, priority, create_time, finish_time) VALUES
+(1, 'REP-20260501', 2,  '商铺门头灯箱不亮，需要检修。',          '张三',   2,   1, 1, 2, '2026-05-01 09:00:00', '2026-05-02 11:00:00'),
+(2, 'REP-20260510', 8,  '卫生间水管漏水，墙面已出现水渍。',     '赵六',   5,   1, 1, 3, '2026-05-10 14:30:00', '2026-05-11 16:00:00'),
+(3, 'REP-20260515', 14, '空调制冷效果差，需要加氟或检修。',     '郑十一', 10, NULL, 0, 2, '2026-05-15 08:20:00', NULL),
+(4, 'REP-20260518', 19, '商铺卷帘门卡顿，升降不顺畅。',        '卫十五', 14,  1, 0, 1, '2026-05-18 10:00:00', NULL),
+(5, 'REP-20260520', 12, '办公室电路跳闸，怀疑线路老化。',       '吴十',   9,  NULL, 0, 3, '2026-05-20 16:45:00', NULL),
+(6, 'REP-20260405', 6,  '中央空调不制热，冬季供暖受影响。',     '王五',   4,   1, 1, 3, '2026-04-05 07:30:00', '2026-04-06 18:00:00'),
+(7, 'REP-20260320', 11, '店铺门口地砖破损，存在安全隐患。',     '周九',   8,   1, 1, 1, '2026-03-20 13:00:00', '2026-03-22 10:00:00');
 
--- -------------------------- 投诉建议 --------------------------
-INSERT INTO bus_complaint (id, complaint_no, category, content, source, status, handle_result) VALUES
-(1, 'CMP-20260501', '环境卫生', '小区垃圾分类点清理不及时，异味严重，希望加强管理。',        '业主APP', 1, '已安排保洁人员每日定时清理，增设分类指引标识。'),
-(2, 'CMP-20260505', '噪音扰民', 'B栋101办公楼装修施工噪音过大，周末也在施工，影响休息。',  '电话投诉', 1, '已与施工方沟通，要求严格执行施工时间规定，周末禁止噪音施工。'),
-(3, 'CMP-20260510', '停车管理', '小区外来车辆占用业主车位现象严重，建议启用智能道闸系统。', '业主APP', 0, NULL),
-(4, 'CMP-20260512', '安保问题', 'C栋单元门禁损坏两周未修复，外人可随意进出。',              '现场反映', 0, NULL),
-(5, 'CMP-20260420', '物业费争议', '业主质疑物业费收费标准不透明，要求公示费用明细。',        '业主APP', 1, '已公示物业服务项目及收费标准，并安排专人向业主解释。'),
-(6, 'CMP-20260315', '绿化养护', 'A栋周边的绿植枯死未更换，草坪大面积裸露。',               '电话投诉', 1, '已安排绿化公司在春季统一补种，加强日常浇水养护。');
+-- -------------------------- 投诉建议 (reporter_id matched to user) --------------------------
+INSERT INTO bus_complaint (id, complaint_no, category, content, source, reporter_id, status, handle_result) VALUES
+(1, 'CMP-20260501', '环境卫生', '小区垃圾分类点清理不及时，异味严重，希望加强管理。',        '业主APP',  2, 1, '已安排保洁人员每日定时清理，增设分类指引标识。'),
+(2, 'CMP-20260505', '噪音扰民', 'B栋101办公楼装修施工噪音过大，周末也在施工，影响休息。',  '电话投诉',  1, 1, '已与施工方沟通，要求严格执行施工时间规定，周末禁止噪音施工。'),
+(3, 'CMP-20260510', '停车管理', '小区外来车辆占用业主车位现象严重，建议启用智能道闸系统。', '业主APP',  4, 0, NULL),
+(4, 'CMP-20260512', '安保问题', 'C栋单元门禁损坏两周未修复，外人可随意进出。',              '现场反映', 10, 0, NULL),
+(5, 'CMP-20260420', '物业费争议', '业主质疑物业费收费标准不透明，要求公示费用明细。',        '业主APP',  3, 1, '已公示物业服务项目及收费标准，并安排专人向业主解释。'),
+(6, 'CMP-20260315', '绿化养护', 'A栋周边的绿植枯死未更换，草坪大面积裸露。',               '电话投诉',  1, 1, '已安排绿化公司在春季统一补种，加强日常浇水养护。');
 
 -- -------------------------- 系统公告 --------------------------
 INSERT INTO sys_notice (id, title, content, target_type, status, view_count) VALUES

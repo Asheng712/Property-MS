@@ -7,4 +7,5 @@ public class ComplaintCreateDTO {
     private String category;
     private String content;
     private String source;
+    private Long reporterId;
 }

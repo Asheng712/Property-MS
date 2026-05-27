@@ -1,5 +1,6 @@
 package com.wisdom.controller;
 
+import com.wisdom.annotation.LoginRequired;
 import com.wisdom.dto.RepairDTO;
 import com.wisdom.dto.RepairDispatchDTO;
 import com.wisdom.dto.RepairStatusUpdateDTO;
@@ -20,6 +21,7 @@ public class RepairController {
 
     @GetMapping("/kanban")
     @Operation(summary = "获取报修看板数据（可选按报修人过滤）")
+    @LoginRequired
     public Result<?> getRepairKanban(@RequestParam(required = false) String reporter) {
         if (reporter != null && !reporter.isEmpty()) {
             return Result.success(repairService.getRepairKanban(reporter));
@@ -29,6 +31,7 @@ public class RepairController {
 
     @PostMapping
     @Operation(summary = "录入/代录工单")
+    @LoginRequired
     public Result<Void> addRepair(@RequestBody RepairDTO repairDTO) {
         repairService.addRepair(repairDTO);
         return Result.success(null);

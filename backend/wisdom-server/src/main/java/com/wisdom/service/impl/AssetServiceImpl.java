@@ -3,6 +3,7 @@ package com.wisdom.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wisdom.context.BaseContext;
 import com.wisdom.dto.AssetDTO;
 import com.wisdom.dto.AssetPageQueryDTO;
 import com.wisdom.entity.House;
@@ -116,5 +117,17 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public void deleteAsset(Long id) {
         assetMapper.deleteById(id);
+    }
+
+    @Override
+    public List<AssetVO> getOwnedHouses() {
+        List<House> houses = assetMapper.selectHousesByOwnerId(BaseContext.getCurrentId());
+        return houses.stream()
+                .map(house -> {
+                    AssetVO assetVO = new AssetVO();
+                    BeanUtils.copyProperties(house, assetVO);
+                    return assetVO;
+                })
+                .collect(Collectors.toList());
     }
 }
