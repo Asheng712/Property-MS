@@ -25,7 +25,17 @@
       "Bash(curl -sI \"https://docker.1ms.run/v2/\")",
       "Bash(wsl -l -q)",
       "Bash(wsl -d docker-desktop cat /etc/docker/daemon.json)",
-      "Bash(wsl *)"
+      "Bash(wsl *)",
+      "Bash(bash deploy.sh dev)",
+      "Bash(bash deploy.sh status)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/doc.html)",
+      "Bash(curl *)",
+      "Bash(docker exec *)",
+      "Bash(git log *)",
+      "Bash(grep -iE \"\\\\.env[^\\\\.]|secret|credential|\\\\.key$|\\\\.pem\")",
+      "Bash(git show *)",
+      "Bash(grep -iE \"\\\\.env$|secret|password|credential|\\\\.key$|\\\\.pem|docker-compose|compose\")",
+      "Bash(grep -iE \"\\\\.env$|docker-compose\\\\.yml$|\\\\.env\\\\.local\")"
     ]
   }
 }
