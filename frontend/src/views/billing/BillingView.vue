@@ -26,7 +26,7 @@
         <el-table-column prop="createTime" label="创建时间" min-width="170" />
         <el-table-column prop="status" label="状态" min-width="120">
           <template #default="{ row }">
-            <StatusBadge :label="row.status" :tone="row.status === 'COMPLETED' ? 'success' : 'info'" />
+            <StatusBadge :label="getBatchStatusText(row.status)" :tone="getBatchStatusTone(row.status)" />
           </template>
         </el-table-column>
       </el-table>
@@ -194,6 +194,19 @@ async function generateMonthlyBills() {
   } finally {
     generating.value = false
   }
+}
+
+function getBatchStatusText(value: string) {
+  const mapping: Record<string, string> = {
+    COMPLETED: '已完成',
+    done: '已完成',
+    processing: '处理中',
+  }
+  return mapping[value] || value
+}
+
+function getBatchStatusTone(value: string) {
+  return value === 'COMPLETED' || value === 'done' ? 'success' : 'info'
 }
 </script>
 

@@ -15,6 +15,16 @@ onMounted(async () => {
   await noticeStore.fetchNotices()
   notice.value = noticeStore.notices.find((n) => n.id === id) || null
 })
+
+function targetTypeLabel(value: string) {
+  const mapping: Record<string, string> = {
+    ALL: '全体业主',
+    RESIDENT: '住户',
+    TENANT: '商铺租户',
+    BUILDING: '楼栋',
+  }
+  return mapping[value] || value
+}
 </script>
 
 <template>
@@ -29,7 +39,7 @@ onMounted(async () => {
           </template>
         </van-cell>
         <van-cell title="发布时间" :value="notice.createTime || '-'" />
-        <van-cell title="发布对象" :value="notice.targetType || '全体业主'" />
+        <van-cell title="发布对象" :value="targetTypeLabel(notice.targetType)" />
         <van-cell title="浏览次数" :value="String(notice.viewCount)" />
       </van-cell-group>
 

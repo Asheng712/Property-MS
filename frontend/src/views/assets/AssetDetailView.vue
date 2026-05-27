@@ -115,10 +115,11 @@ function getStatusText(value: string) {
   const normalized = value.trim().toLowerCase()
   const mapping: Record<string, string> = {
     occupied: '已入住',
+    renting: '已出租',
     vacant: '空置',
     sold: '已售',
+    decorating: '装修中',
   }
-
   return mapping[normalized] || value
 }
 
@@ -126,10 +127,11 @@ function getStatusTone(value: string) {
   const normalized = value.toLowerCase()
   const mapping: Record<string, 'success' | 'warning' | 'info'> = {
     occupied: 'success',
+    renting: 'success',
     vacant: 'warning',
     sold: 'info',
+    decorating: 'warning',
   }
-
   return mapping[normalized] || 'info'
 }
 </script>

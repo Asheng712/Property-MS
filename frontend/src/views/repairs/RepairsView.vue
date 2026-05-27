@@ -19,7 +19,7 @@
         <article v-for="ticket in column.items" :key="ticket.id" class="kanban-ticket glass-card">
           <div class="kanban-ticket__top">
             <span class="ticket-id">{{ ticket.repairNo }}</span>
-            <span class="ticket-age">{{ ticket.priorityText || `优先级 ${ticket.priority}` }}</span>
+            <span class="ticket-age">{{ ticket.priorityText || getPriorityText(ticket.priority) }}</span>
           </div>
           <h3>{{ ticket.content }}</h3>
           <p>位置: {{ ticket.houseName || `房屋ID: ${ticket.houseId}` }}</p>
@@ -123,7 +123,7 @@ const detailItems = computed(() =>
         { label: '报修内容', value: activeTicket.value.content },
         { label: '报修人', value: activeTicket.value.reporter },
         { label: '维修人', value: activeTicket.value.workerName || '-' },
-        { label: '状态', value: activeTicket.value.statusText || String(activeTicket.value.status) },
+        { label: '状态', value: activeTicket.value.statusText || getStatusText(activeTicket.value.status) },
         { label: '创建时间', value: activeTicket.value.createTime || '-' },
         { label: '完成时间', value: activeTicket.value.finishTime || '-' },
       ]
@@ -216,6 +216,16 @@ async function createTicket() {
   } finally {
     submitting.value = false
   }
+}
+
+function getPriorityText(priority?: number) {
+  const mapping: Record<number, string> = { 1: '普通', 2: '紧急', 3: '非常紧急' }
+  return priority ? (mapping[priority] || `优先级 ${priority}`) : '普通'
+}
+
+function getStatusText(status?: number) {
+  const mapping: Record<number, string> = { 0: '待处理', 1: '处理中', 2: '已完成' }
+  return status !== undefined ? (mapping[status] || String(status)) : '未知'
 }
 
 </script>

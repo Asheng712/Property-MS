@@ -160,15 +160,17 @@ const draft = reactive<{
   name: '',
   type: 'SHOP',
   area: 0,
-  status: 'occupied',
+  status: 'OCCUPIED',
   ownerName: '',
   ownerPhone: '',
 })
 
 const statusFilters = [
-  { label: '已入住', value: 'occupied' },
-  { label: '空置', value: 'vacant' },
-  { label: '已售', value: 'sold' },
+  { label: '已入住', value: 'OCCUPIED' },
+  { label: '已出租', value: 'RENTING' },
+  { label: '空置', value: 'VACANT' },
+  { label: '已售', value: 'SOLD' },
+  { label: '装修中', value: 'DECORATING' },
 ]
 
 onMounted(() => {
@@ -339,10 +341,11 @@ function getStatusText(value: string) {
   const normalized = value.trim().toLowerCase()
   const mapping: Record<string, string> = {
     occupied: '已入住',
+    renting: '已出租',
     vacant: '空置',
     sold: '已售',
+    decorating: '装修中',
   }
-
   return mapping[normalized] || value
 }
 
@@ -350,10 +353,11 @@ function getStatusTone(value: string) {
   const normalized = value.trim().toLowerCase()
   const mapping: Record<string, 'success' | 'warning' | 'info'> = {
     occupied: 'success',
+    renting: 'success',
     vacant: 'warning',
     sold: 'info',
+    decorating: 'warning',
   }
-
   return mapping[normalized] || 'info'
 }
 </script>
