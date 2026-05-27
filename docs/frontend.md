@@ -46,6 +46,9 @@ Vant 4 + unplugin-vue-components（按需自动导入）
 - keep-alive 缓存 Tab 页
 - van-list 无限滚动 + van-pull-refresh 下拉刷新
 - Axios 拦截器统一 Token 管理 + 401 自动跳转登录
+- 数据隔离：账单/报修/投诉/合同均按当前登录用户自动过滤
+- 报修创建：房屋从名下房产下拉选择（`GET /assets/my-houses`）
+- 后端自动填 `reporterId`，前端无需传报修人/投诉人字段
 
 ## 4. 通用规范
 

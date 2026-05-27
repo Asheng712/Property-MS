@@ -40,10 +40,12 @@
 
 | 功能       | 方法         | 路径             | DTO (入参)               | VO (出参)                  |
 |:-------- |:---------- |:-------------- |:---------------------- |:------------------------ |
-| 获取资产空间树  | `GET`      | `/assets/tree` | -                      | `List<AssetTreeVO>`      |
-| 分页查询资产列表 | `GET`      | `/assets`      | `AssetPageQueryDTO`    | `PageResult<AssetVO>`    |
-| 新增/编辑资产  | `POST/PUT` | `/assets`      | `AssetDTO`             | -                        |
-| 删除资产     | `DELETE`   | `/assets/{id}` | -                      | -                        |
+| 获取资产空间树  | `GET`      | `/assets/tree`     | -                      | `List<AssetTreeVO>`      |
+| 获取名下房屋    | `GET`      | `/assets/my-houses` | - (需登录)        | `List<AssetVO>`          |
+| 查询资产详情    | `GET`      | `/assets/{id}`       | -                 | `AssetVO`                |
+| 分页查询资产列表 | `GET`      | `/assets`            | `AssetPageQueryDTO`| `PageResult<AssetVO>`    |
+| 新增/编辑资产  | `POST/PUT` | `/assets`            | `AssetDTO`         | -                        |
+| 删除资产     | `DELETE`   | `/assets/{id}`       | -                  | -                        |
 | 分页查询合同   | `GET`      | `/contracts`   | `ContractPageQueryDTO` | `PageResult<ContractVO>` |
 | 新增/终止合同  | `POST/PUT` | `/contracts`   | `ContractDTO`          | -                        |
 
@@ -66,12 +68,12 @@
 
 | 功能        | 方法     | 路径                   | DTO (入参)                | VO (出参)                   |
 |:--------- |:------ |:-------------------- |:----------------------- |:------------------------- |
-| 获取报修看板数据  | `GET`  | `/repairs/kanban`    | `?reporter` (可选)       | `RepairKanbanVO`          |
-| 录入/代录工单   | `POST` | `/repairs`           | `RepairDTO`             | -                         |
+| 获取报修看板数据  | `GET`  | `/repairs/kanban`    | - (非admin自动按用户过滤) | `RepairKanbanVO`          |
+| 录入/代录工单   | `POST` | `/repairs`           | `RepairDTO` (仅可报名下房屋) | -                  |
 | 派发工单/指派师傅 | `PUT`  | `/repairs/dispatch`  | `RepairDispatchDTO`     | -                         |
 | 更新工单状态    | `PUT`  | `/repairs/status`    | `RepairStatusUpdateDTO` | -                         |
 | 分页查询投诉建议  | `GET`  | `/complaints`        | `ComplaintPageQueryDTO` | `PageResult<ComplaintVO>` |
-| 提交投诉建议    | `POST` | `/complaints`        | `ComplaintCreateDTO`    | -                         |
+| 提交投诉建议    | `POST` | `/complaints`        | `ComplaintCreateDTO`    | - (reporterId由后端自动填)  |
 | 处理并反馈投诉   | `PUT`  | `/complaints/handle` | `ComplaintHandleDTO`    | -                         |
 
 ---
@@ -169,3 +171,4 @@
    * `403`: 角色权限不足。
    * `500`: 后端代码异常或数据库报错。
 4. **Swagger/Knife4j**: 所有接口开发完成后，需及时在 Controller 增加 `@Operation` 注解，确保在线文档 `doc.html` 实时更新。
+5. **数据隔离**: 非管理员用户查询账单/缴费/报修/投诉/合同时，后端自动按用户身份过滤，仅返回其名下房屋或本人提交的数据。管理员不受限制。

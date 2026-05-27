@@ -49,6 +49,7 @@
 | status | ENUM | DEFAULT 'VACANT' | VACANT, SOLD, RENTING, DECORATING |
 | owner_name | VARCHAR(50) | - | 业主或承租人姓名 |
 | owner_phone | VARCHAR(20) | - | 联系方式 |
+| owner_id | BIGINT | FK→sys_user.id | 产权人用户ID，楼栋层级为NULL |
 | create_time | DATETIME | DEFAULT NOW | 登记时间 |
 
 #### 2.2.2 商业合同表 (`bus_contract`)
@@ -121,6 +122,7 @@
 | house_id | BIGINT | - | 报修具体位置 |
 | content | TEXT | NOT NULL | 故障描述摘要 |
 | reporter | VARCHAR(50) | - | 报修人姓名 |
+| reporter_id | BIGINT | FK→sys_user.id | 报修人用户ID |
 | worker_id | BIGINT | FK | 关联执行师傅 (`sys_user.id`) |
 | status | TINYINT | DEFAULT 0 | 0-待处理, 1-处理中, 2-已办结 |
 | priority | TINYINT | DEFAULT 1 | 1-普通, 2-紧急 |
@@ -135,6 +137,7 @@
 | category | VARCHAR(50) | - | 分类 (噪音/卫生/违规等) |
 | content | TEXT | NOT NULL | 投诉详细详情 |
 | source | VARCHAR(100) | - | 来源区域或匿名状态 |
+| reporter_id | BIGINT | FK→sys_user.id | 投诉提交人用户ID |
 | status | TINYINT | DEFAULT 0 | 0-待处理, 1-处理中, 2-已办结 |
 | handle_result | VARCHAR(500) | - | 处理反馈结果 |
 | create_time | DATETIME | DEFAULT NOW | 提起时间 |
