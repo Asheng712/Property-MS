@@ -21,10 +21,8 @@ async function loadBill() {
 
   loading.value = true
   try {
-    const result = await billApi.getList({ page: 1, pageSize: 1, billNo: String(id) })
-    if (result.records.length > 0) {
-      bill.value = result.records[0]
-    }
+    const result = await billApi.getList({ page: 1, pageSize: 100 })
+    bill.value = result.records.find((b) => b.id === id) ?? null
   } finally {
     loading.value = false
   }

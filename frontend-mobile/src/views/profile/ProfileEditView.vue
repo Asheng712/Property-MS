@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { showToast } from 'vant'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -16,11 +17,8 @@ const loading = ref(false)
 
 function onSubmit() {
   loading.value = true
-  // 目前后端暂无更新用户信息接口，后续补充
-  setTimeout(() => {
-    loading.value = false
-    router.back()
-  }, 500)
+  showToast('该功能暂未开放，请联系管理员')
+  loading.value = false
 }
 </script>
 

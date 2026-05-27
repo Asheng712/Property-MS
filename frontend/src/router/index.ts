@@ -38,6 +38,11 @@ const router = createRouter({
         { path: 'profile', name: 'profile', component: () => import('@/views/profile/ProfileView.vue'), meta: { title: '个人中心' } },
       ],
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      redirect: '/dashboard',
+    },
   ],
   scrollBehavior() {
     return { top: 0 }

@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
@@ -170,6 +170,16 @@ function handleBillSizeChange(size: number) {
 }
 
 async function generateMonthlyBills() {
+  try {
+    await ElMessageBox.confirm('确认生成本月账单批次？此操作将批量生成账单数据。', '操作确认', {
+      confirmButtonText: '确认生成',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+
   generating.value = true
   try {
     await financeApi.generateBills({

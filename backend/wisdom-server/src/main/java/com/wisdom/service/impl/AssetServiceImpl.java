@@ -52,6 +52,17 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
+    public AssetVO getById(Long id) {
+        House house = assetMapper.selectById(id);
+        if (house == null) {
+            return null;
+        }
+        AssetVO assetVO = new AssetVO();
+        BeanUtils.copyProperties(house, assetVO);
+        return assetVO;
+    }
+
+    @Override
     public PageResult<AssetVO> getAssetList(AssetPageQueryDTO assetPageQueryDTO) {
         int pageNum = assetPageQueryDTO.getPage() != null ? assetPageQueryDTO.getPage() : 1;
         int pageSize = assetPageQueryDTO.getPageSize() != null ? assetPageQueryDTO.getPageSize() : 10;

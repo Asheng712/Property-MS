@@ -23,6 +23,12 @@ public class AssetController {
         return Result.success(assetService.getAssetTree());
     }
 
+    @GetMapping("/{id}")
+    @Operation(summary = "根据ID查询资产详情")
+    public Result<?> getById(@PathVariable Long id) {
+        return Result.success(assetService.getById(id));
+    }
+
     @GetMapping
     @Operation(summary = "分页查询资产列表")
     public Result<?> getAssetList(AssetPageQueryDTO assetPageQueryDTO) {

@@ -116,6 +116,11 @@ const router = createRouter({
       component: () => import('@/views/profile/ProfileEditView.vue'),
       meta: { title: '编辑资料' },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      redirect: '/home',
+    },
   ],
 })
 

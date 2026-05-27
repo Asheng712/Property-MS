@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface AssetService {
     List<AssetTreeVO> getAssetTree();
+    AssetVO getById(Long id);
     PageResult<AssetVO> getAssetList(AssetPageQueryDTO assetPageQueryDTO);
     void saveOrUpdateAsset(AssetDTO assetDTO);
     void deleteAsset(Long id);

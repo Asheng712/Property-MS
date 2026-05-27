@@ -7,6 +7,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const showLogoutDialog = ref(false)
+const notificationEnabled = ref(true)
 
 function handleLogout() {
   userStore.logout()
@@ -53,7 +54,7 @@ function handleLogout() {
     <van-cell-group title="设置" style="margin: 12px; border-radius: 8px; overflow: hidden">
       <van-cell title="消息通知" icon="bell-o">
         <template #right-icon>
-          <van-switch :model-value="true" size="24px" />
+          <van-switch v-model="notificationEnabled" size="24px" />
         </template>
       </van-cell>
       <van-cell title="关于我们" icon="info-o" is-link value="v0.1.0" />

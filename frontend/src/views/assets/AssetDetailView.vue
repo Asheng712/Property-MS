@@ -85,8 +85,7 @@ async function loadDetail() {
 
   try {
     const id = Number(route.params.id)
-    const result = await assetApi.getList({ page: 1, pageSize: 1000 })
-    asset.value = result.records.find((item) => item.id === id) ?? null
+    asset.value = await assetApi.getById(id)
 
     if (!asset.value) {
       errorMessage.value = '未找到对应资产，请返回资产台账重新选择'

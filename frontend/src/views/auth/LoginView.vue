@@ -41,9 +41,6 @@
           <div class="auth-form__links">
             <router-link to="/register">没有账号？立即注册</router-link>
           </div>
-          <div class="auth-remember">
-            <el-checkbox v-model="form.remember">记住登录状态</el-checkbox>
-          </div>
           <el-button
             type="primary"
             size="large"
@@ -74,7 +71,6 @@ const submitting = ref(false)
 const form = reactive({
   username: (route.query.account as string) || '',
   password: '',
-  remember: true,
 })
 
 const rules: FormRules<typeof form> = {
@@ -229,14 +225,6 @@ async function handleLogin() {
   font-weight: 600;
 }
 
-.auth-remember {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
 .auth-submit {
   width: 100%;
   height: 52px;
@@ -277,11 +265,6 @@ async function handleLogin() {
 
   .auth-copy h1 {
     font-size: 34px;
-  }
-
-  .auth-remember {
-    flex-direction: column;
-    align-items: flex-start;
   }
 }
 

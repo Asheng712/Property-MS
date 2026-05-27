@@ -66,6 +66,7 @@ import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import { financeApi } from '@/services/api'
 import { formatCurrency } from '@/utils/format'
+import { useAppStore } from '@/stores/app'
 import type { PaymentRecord } from '@/types'
 
 const loading = ref(false)
@@ -155,7 +156,7 @@ async function confirmPayment(id: number) {
   try {
     await financeApi.auditPayment(id, {
       status: 1,
-      operator: 'admin',
+      operator: useAppStore().currentUser,
     })
     ElMessage.success('该笔流水已核销完成')
     await loadPayments()

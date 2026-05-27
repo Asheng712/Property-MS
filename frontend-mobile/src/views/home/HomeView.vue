@@ -46,8 +46,6 @@ async function loadData() {
 onActivated(() => {
   loadData()
 })
-
-loadData()
 </script>
 
 <template>

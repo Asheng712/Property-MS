@@ -57,6 +57,9 @@ export const assetApi = {
   getTree() {
     return request<AssetTreeNode[]>('/api/v1/assets/tree', { method: 'GET' })
   },
+  getById(id: number) {
+    return request<AssetRecord>(`/api/v1/assets/${id}`, { method: 'GET' })
+  },
   getList(query: AssetQuery) {
     return request<PageResult<AssetRecord>>('/api/v1/assets', {
       method: 'GET',

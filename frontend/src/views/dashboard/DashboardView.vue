@@ -47,6 +47,7 @@ import PageContainer from '@/components/PageContainer.vue'
 import PieLegendCard from '@/components/PieLegendCard.vue'
 import StatCard from '@/components/StatCard.vue'
 import { dashboardApi } from '@/services/api'
+import { formatCurrency } from '@/utils/format'
 import type { AssetRentalStatus, ChartSegment, DashboardData, QuickStat } from '@/types'
 
 const loading = ref(false)
@@ -77,7 +78,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'unpaid-amount',
       label: '待收费金额',
-      value: formatMoney(dashboard.value.pendingChargeAmount),
+      value: formatCurrency(dashboard.value.pendingChargeAmount),
       unit: '元',
       color: '#2563eb',
       accent: '#dbeafe',
@@ -95,7 +96,7 @@ const stats = computed<QuickStat[]>(() => {
     {
       id: 'overdue-amount',
       label: '欠费金额',
-      value: formatMoney(dashboard.value.overdueAmount),
+      value: formatCurrency(dashboard.value.overdueAmount),
       unit: '元',
       color: '#ef4444',
       accent: '#fee2e2',
@@ -186,12 +187,6 @@ function buildRentalSegments(status: AssetRentalStatus): ChartSegment[] {
   ].filter(s => s.value > 0)
 }
 
-function formatMoney(value?: number) {
-  return Number(value || 0).toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-}
 </script>
 
 <style scoped>
