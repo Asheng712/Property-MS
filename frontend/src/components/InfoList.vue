@@ -21,15 +21,15 @@ defineProps<{
 <style scoped>
 .info-list {
   display: grid;
-  gap: 14px;
+  gap: 18px;
 }
 
 .info-list__item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 12px;
+  gap: 16px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border-card);
 }
 
@@ -40,9 +40,12 @@ defineProps<{
 
 .info-list__item span {
   color: var(--text-subtle);
+  font-size: 14px;
 }
 
 .info-list__item strong {
   color: var(--text-main);
+  font-weight: 500;
+  text-align: right;
 }
 </style>

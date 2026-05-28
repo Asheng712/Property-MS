@@ -235,18 +235,20 @@ function stripHtml(html: string) {
 .announcement-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 .announcement-card h3 {
-  margin: 0 0 10px;
-  font-size: 24px;
-  color: #22304a;
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.3;
 }
 
 .announcement-card .content-preview {
   min-height: 54px;
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   color: var(--text-subtle);
   display: -webkit-box;
   overflow: hidden;
@@ -255,13 +257,13 @@ function stripHtml(html: string) {
 }
 
 .content-html {
-  margin-top: 20px;
-  padding: 16px;
-  background: #f8fbff;
-  border: 1px solid #edf1f7;
-  border-radius: 12px;
+  margin-top: 24px;
+  padding: 20px;
+  background: #fafafa;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
   line-height: 1.8;
-  color: #334155;
+  color: #444;
 }
 
 .content-html :deep(p) {
@@ -283,13 +285,12 @@ function stripHtml(html: string) {
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 24px;
 }
 
 @media (max-width: 768px) {
   .announcement-grid {
     grid-template-columns: 1fr;
   }
-
 }
 </style>

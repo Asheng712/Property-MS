@@ -138,19 +138,19 @@ function getStatusTone(value: string) {
 
 <style scoped>
 .detail-alert {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-  gap: 20px;
+  gap: 24px;
   min-height: 360px;
 }
 
 .metric-grid {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .metric-item {
@@ -158,18 +158,20 @@ function getStatusTone(value: string) {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px;
-  border: 1px solid #edf1f7;
-  border-radius: 16px;
-  background: #f8fbff;
+  padding: 18px 20px;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: var(--bg-stripe);
 }
 
 .metric-item span {
   color: var(--text-subtle);
+  font-size: 14px;
 }
 
 .metric-item strong {
-  color: #23324a;
+  color: var(--text-main);
+  font-weight: 500;
 }
 
 @media (max-width: 1024px) {

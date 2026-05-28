@@ -71,8 +71,8 @@ const stats = computed<QuickStat[]>(() => {
       label: '待收费数据',
       value: dashboard.value.pendingChargeCount,
       unit: '条',
-      color: '#a855f7',
-      accent: '#f3e8ff',
+      color: '#7c3aed',
+      accent: '#f5f3ff',
       icon: 'bell',
     },
     {
@@ -80,8 +80,8 @@ const stats = computed<QuickStat[]>(() => {
       label: '待收费金额',
       value: formatCurrency(dashboard.value.pendingChargeAmount),
       unit: '元',
-      color: '#2563eb',
-      accent: '#dbeafe',
+      color: '#1a1a1a',
+      accent: '#f5f5f5',
       icon: 'money',
     },
     {
@@ -89,8 +89,8 @@ const stats = computed<QuickStat[]>(() => {
       label: '欠费数据',
       value: dashboard.value.overdueCount,
       unit: '条',
-      color: '#f97316',
-      accent: '#ffedd5',
+      color: '#d97706',
+      accent: '#fffbeb',
       icon: 'warning',
     },
     {
@@ -98,8 +98,8 @@ const stats = computed<QuickStat[]>(() => {
       label: '欠费金额',
       value: formatCurrency(dashboard.value.overdueAmount),
       unit: '元',
-      color: '#ef4444',
-      accent: '#fee2e2',
+      color: '#dc2626',
+      accent: '#fef2f2',
       icon: 'document',
     },
     {
@@ -108,7 +108,7 @@ const stats = computed<QuickStat[]>(() => {
       value: dashboard.value.todayComplaintCount,
       unit: '件',
       color: '#16a34a',
-      accent: '#dcfce7',
+      accent: '#f0fdf4',
       icon: 'service',
     },
     {
@@ -116,8 +116,8 @@ const stats = computed<QuickStat[]>(() => {
       label: '投诉待办',
       value: dashboard.value.pendingComplaintCount,
       unit: '件',
-      color: '#ec4899',
-      accent: '#fce7f3',
+      color: '#db2777',
+      accent: '#fdf2f8',
       icon: 'clock',
     },
     {
@@ -126,7 +126,7 @@ const stats = computed<QuickStat[]>(() => {
       value: dashboard.value.todayRepairCount,
       unit: '件',
       color: '#e11d48',
-      accent: '#ffe4e6',
+      accent: '#fff1f2',
       icon: 'tool',
     },
     {
@@ -134,8 +134,8 @@ const stats = computed<QuickStat[]>(() => {
       label: '报修待办',
       value: dashboard.value.pendingRepairCount,
       unit: '件',
-      color: '#14b8a6',
-      accent: '#ccfbf1',
+      color: '#0d9488',
+      accent: '#f0fdfa',
       icon: 'repair',
     },
   ]
@@ -180,10 +180,10 @@ async function loadDashboard() {
 
 function buildRentalSegments(status: AssetRentalStatus): ChartSegment[] {
   return [
-    { label: '已入住', value: Math.round(status.occupiedRate || 0), color: '#2563eb' },
+    { label: '已入住', value: Math.round(status.occupiedRate || 0), color: '#1a1a1a' },
     { label: '已出租', value: Math.round(status.rentedRate || 0), color: '#10b981' },
     { label: '已出售', value: Math.round(status.soldRate || 0), color: '#f59e0b' },
-    { label: '空置',   value: Math.round(status.vacantRate || 0), color: '#94a3b8' },
+    { label: '空置',   value: Math.round(status.vacantRate || 0), color: '#d4d4d4' },
   ].filter(s => s.value > 0)
 }
 
@@ -191,7 +191,7 @@ function buildRentalSegments(status: AssetRentalStatus): ChartSegment[] {
 
 <style scoped>
 .dashboard-alert {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .dashboard-content {
@@ -201,19 +201,20 @@ function buildRentalSegments(status: AssetRentalStatus): ChartSegment[] {
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 .section-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin: 28px 0 18px;
+  margin: 48px 0 24px;
 }
 
 .section-header h3 {
   margin: 0;
   font-size: 18px;
+  font-weight: 600;
   color: var(--text-heading);
 }
 
@@ -223,14 +224,14 @@ function buildRentalSegments(status: AssetRentalStatus): ChartSegment[] {
 }
 
 .empty-chart {
-  padding: 48px 0;
+  padding: 64px 0;
   text-align: center;
   color: var(--text-subtle);
 }
 
 .chart-grid {
   display: grid;
-  gap: 20px;
+  gap: 24px;
 }
 
 @media (max-width: 1024px) {

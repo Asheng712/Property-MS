@@ -85,15 +85,15 @@ function logout() {
 .profile-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-  gap: 20px;
+  gap: 24px;
 }
 
 .profile-hero {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 28px;
+  gap: 24px;
+  padding: 32px;
 }
 
 .profile-avatar {
@@ -101,27 +101,28 @@ function logout() {
   place-items: center;
   width: 72px;
   height: 72px;
-  border-radius: 22px;
-  background: linear-gradient(135deg, #2563eb, #14b8a6);
+  border-radius: 18px;
+  background: var(--brand);
   color: #fff;
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .profile-hero h2 {
   margin: 0;
-  color: #20304b;
-  font-size: 28px;
+  color: var(--text-heading);
+  font-size: 26px;
+  font-weight: 600;
 }
 
 .profile-hero p {
   margin: 8px 0 0;
   color: var(--text-subtle);
+  font-size: 15px;
 }
 
 .preference-list {
   display: grid;
-  gap: 18px;
 }
 
 .preference-item {
@@ -129,17 +130,20 @@ function logout() {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-card);
+  padding: 16px 0;
+}
+
+.preference-item:first-child {
+  padding-top: 0;
 }
 
 .preference-item:last-child {
   padding-bottom: 0;
-  border-bottom: none;
 }
 
 .preference-item strong {
   color: var(--text-heading);
+  font-weight: 500;
 }
 
 @media (max-width: 1024px) {

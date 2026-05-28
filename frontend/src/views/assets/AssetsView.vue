@@ -366,7 +366,7 @@ function getStatusTone(value: string) {
 .asset-layout {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  gap: 20px;
+  gap: 24px;
 }
 
 .tree-panel {
@@ -375,13 +375,13 @@ function getStatusTone(value: string) {
 
 .asset-main {
   display: grid;
-  gap: 16px;
+  gap: 24px;
 }
 
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 24px;
 }
 
 .full-width {
@@ -392,10 +392,10 @@ function getStatusTone(value: string) {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px;
-  background: #fff;
-  border: 1px solid #edf1f7;
-  border-radius: 16px;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
 }
 
 .search-input {

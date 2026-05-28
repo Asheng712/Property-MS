@@ -1,6 +1,6 @@
 <template>
   <div class="register-shell">
-    <div class="register-panel glass-card">
+    <div class="register-panel">
       <div class="register-panel__copy">
         <h1>创建物业管理账号</h1>
         <p>填写基础资料后即可创建账号。</p>
@@ -32,7 +32,7 @@
         </el-form-item>
         <div class="register-actions">
           <el-button @click="router.push('/login')">返回登录</el-button>
-          <el-button type="primary" class="btn-primary-gradient register-submit" :loading="submitting" @click="handleRegister">
+          <el-button type="primary" class="register-submit" :loading="submitting" @click="handleRegister">
             完成注册
           </el-button>
         </div>
@@ -140,57 +140,62 @@ async function handleRegister() {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 24px;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.15), transparent 35%),
-    linear-gradient(180deg, #f8fbff, #eff4fb);
+  padding: 40px 24px;
+  background: #fafafa;
 }
 
 .register-panel {
-  width: min(100%, 980px);
+  width: min(100%, 960px);
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
-  gap: 24px;
-  padding: 28px;
+  gap: 0;
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .register-panel__copy {
-  padding: 24px;
-  border-radius: var(--radius-card);
-  background: linear-gradient(180deg, #245ef5, #153aa8);
+  padding: 48px 40px;
+  background: #0a0a0a;
   color: #fff;
 }
 
 .register-panel__copy h1 {
-  margin: 0 0 14px;
-  font-size: 36px;
+  margin: 0 0 16px;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .register-panel__copy p {
-  margin: 0 0 18px;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.register-panel__copy ul {
   margin: 0;
-  padding-left: 18px;
-  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 16px;
 }
 
 .register-form {
-  padding: 16px;
+  padding: 40px;
 }
 
 .register-actions {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  grid-template-columns: 130px 1fr;
   gap: 12px;
 }
 
 .register-submit {
   width: 100%;
   height: 48px;
+  font-weight: 500;
+  background: #0a0a0a;
+  border-color: #0a0a0a;
+}
+
+.register-submit:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
 }
 
 .full-width {
@@ -200,28 +205,27 @@ async function handleRegister() {
 @media (max-width: 768px) {
   .register-shell {
     align-items: start;
-    padding: 16px;
+    padding: 20px 16px;
   }
 
   .register-panel {
     grid-template-columns: 1fr;
-    padding: 18px;
+  }
+
+  .register-panel__copy {
+    padding: 36px 28px;
+  }
+
+  .register-panel__copy h1 {
+    font-size: 26px;
+  }
+
+  .register-form {
+    padding: 28px 20px;
   }
 
   .register-actions {
     grid-template-columns: 1fr;
-  }
-
-  .register-panel__copy {
-    padding: 20px;
-  }
-
-  .register-panel__copy h1 {
-    font-size: 28px;
-  }
-
-  .register-form {
-    padding: 4px;
   }
 }
 </style>

@@ -63,7 +63,7 @@ const statusModel = computed({
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px;
+  padding: 18px 20px;
 }
 
 .toolbar__left {
@@ -75,7 +75,7 @@ const statusModel = computed({
 
 .toolbar__left .el-input,
 .toolbar__left .el-select {
-  max-width: 360px;
+  max-width: 320px;
   min-width: 180px;
 }
 

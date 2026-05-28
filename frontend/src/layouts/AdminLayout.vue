@@ -8,8 +8,8 @@
         <el-menu
           :collapse="appStore.sidebarCollapsed"
           :default-active="route.path"
-          background-color="#0f172a"
-          text-color="var(--text-subtle)"
+          background-color="transparent"
+          text-color="rgba(255,255,255,0.45)"
           active-text-color="#ffffff"
           router
         >
@@ -43,7 +43,7 @@
     </el-drawer>
 
     <div class="layout-main">
-      <header class="topbar glass-card">
+      <header class="topbar">
         <div class="topbar__left">
           <el-button circle plain class="mobile-only" @click="appStore.openSidebarDrawer">
             <el-icon><Menu /></el-icon>
@@ -214,7 +214,7 @@ function logout() {
   position: sticky;
   top: 0;
   height: 100vh;
-  background: linear-gradient(180deg, #0f172a 0%, #101b34 100%);
+  background: var(--bg-sidebar);
   transition: width 0.25s ease;
   overflow: hidden;
 }
@@ -222,23 +222,31 @@ function logout() {
 .sidebar__brand {
   display: flex;
   align-items: center;
-  min-height: 86px;
-  padding: 22px;
+  min-height: 80px;
+  padding: 24px 22px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 :deep(.el-menu) {
   border-right: none;
+  padding: 8px 0;
 }
 
 :deep(.el-menu-item) {
-  margin: 10px 10px 0;
-  border-radius: 14px;
-  height: 48px;
+  margin: 2px 10px;
+  border-radius: 8px;
+  height: 44px;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+:deep(.el-menu-item:hover) {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 :deep(.el-menu-item.is-active) {
-  background: linear-gradient(135deg, #2b6dff, #275ae1);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .layout-main {
@@ -254,17 +262,18 @@ function logout() {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  min-height: 86px;
-  margin: 18px 18px 0;
-  padding: 0 24px;
-  border-radius: var(--radius-card);
+  min-height: 72px;
+  margin: 0;
+  padding: 0 32px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .topbar__left,
 .topbar__right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -274,10 +283,12 @@ function logout() {
   gap: 8px;
   color: var(--text-subtle);
   min-width: 0;
+  font-size: 14px;
 }
 
 .topbar__breadcrumb strong {
   color: var(--text-heading);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -296,6 +307,7 @@ function logout() {
   border: none;
   background: transparent;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .topbar__user span {
@@ -307,12 +319,13 @@ function logout() {
 .avatar {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: var(--info-bg);
-  color: var(--brand);
-  font-weight: 700;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .main-content {
@@ -329,8 +342,8 @@ function logout() {
 
 .search-result {
   display: grid;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 20px;
 }
 
 .search-result__item {
@@ -338,11 +351,16 @@ function logout() {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-control);
-  background: var(--bg-stripe);
+  background: var(--bg-card);
   cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.search-result__item:hover {
+  background: var(--bg-hover);
 }
 
 .search-result__item small {
@@ -351,7 +369,7 @@ function logout() {
 
 .settings-list {
   display: grid;
-  gap: 18px;
+  gap: 24px;
 }
 
 .settings-item {
@@ -359,12 +377,13 @@ function logout() {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-bottom: 16px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--border-card);
 }
 
 .settings-item strong {
   color: var(--text-heading);
+  font-weight: 500;
 }
 
 .settings-item p {
@@ -386,13 +405,12 @@ function logout() {
   }
 
   .topbar {
-    margin: 12px 12px 0;
-    padding: 0 16px;
-    min-height: 72px;
+    padding: 0 20px;
+    min-height: 64px;
   }
 
   .topbar__breadcrumb {
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 
@@ -406,12 +424,12 @@ function logout() {
   }
 
   .topbar {
-    gap: 10px;
+    gap: 8px;
   }
 
   .topbar__left,
   .topbar__right {
-    gap: 10px;
+    gap: 8px;
   }
 }
 

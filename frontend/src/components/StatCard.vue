@@ -1,7 +1,7 @@
 <template>
   <article class="stat-card surface-card">
     <div class="stat-card__icon" :style="{ background: stat.accent, color: stat.color }">
-      <el-icon :size="23">
+      <el-icon :size="22">
         <component :is="iconComponent" />
       </el-icon>
     </div>
@@ -39,44 +39,46 @@ const iconComponent = computed(() => iconMap[props.stat.icon] ?? Document)
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 18px;
-  min-height: 112px;
-  padding: 22px;
+  gap: 20px;
+  min-height: 108px;
+  padding: 24px 28px;
 }
 
 .stat-card__icon {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   flex: 0 0 auto;
 }
 
 .stat-card__value {
-  font-size: 24px;
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 700;
   color: var(--text-heading);
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
 .stat-card__label {
-  margin-top: 6px;
+  margin-top: 8px;
   color: var(--text-subtle);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.35;
 }
 
 .stat-card__label span {
-  color: #a2b0c4;
+  color: #bababa;
 }
 
 @media (max-width: 480px) {
   .stat-card {
-    padding: 18px;
+    padding: 20px 22px;
   }
 
   .stat-card__value {
-    font-size: 22px;
+    font-size: 24px;
   }
 }
 </style>

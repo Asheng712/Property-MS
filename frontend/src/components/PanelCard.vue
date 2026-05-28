@@ -25,12 +25,16 @@ defineProps<{
 </script>
 
 <style scoped>
+.panel-card {
+  padding: 28px;
+}
+
 .panel-card__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
 .panel-card__actions {

@@ -16,7 +16,7 @@
           </div>
         </template>
 
-        <article v-for="ticket in column.items" :key="ticket.id" class="kanban-ticket glass-card">
+        <article v-for="ticket in column.items" :key="ticket.id" class="kanban-ticket">
           <div class="kanban-ticket__top">
             <span class="ticket-id">{{ ticket.repairNo }}</span>
             <span class="ticket-age">{{ ticket.priorityText || getPriorityText(ticket.priority) }}</span>
@@ -109,8 +109,8 @@ const assignDraft = reactive({
 })
 
 const columns = computed(() => [
-  { key: 'pending', title: '待处理', color: '#f97316', items: kanban.pending },
-  { key: 'processing', title: '处理中', color: '#3b82f6', items: kanban.processing },
+  { key: 'pending', title: '待处理', color: '#d97706', items: kanban.pending },
+  { key: 'processing', title: '处理中', color: '#1a1a1a', items: kanban.processing },
   { key: 'completed', title: '已完成', color: '#10b981', items: kanban.completed },
 ])
 
@@ -234,7 +234,7 @@ function getStatusText(status?: number) {
 .kanban-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 .kanban-column {
@@ -255,24 +255,29 @@ function getStatusText(status?: number) {
 }
 
 .kanban-column__dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
 .kanban-column__count {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  color: var(--text-main);
-  background: #f3f7fc;
+  color: var(--text-subtle);
+  background: #f5f5f5;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .kanban-ticket {
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 18px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
 }
 
 .kanban-ticket__top,
@@ -285,9 +290,10 @@ function getStatusText(status?: number) {
 
 .kanban-ticket h3 {
   margin: 14px 0 10px;
-  font-size: 18px;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.45;
-  color: #22304a;
+  color: var(--text-heading);
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -297,17 +303,20 @@ function getStatusText(status?: number) {
 .kanban-ticket p {
   margin: 0 0 16px;
   color: var(--text-subtle);
+  font-size: 14px;
 }
 
 .ticket-id {
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: #eef4ff;
-  color: var(--brand-light);
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: #f5f5f5;
+  color: var(--text-subtle);
+  font-size: 13px;
 }
 
 .ticket-age {
   color: var(--text-subtle);
+  font-size: 13px;
 }
 
 .full-width {

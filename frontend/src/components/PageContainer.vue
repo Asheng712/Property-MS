@@ -25,5 +25,6 @@ defineProps<{
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-shrink: 0;
 }
 </style>

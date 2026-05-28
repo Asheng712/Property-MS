@@ -47,9 +47,9 @@ const pieBackground = computed(() => {
 .pie-card__body {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) 220px;
-  gap: 16px;
+  gap: 20px;
   align-items: center;
-  min-height: 280px;
+  min-height: 260px;
 }
 
 .pie-card__chart {
@@ -60,15 +60,15 @@ const pieBackground = computed(() => {
 
 .pie-card__circle {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
 }
 
 .pie-card__circle::after {
   content: '';
   position: absolute;
-  inset: 36px;
+  inset: 34px;
   border-radius: 50%;
   background: #fff;
 }
@@ -78,33 +78,35 @@ const pieBackground = computed(() => {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: #2c3c57;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
   z-index: 1;
 }
 
 .pie-card__legend {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .pie-card__legend-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
-  background: #f8fbff;
+  padding: 10px 14px;
+  background: var(--bg-stripe);
   border-radius: var(--radius-control);
+  font-size: 14px;
 }
 
 .pie-card__legend-item strong {
   margin-left: auto;
+  font-weight: 600;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
@@ -120,18 +122,18 @@ const pieBackground = computed(() => {
   }
 
   .pie-card__circle {
-    width: 180px;
-    height: 180px;
+    width: 160px;
+    height: 160px;
   }
 
   .pie-card__circle::after {
-    inset: 30px;
+    inset: 28px;
   }
 
   .pie-card__center {
-    padding: 0 40px;
+    padding: 0 36px;
     text-align: center;
-    font-size: 15px;
+    font-size: 14px;
   }
 }
 </style>

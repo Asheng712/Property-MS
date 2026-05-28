@@ -178,6 +178,6 @@ function getStatusTone(value: number) {
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 24px;
 }
 </style>

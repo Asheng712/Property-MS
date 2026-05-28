@@ -1,7 +1,6 @@
 <template>
   <div class="auth-shell">
     <section class="auth-hero">
-      <div class="auth-hero__overlay"></div>
       <div class="auth-hero__content">
         <div class="auth-brand">
           <div class="auth-brand__mark">W</div>
@@ -17,7 +16,7 @@
     </section>
 
     <section class="auth-panel">
-      <div class="auth-form glass-card">
+      <div class="auth-form">
         <div>
           <h2>欢迎登录</h2>
           <p>请输入用户名和密码进入系统。</p>
@@ -44,7 +43,7 @@
           <el-button
             type="primary"
             size="large"
-            class="auth-submit btn-primary-gradient"
+            class="auth-submit"
             :loading="submitting"
             @click="handleLogin"
           >
@@ -108,31 +107,13 @@ async function handleLogin() {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   min-height: 100vh;
-  background: #f5f7fb;
+  background: #fafafa;
 }
 
 .auth-hero {
   position: relative;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(13, 43, 135, 0.05), rgba(6, 16, 58, 0.42)),
-    linear-gradient(120deg, #1d4ed8, #1e40af);
-}
-
-.auth-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 2px, transparent 2px 80px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0 2px, transparent 2px 80px);
-  opacity: 0.22;
-}
-
-.auth-hero__overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.08), rgba(15, 23, 42, 0.42));
+  background: #0a0a0a;
 }
 
 .auth-hero__content {
@@ -142,7 +123,7 @@ async function handleLogin() {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  padding: 46px 48px;
+  padding: 56px 64px;
 }
 
 .auth-brand {
@@ -150,8 +131,8 @@ async function handleLogin() {
   align-items: center;
   gap: 14px;
   color: #fff;
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .auth-brand__mark {
@@ -159,9 +140,9 @@ async function handleLogin() {
   place-items: center;
   width: 42px;
   height: 42px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #2563eb;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
 .auth-copy {
@@ -170,65 +151,74 @@ async function handleLogin() {
 }
 
 .auth-copy h1 {
-  margin: 0 0 22px;
-  font-size: 58px;
-  line-height: 1.06;
+  margin: 0 0 24px;
+  font-size: 52px;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
 }
 
 .auth-copy p {
-  margin: 0 0 20px;
-  font-size: 21px;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.auth-tips {
   margin: 0;
-  padding-left: 20px;
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.auth-tips li + li {
-  margin-top: 10px;
+  font-size: 20px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .auth-panel {
   display: grid;
   place-items: center;
-  padding: 28px;
+  padding: 40px;
 }
 
 .auth-form {
-  width: min(100%, 560px);
+  width: min(100%, 520px);
   padding: 48px;
+  background: #fff;
+  border: 1px solid #ebebeb;
+  border-radius: 16px;
 }
 
 .auth-form h2 {
   margin: 0;
-  font-size: 42px;
-  color: #20304b;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-heading);
+  letter-spacing: -0.01em;
 }
 
 .auth-form p {
-  color: #91a0b8;
+  margin: 8px 0 0;
+  color: var(--text-subtle);
+  font-size: 15px;
 }
 
 .auth-form__links {
   display: flex;
   justify-content: flex-end;
-  margin: -8px 0 14px;
+  margin: -4px 0 18px;
   font-size: 14px;
 }
 
 .auth-form__links a {
-  color: #2563eb;
-  font-weight: 600;
+  color: var(--text-heading);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .auth-submit {
   width: 100%;
-  height: 52px;
-  font-size: 17px;
+  height: 50px;
+  font-size: 16px;
+  font-weight: 500;
+  background: #0a0a0a;
+  border-color: #0a0a0a;
+}
+
+.auth-submit:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
 }
 
 @media (max-width: 1024px) {
@@ -237,15 +227,15 @@ async function handleLogin() {
   }
 
   .auth-hero {
-    min-height: 320px;
+    min-height: 300px;
   }
 
   .auth-copy h1 {
-    font-size: 42px;
+    font-size: 38px;
   }
 
   .auth-copy p {
-    font-size: 18px;
+    font-size: 17px;
   }
 }
 
@@ -255,54 +245,50 @@ async function handleLogin() {
   }
 
   .auth-hero {
-    min-height: 300px;
+    min-height: 260px;
   }
 
-  .auth-hero__content,
-  .auth-form {
-    padding: 28px;
+  .auth-hero__content {
+    padding: 32px 28px;
   }
 
   .auth-copy h1 {
-    font-size: 34px;
+    font-size: 30px;
+  }
+
+  .auth-form {
+    padding: 32px 24px;
+  }
+
+  .auth-form h2 {
+    font-size: 28px;
   }
 }
 
 @media (max-width: 480px) {
   .auth-hero {
-    min-height: 260px;
+    min-height: 220px;
   }
 
   .auth-hero__content {
-    padding: 28px;
-  }
-
-  .auth-brand {
-    font-size: 20px;
+    padding: 28px 24px;
   }
 
   .auth-copy h1 {
-    font-size: 30px;
-    line-height: 1.14;
-    margin-bottom: 12px;
+    font-size: 26px;
   }
 
   .auth-copy p {
-    font-size: 16px;
-    line-height: 1.55;
+    font-size: 15px;
   }
 
   .auth-panel {
     align-items: start;
-    padding: 20px 14px 28px;
+    padding: 24px 16px 32px;
   }
 
   .auth-form {
-    padding: 28px;
-  }
-
-  .auth-form h2 {
-    font-size: 34px;
+    padding: 28px 20px;
   }
 }
 </style>

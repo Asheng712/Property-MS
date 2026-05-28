@@ -213,24 +213,27 @@ function getBatchStatusTone(value: string) {
 <style scoped>
 .billing-summary {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .billing-summary__card {
   display: flex;
   align-items: center;
-  gap: 18px;
-  min-width: 340px;
+  gap: 20px;
+  min-width: 360px;
 }
 
 .billing-summary__card strong {
   display: block;
-  font-size: 38px;
-  color: #20304b;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--text-heading);
+  letter-spacing: -0.02em;
 }
 
 .billing-summary__card span {
   color: var(--text-subtle);
+  font-size: 14px;
 }
 
 .billing-summary__icon {
@@ -238,15 +241,16 @@ function getBatchStatusTone(value: string) {
   place-items: center;
   width: 56px;
   height: 56px;
-  border-radius: 50%;
-  background: #e4efff;
-  color: #2563eb;
+  border-radius: 14px;
+  background: #f5f5f5;
+  color: #1a1a1a;
   font-size: 24px;
+  font-weight: 600;
 }
 
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 24px;
 }
 </style>

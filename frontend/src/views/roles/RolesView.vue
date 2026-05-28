@@ -102,38 +102,44 @@ async function savePermissions() {
 .roles-layout {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
-  gap: 20px;
+  gap: 24px;
 }
 
 .role-list {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   align-content: start;
 }
 
 .role-list__item {
-  border: 1px solid #e7eef6;
-  background: #fff;
-  border-radius: 18px;
-  padding: 16px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  border-radius: 10px;
+  padding: 16px 18px;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+}
+
+.role-list__item:hover {
+  border-color: #ccc;
 }
 
 .role-list__item strong {
   display: block;
-  color: #20304b;
-  margin-bottom: 8px;
+  color: var(--text-heading);
+  font-size: 15px;
+  margin-bottom: 6px;
 }
 
 .role-list__item span {
   color: var(--text-subtle);
+  font-size: 13px;
 }
 
 .role-list__item.active {
-  border-color: #b8d0ff;
-  background: #eef4ff;
+  border-color: #1a1a1a;
+  background: #f5f5f5;
 }
 
 .permission-panel__header {
@@ -145,13 +151,15 @@ async function savePermissions() {
 }
 
 .permission-panel__header h3 {
-  margin: 0 0 8px;
-  font-size: 28px;
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .permission-panel__header p {
   margin: 0;
   color: var(--text-subtle);
+  font-size: 14px;
 }
 
 @media (max-width: 1024px) {

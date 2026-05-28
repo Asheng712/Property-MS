@@ -2,8 +2,8 @@
   <div class="brand-logo" :class="{ compact }">
     <div class="brand-logo__mark">W</div>
     <div v-if="!compact" class="brand-logo__text">
-      <strong>智慧物业管理系统</strong>
-      <span>WisdomPM</span>
+      <strong>WisdomPM</strong>
+      <span>智慧物业管理系统</span>
     </div>
   </div>
 </template>
@@ -24,14 +24,13 @@ defineProps<{
 .brand-logo__mark {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
   color: #fff;
-  font-size: 22px;
-  font-weight: 800;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .brand-logo__text {
@@ -40,17 +39,19 @@ defineProps<{
 }
 
 .brand-logo__text strong {
-  font-size: 17px;
+  font-size: 16px;
   color: #fff;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .brand-logo__text span {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.48);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .compact .brand-logo__mark {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
 }
 </style>
