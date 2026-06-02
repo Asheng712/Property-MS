@@ -52,33 +52,39 @@ onActivated(() => {
         finished-text="没有更多了"
         @load="billStore.onLoad"
       >
-        <div v-for="bill in billStore.bills" :key="bill.id" class="card-wrapper">
-          <van-swipe-cell>
-            <div style="padding: 14px 16px">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
-                <span style="font-weight: 600; font-size: 15px">{{ bill.houseName || `房屋 #${bill.houseId}` }}</span>
-                <van-tag :type="bill.payStatus === 0 ? 'warning' : 'success'" size="medium">
-                  {{ bill.payStatus === 0 ? '待缴费' : '已缴费' }}
-                </van-tag>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px">
-                <span style="color: var(--van-text-color-weak); font-size: 13px">账单编号: {{ bill.billNo }}</span>
-                <span class="amount-text">{{ formatCurrency(bill.amount) }}</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--van-text-color-weak)">
-                <span>{{ bill.type }} | 截止: {{ bill.deadline || '-' }}</span>
-              </div>
-            </div>
-            <template v-if="bill.payStatus === 0" #right>
-              <van-button
-                type="primary"
-                text="去缴费"
-                style="height: 100%; border-radius: 0"
-                @click="goPay(bill.id)"
-              />
+        <van-swipe-cell
+          v-for="bill in billStore.bills"
+          :key="bill.id"
+          :right-width="65"
+        >
+          <van-cell
+            :title="bill.houseName || `房屋 #${bill.houseId}`"
+            :label="`${bill.billNo}\n${bill.type} · 截止 ${bill.deadline || '-'}`"
+            title-style="font-weight: 600; font-size: 15px"
+            label-style="margin-top: 6px; line-height: 1.6; white-space: pre-line"
+            clickable
+            @click="bill.payStatus === 0 ? goPay(bill.id) : undefined"
+          >
+            <template #value>
+              <span class="amount-text" style="font-size: 17px">{{ formatCurrency(bill.amount) }}</span>
             </template>
-          </van-swipe-cell>
-        </div>
+            <template #extra>
+              <van-tag :type="bill.payStatus === 0 ? 'warning' : 'success'" size="medium">
+                {{ bill.payStatus === 0 ? '待缴费' : '已缴费' }}
+              </van-tag>
+            </template>
+          </van-cell>
+
+          <template #right>
+            <van-button
+              square
+              type="primary"
+              text="缴费"
+              style="height: 100%"
+              @click="goPay(bill.id)"
+            />
+          </template>
+        </van-swipe-cell>
 
         <EmptyState v-if="!billStore.loading && billStore.bills.length === 0" description="暂无账单" />
       </van-list>

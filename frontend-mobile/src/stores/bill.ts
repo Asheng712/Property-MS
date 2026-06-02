@@ -6,6 +6,7 @@ import type { BillRecord, BillQuery, PaymentRecord, PaymentQuery } from '@/types
 export const useBillStore = defineStore('bill', () => {
   const bills = ref<BillRecord[]>([])
   const payments = ref<PaymentRecord[]>([])
+  const currentBill = ref<BillRecord | null>(null)
   const loading = ref(false)
   const refreshing = ref(false)
   const finished = ref(false)
@@ -69,6 +70,7 @@ export const useBillStore = defineStore('bill', () => {
   return {
     bills,
     payments,
+    currentBill,
     loading,
     refreshing,
     finished,
