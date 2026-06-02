@@ -37,7 +37,13 @@
       "Bash(grep -iE \"\\\\.env$|secret|password|credential|\\\\.key$|\\\\.pem|docker-compose|compose\")",
       "Bash(grep -iE \"\\\\.env$|docker-compose\\\\.yml$|\\\\.env\\\\.local\")",
       "Bash(findstr -i house)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(dir \"F:\\\\Git\\\\Property-MS\" /s /b)",
+      "Bash(findstr /i \"监管\")",
+      "Bash(python -c ' *)",
+      "Bash(pip install *)",
+      "Bash(iconv -f gbk -t utf-8)",
+      "Bash(java -version)"
     ]
   }
 }
