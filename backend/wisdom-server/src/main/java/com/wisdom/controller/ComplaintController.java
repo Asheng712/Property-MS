@@ -35,6 +35,7 @@ public class ComplaintController {
         return Result.success(null);
     }
 
+    @LoginRequired
     @PutMapping("/handle")
     @Operation(summary = "处理并反馈投诉")
     public Result<Void> handleComplaint(@RequestBody ComplaintHandleDTO complaintHandleDTO) {

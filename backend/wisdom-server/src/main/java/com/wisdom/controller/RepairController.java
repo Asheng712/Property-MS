@@ -37,6 +37,7 @@ public class RepairController {
         return Result.success(null);
     }
 
+    @LoginRequired
     @PutMapping("/dispatch")
     @Operation(summary = "派发工单/指派师傅")
     public Result<Void> dispatchRepair(@RequestBody RepairDispatchDTO repairDispatchDTO) {
@@ -44,6 +45,7 @@ public class RepairController {
         return Result.success(null);
     }
 
+    @LoginRequired
     @PutMapping("/status")
     @Operation(summary = "更新工单状态")
     public Result<Void> updateRepairStatus(@RequestBody RepairStatusUpdateDTO repairStatusUpdateDTO) {

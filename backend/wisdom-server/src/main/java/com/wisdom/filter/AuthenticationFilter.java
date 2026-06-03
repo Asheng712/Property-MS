@@ -1,6 +1,6 @@
 package com.wisdom.filter;
 
-import com.wisdom.annotation.Anonymous;
+import com.wisdom.annotation.LoginRequired;
 import com.wisdom.context.BaseContext;
 import com.wisdom.result.Result;
 import com.wisdom.util.JwtTokenUtil;
@@ -103,9 +103,8 @@ public class AuthenticationFilter implements Filter {
 
     /**
      * 判定当前请求是否需要登录。
-     * 默认策略：所有能解析到 HandlerMethod 的请求都需要登录，
-     * 除非方法上标注了 @Anonymous。
-     * 无法解析的（静态资源等）不需要登录。
+     * 白名单模式：仅 @LoginRequired 标注的方法需要鉴权。
+     * 未标注的、静态资源等均不需要登录。
      */
     private boolean requiresLogin(HttpServletRequest request) {
         try {
@@ -115,12 +114,7 @@ public class AuthenticationFilter implements Filter {
             }
             if (handlerChain.getHandler() instanceof HandlerMethod handlerMethod) {
                 Method method = handlerMethod.getMethod();
-                // @Anonymous 标注 → 不需要登录
-                if (method.isAnnotationPresent(Anonymous.class)) {
-                    return false;
-                }
-                // 所有其他 Controller 方法默认需要登录
-                return true;
+                return method.isAnnotationPresent(LoginRequired.class);
             }
             return false;
         } catch (Exception e) {
