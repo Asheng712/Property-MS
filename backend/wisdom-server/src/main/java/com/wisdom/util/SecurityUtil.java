@@ -1,6 +1,7 @@
 package com.wisdom.util;
 
 import com.wisdom.context.BaseContext;
+import com.wisdom.exception.BusinessException;
 
 public class SecurityUtil {
 
@@ -13,10 +14,10 @@ public class SecurityUtil {
     public static void checkOwnership(Long resourceOwnerId) {
         Long currentUserId = getCurrentUserId();
         if (currentUserId == null) {
-            throw new RuntimeException("UNAUTHORIZED");
+            throw BusinessException.unauthorized();
         }
         if (!currentUserId.equals(resourceOwnerId)) {
-            throw new RuntimeException("FORBIDDEN");
+            throw BusinessException.forbidden();
         }
     }
 

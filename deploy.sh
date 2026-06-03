@@ -66,7 +66,7 @@ setup_secrets() {
 }
 
 check_health() {
-    local url=${1:-http://localhost:8080/doc.html}
+    local url=${1:-http://localhost:8080/api/v1/auth/login}
     local retries=${2:-30}
     local delay=${3:-2}
 
@@ -87,7 +87,7 @@ cmd_dev() {
     check_deps
     docker compose -f compose.yaml up -d --build
     log "前端: http://localhost:${FRONTEND_PORT:-5173}"
-    log "后端: http://localhost:${BACKEND_PORT:-8080}/doc.html"
+    log "后端: http://localhost:${BACKEND_PORT:-8080}"
     log "源码挂载已启用，修改代码实时生效"
 }
 
@@ -138,7 +138,8 @@ cmd_status() {
 cmd_backup() {
     local backup_file="backup_$(date +%Y%m%d_%H%M%S).sql"
     log "备份数据库到 $backup_file ..."
-    docker exec wisdom-mysql mysqldump -u root -p"${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD not set}" \
+    docker exec -e MYSQL_PWD="${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD not set}" \
+        wisdom-mysql mysqldump -u root \
         --single-transaction --routines --triggers property_ms > "$backup_file"
     log "备份完成: $backup_file ($(du -h "$backup_file" | cut -f1))"
 }

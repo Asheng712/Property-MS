@@ -47,7 +47,7 @@ COPY --from=build /app/wisdom-server/target/*.jar /app/app.jar
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://127.0.0.1:8080/doc.html || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://127.0.0.1:8080/api/v1/auth/login || exit 1
 
 ENTRYPOINT ["java", \
     "-XX:+UseContainerSupport", \

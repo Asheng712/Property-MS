@@ -68,7 +68,16 @@
       "Bash(node -e ' *)",
       "Bash(echo \"EXIT_CODE=$?\")",
       "Bash(echo \"LINT_EXIT=$?\")",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(sed -i '75,80s/.andExpect\\(status\\(\\).isOk\\(\\)\\)/.andExpect\\(status\\(\\).isNotFound\\(\\)\\)/' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/AuthControllerApiTest.java)",
+      "Bash(sed -i '92,97s/.andExpect\\(status\\(\\).isOk\\(\\)\\)/.andExpect\\(status\\(\\).isBadRequest\\(\\)\\)/' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/AuthControllerApiTest.java)",
+      "Bash(sed -i '101,106s/.andExpect\\(status\\(\\).isOk\\(\\)\\)/.andExpect\\(status\\(\\).isBadRequest\\(\\)\\)/' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/AuthControllerApiTest.java)",
+      "Bash(sed -i '137,142s/.andExpect\\(status\\(\\).isOk\\(\\)\\)/.andExpect\\(status\\(\\).isBadRequest\\(\\)\\)/' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/AuthControllerApiTest.java)",
+      "Bash(sed -i 's/.andExpect\\(status\\(\\).isOk\\(\\)\\)/.andExpect\\(status\\(\\).isBadRequest\\(\\)\\)/' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/ComplaintControllerApiTest.java)",
+      "Bash(awk 'BEGIN{c=0} { if\\(/\\\\.andExpect\\\\\\(status\\\\\\(\\\\\\)\\\\.isBadRequest\\\\\\(\\\\\\)\\\\\\)/\\) { c++; if\\(c==2\\) { sub\\(/isBadRequest/, \"isOk\"\\) } } print }' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/ComplaintControllerApiTest.java)",
+      "Bash(mv /tmp/ComplaintControllerApiTest.java /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/ComplaintControllerApiTest.java)",
+      "Bash(awk 'BEGIN{c=0} { if\\(/\\\\.andExpect\\\\\\(status\\\\\\(\\\\\\)\\\\.isBadRequest\\\\\\(\\\\\\)\\\\\\)/\\) { c++; if\\(c==2\\) { sub\\(/isBadRequest/, \"isOk\"\\) } } print }' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/NoticeControllerApiTest.java)",
+      "Bash(mv /tmp/NoticeControllerApiTest.java /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/NoticeControllerApiTest.java)"
     ]
   }
 }

@@ -11,10 +11,10 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
 
 knife4j:
-  enable: true
+  enable: ${KNIFE4J_ENABLE:false}
   openapi:
     title: 智慧物业管理系统API文档
     description: "React + SpringBoot 全栈项目"
@@ -25,3 +25,4 @@ knife4j:
 
 jwt:
   secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}

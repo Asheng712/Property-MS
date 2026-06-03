@@ -2,6 +2,7 @@ package com.wisdom.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -12,13 +13,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class JwtTokenUtil {
 
     private final SecretKey secretKey;
-    private static final long EXPIRATION = 86400000L;
+    private final long expiration;
 
-    public JwtTokenUtil(@Value("${jwt.secret}") String secret) {
+    public JwtTokenUtil(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration:86400000}") long expiration
+    ) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expiration = expiration;
     }
 
     public String generateToken(Long userId, String username) {
@@ -28,7 +34,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .claims(claims)
                 .subject(username)
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(secretKey)
                 .compact();
     }
@@ -67,6 +73,7 @@ public class JwtTokenUtil {
                     .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            log.debug("JWT validation failed: {}", e.getMessage());
             return false;
         }
     }

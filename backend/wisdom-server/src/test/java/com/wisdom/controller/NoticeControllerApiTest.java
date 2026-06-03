@@ -88,7 +88,7 @@ class NoticeControllerApiTest {
                 .thenThrow(new BusinessException("NOTICE_QUERY_FAILED"));
 
         mockMvc.perform(get("/api/v1/notices"))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(500))
                 .andExpect(jsonPath("$.msg").value("NOTICE_QUERY_FAILED"));
     }
@@ -124,7 +124,7 @@ class NoticeControllerApiTest {
         mockMvc.perform(post("/api/v1/notices")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(noticeDTO)))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(500))
                 .andExpect(jsonPath("$.msg").value("NOTICE_SAVE_FAILED"));
     }

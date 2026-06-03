@@ -3,8 +3,8 @@ package com.wisdom.filter;
 import com.wisdom.context.BaseContext;
 import com.wisdom.util.JwtTokenUtil;
 import jakarta.servlet.*;
-import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -13,6 +13,7 @@ import java.io.IOException;
 
 @Component
 @Order(1)
+@Slf4j
 public class JwtAuthenticationFilter implements Filter {
 
     @Autowired
@@ -33,6 +34,11 @@ public class JwtAuthenticationFilter implements Filter {
                 }
             }
         }
-        chain.doFilter(request, response);
+
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            BaseContext.removeCurrentId();
+        }
     }
 }

@@ -29,26 +29,36 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void businessExceptionHandlerShouldReturnCode500WithMessage() {
+    void notFoundExceptionShouldReturn404() {
         BusinessException ex = BusinessException.notFound("USER_NOT_FOUND");
 
         ResponseEntity<Result<Void>> response = handler.businessExceptionHandler(ex);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(500, response.getBody().getCode());
+        assertEquals(404, response.getBody().getCode());
         assertEquals("USER_NOT_FOUND", response.getBody().getMsg());
         assertNull(response.getBody().getData());
     }
 
     @Test
-    void businessExceptionHandlerShouldPreserveMessageForBadRequest() {
+    void badRequestExceptionShouldReturn400() {
         BusinessException ex = BusinessException.badRequest("PASSWORD_ERROR");
 
         ResponseEntity<Result<Void>> response = handler.businessExceptionHandler(ex);
 
-        assertEquals(500, response.getBody().getCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(400, response.getBody().getCode());
         assertEquals("PASSWORD_ERROR", response.getBody().getMsg());
+    }
+
+    @Test
+    void unauthorizedExceptionShouldReturn401() {
+        BusinessException ex = BusinessException.unauthorized();
+
+        ResponseEntity<Result<Void>> response = handler.businessExceptionHandler(ex);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
@@ -62,7 +72,7 @@ class GlobalExceptionHandlerTest {
 
         ResponseEntity<Result<Void>> response = handler.validationExceptionHandler(ex);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(500, response.getBody().getCode());
         assertEquals("username: 用户名不能为空, password: 密码长度至少6位", response.getBody().getMsg());
@@ -82,31 +92,31 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void httpMessageNotReadableExceptionHandlerShouldReturnBadRequestMessage() {
+    void httpMessageNotReadableExceptionHandlerShouldReturnBadRequest() {
         HttpMessageNotReadableException ex = new HttpMessageNotReadableException("Malformed JSON");
 
         ResponseEntity<Result<Void>> response = handler.httpMessageNotReadableExceptionHandler(ex);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(500, response.getBody().getCode());
         assertEquals("请求体格式错误", response.getBody().getMsg());
     }
 
     @Test
-    void runtimeExceptionHandlerShouldReturnMessageAsIs() {
+    void runtimeExceptionHandlerShouldReturn500WithGenericMessage() {
         RuntimeException ex = new RuntimeException("SERVICE_CALL_FAILED");
 
         ResponseEntity<Result<Void>> response = handler.runtimeExceptionHandler(ex);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(500, response.getBody().getCode());
-        assertEquals("SERVICE_CALL_FAILED", response.getBody().getMsg());
+        assertEquals("服务器内部错误", response.getBody().getMsg());
     }
 
     @Test
-    void exceptionHandlerShouldReturnInternalServerErrorWithGenericMessage() {
+    void exceptionHandlerShouldReturn500WithGenericMessage() {
         Exception ex = new Exception("Native database connection failure");
 
         ResponseEntity<Result<Void>> response = handler.exceptionHandler(ex);
