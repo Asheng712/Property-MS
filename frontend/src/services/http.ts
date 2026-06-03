@@ -1,4 +1,9 @@
 import type { ApiResponse } from '@/types'
+<<<<<<< HEAD
+=======
+import { getPreviewData, isPreviewMode } from '@/mock/preview'
+import { monitor } from '@/utils/monitor'
+>>>>>>> 3c76dde869a3d215bf2934abc1dde4a5cfce5b68
 
 type Primitive = string | number | boolean
 
@@ -71,34 +76,43 @@ export async function request<T>(path: string, options: RequestOptions = {}) {
     nextHeaders.set('Content-Type', 'application/json')
   }
 
-  const response = await fetch(buildUrl(path, query), {
-    ...rest,
-    headers: nextHeaders,
-    body:
-      body === undefined
-        ? undefined
-        : skipJson || isFormData
-          ? (body as BodyInit)
-          : JSON.stringify(body),
-  })
+  const started = performance.now()
+  let success = false
 
-  if (AUTH_EXPIRED_CODES.has(response.status)) {
-    handleAuthExpired()
-  }
+  try {
+    const response = await fetch(buildUrl(path, query), {
+      ...rest,
+      headers: nextHeaders,
+      body:
+        body === undefined
+          ? undefined
+          : skipJson || isFormData
+            ? (body as BodyInit)
+            : JSON.stringify(body),
+    })
 
-  if (!response.ok) {
-    throw new Error(`请求失败: ${response.status}`)
-  }
-
-  const result = (await response.json()) as ApiResponse<T>
-
-  if (result.code !== 200) {
-    if (AUTH_EXPIRED_CODES.has(result.code)) {
+    if (AUTH_EXPIRED_CODES.has(response.status)) {
       handleAuthExpired()
     }
 
-    throw new Error(result.msg || '接口返回异常')
-  }
+    if (!response.ok) {
+      throw new Error(`请求失败: ${response.status}`)
+    }
 
-  return result.data
+    const result = (await response.json()) as ApiResponse<T>
+
+    if (result.code !== 200) {
+      if (AUTH_EXPIRED_CODES.has(result.code)) {
+        handleAuthExpired()
+      }
+
+      throw new Error(result.msg || '接口返回异常')
+    }
+
+    success = true
+    return result.data
+  } finally {
+    const duration = performance.now() - started
+    monitor.recordRequest(duration, success)
+  }
 }

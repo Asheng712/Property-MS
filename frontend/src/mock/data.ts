@@ -1,6 +1,7 @@
 import {
   Bell,
   Coin,
+  Connection,
   House,
   MagicStick,
   Monitor,
@@ -34,6 +35,7 @@ export const navigationItems: NavigationItem[] = [
   { path: '/complaints', label: '投诉建议闭环', icon: Opportunity },
   { path: '/announcements', label: '定向公告发布', icon: Bell },
   { path: '/roles', label: '角色权限控制', icon: SetUp },
+  { path: '/monitor', label: '系统监控', icon: Connection },
 ]
 
 export const dashboardStats: QuickStat[] = [

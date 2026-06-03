@@ -211,3 +211,15 @@ export const dashboardApi = {
     return request<DashboardData>('/api/v1/dashboard/data', { method: 'GET' })
   },
 }
+
+export interface HealthStatus {
+  status: string
+  timestamp: string
+  version: string
+}
+
+export const monitorApi = {
+  getHealth() {
+    return request<HealthStatus>('/health', { method: 'GET' })
+  },
+}
