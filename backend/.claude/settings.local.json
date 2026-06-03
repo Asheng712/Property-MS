@@ -57,7 +57,15 @@
       "Bash(docker volume *)",
       "Bash(python3 -c \"import sys,json; [print\\(json.loads\\(l\\).get\\('message',''\\)[:120]\\) for l in sys.stdin]\")",
       "Read(//tmp/**)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(mvn *)",
+      "Bash(mvn.cmd *)",
+      "Bash(/d/develop/SERVER/apache-maven-3.9.12/bin/mvn *)",
+      "Bash(cmd.exe *)",
+      "Bash(npm --version)",
+      "Bash(npm ci *)",
+      "Bash(npm test *)",
+      "Bash(node -e ' *)"
     ]
   }
 }

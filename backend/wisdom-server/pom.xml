@@ -113,6 +113,7 @@
                                 <include>com.wisdom.*</include>
                                 <include>com.wisdom.*.*</include>
                                 <include>com.wisdom.*.*.*</include>
+                                <include>com.wisdom.*.*.*.*</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -124,13 +125,7 @@
                         </goals>
                         <configuration>
                             <includes>
-                                <include>com/wisdom/controller/AuthController*</include>
-                                <include>com/wisdom/controller/NoticeController*</include>
-                                <include>com/wisdom/controller/ComplaintController*</include>
-                                <include>com/wisdom/service/impl/UserServiceImpl*</include>
-                                <include>com/wisdom/service/impl/NoticeServiceImpl*</include>
-                                <include>com/wisdom/service/impl/ComplaintServiceImpl*</include>
-                                <include>com/wisdom/handler/GlobalExceptionHandler*</include>
+                                <include>com/wisdom/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -145,13 +140,7 @@
                                 <rule>
                                     <element>CLASS</element>
                                     <includes>
-                                        <include>com.wisdom.controller.AuthController</include>
-                                        <include>com.wisdom.controller.NoticeController</include>
-                                        <include>com.wisdom.controller.ComplaintController</include>
-                                        <include>com.wisdom.service.impl.UserServiceImpl</include>
-                                        <include>com.wisdom.service.impl.NoticeServiceImpl</include>
-                                        <include>com.wisdom.service.impl.ComplaintServiceImpl</include>
-                                        <include>com.wisdom.handler.GlobalExceptionHandler</include>
+                                        <include>com.wisdom.**</include>
                                     </includes>
                                     <limits>
                                         <limit>

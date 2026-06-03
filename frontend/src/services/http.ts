@@ -1,9 +1,5 @@
 import type { ApiResponse } from '@/types'
-<<<<<<< HEAD
-=======
-import { getPreviewData, isPreviewMode } from '@/mock/preview'
 import { monitor } from '@/utils/monitor'
->>>>>>> 3c76dde869a3d215bf2934abc1dde4a5cfce5b68
 
 type Primitive = string | number | boolean
 
