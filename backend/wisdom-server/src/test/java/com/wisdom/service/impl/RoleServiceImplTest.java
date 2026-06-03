@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -50,7 +51,7 @@ class RoleServiceImplTest {
         page.setRecords(List.of(role));
         page.setTotal(1);
 
-        when(roleMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(roleMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
 
         PageResult<RoleVO> result = roleService.getRoleList(dto);
 
@@ -66,7 +67,7 @@ class RoleServiceImplTest {
         Page<Role> page = new Page<>(1, 10);
         page.setRecords(List.of());
 
-        when(roleMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(roleMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
 
         PageResult<RoleVO> result = roleService.getRoleList(dto);
 
@@ -80,12 +81,12 @@ class RoleServiceImplTest {
         Page<Role> page = new Page<>(1, 10);
         page.setRecords(List.of());
 
-        when(roleMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(roleMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
 
         roleService.getRoleList(dto);
 
         ArgumentCaptor<Page<Role>> captor = ArgumentCaptor.forClass(Page.class);
-        verify(roleMapper).selectPage(captor.capture(), any());
+        verify(roleMapper).selectPage(captor.capture(), isNull());
         assertEquals(1, captor.getValue().getCurrent());
         assertEquals(10, captor.getValue().getSize());
     }

@@ -23,8 +23,6 @@ import com.wisdom.service.UserService;
 import com.wisdom.vo.BatchRecordVO;
 import com.wisdom.vo.BillVO;
 import com.wisdom.vo.PaymentVO;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -41,8 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -121,7 +118,7 @@ class FinanceServiceImplTest {
         page.setRecords(List.of(batch));
         page.setTotal(1);
 
-        when(billBatchMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(billBatchMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
 
         PageResult<BatchRecordVO> result = financeService.getBatchLogs(dto);
 

@@ -32,7 +32,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,7 +75,7 @@ class SystemServiceImplTest {
         page.setRecords(List.of(task));
         page.setTotal(1);
 
-        when(fileTaskMapper.selectPage(any(Page.class), any())).thenReturn(page);
+        when(fileTaskMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
 
         PageResult<FileTaskVO> result = systemService.getFileTasks(dto);
 
@@ -158,7 +158,7 @@ class SystemServiceImplTest {
         );
         when(complaintMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(3L, 1L);
         when(repairMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(2L, 2L);
-        when(assetMapper.selectList(any())).thenReturn(List.of(residentialRenting, residentialVacant));
+        when(assetMapper.selectList(isNull())).thenReturn(List.of(residentialRenting, residentialVacant));
 
         DashboardVO result = systemService.getDashboardData();
 
