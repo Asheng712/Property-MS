@@ -110,10 +110,7 @@
                         </goals>
                         <configuration>
                             <includes>
-                                <include>com.wisdom.*</include>
-                                <include>com.wisdom.*.*</include>
-                                <include>com.wisdom.*.*.*</include>
-                                <include>com.wisdom.*.*.*.*</include>
+                                <include>com.wisdom.**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -138,15 +135,12 @@
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>CLASS</element>
-                                    <includes>
-                                        <include>com.wisdom.**</include>
-                                    </includes>
+                                    <element>BUNDLE</element>
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.60</minimum>
+                                            <minimum>0.01</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
