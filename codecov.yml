@@ -1,31 +1,51 @@
+fixes:
+  - "src/::frontend/src/"
+
 coverage:
+  precision: 2
+  round: down
+  range: "50...90"
   status:
     project:
-      default: false
+      default:
+        target: auto
+        threshold: 2%
       backend:
         flags:
           - backend
         target: 60%
-        threshold: 1%
+        threshold: 2%
       frontend:
         flags:
           - frontend
         target: 60%
-        threshold: 1%
+        threshold: 2%
+    patch:
+      default:
+        target: auto
+        threshold: 2%
 
 comment:
-  layout: "header, diff, flags, files"
+  layout: "header, diff, flags, files, components"
   behavior: default
   require_changes: false
   require_base: false
-  require_head: false
+  require_head: true
 
 flags:
   backend:
     paths:
-      - backend/wisdom-server/src/main/java
-    carryforward: false
+      - backend/wisdom-server/src/main/java/**
+    carryforward: true
   frontend:
     paths:
-      - frontend/src
-    carryforward: false
+      - frontend/src/**
+    carryforward: true
+
+github_checks:
+  annotations: true
+
+ignore:
+  - "**/*.d.ts"
+  - "**/*.test.ts"
+  - "**/__tests__/**"
