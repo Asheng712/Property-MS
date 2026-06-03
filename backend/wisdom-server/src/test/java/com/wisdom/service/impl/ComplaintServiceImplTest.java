@@ -24,6 +24,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.wisdom.service.UserService;
 import com.wisdom.exception.BusinessException;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +32,9 @@ class ComplaintServiceImplTest {
 
     @Mock
     private ComplaintMapper complaintMapper;
+
+    @Mock
+    private UserService userService;
 
     @InjectMocks
     private ComplaintServiceImpl complaintService;
@@ -55,6 +59,7 @@ class ComplaintServiceImplTest {
         page.setRecords(List.of(complaint));
         page.setTotal(1);
 
+        when(userService.isCurrentUserAdmin()).thenReturn(true);
         when(complaintMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
 
         PageResult<ComplaintVO> result = complaintService.getComplaintList(dto);
@@ -81,6 +86,7 @@ class ComplaintServiceImplTest {
         Page<Complaint> page = new Page<>(1, 10);
         page.setRecords(List.of());
 
+        when(userService.isCurrentUserAdmin()).thenReturn(true);
         when(complaintMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
 
         PageResult<ComplaintVO> result = complaintService.getComplaintList(dto);

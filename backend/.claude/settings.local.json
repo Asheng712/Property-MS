@@ -65,7 +65,9 @@
       "Bash(npm --version)",
       "Bash(npm ci *)",
       "Bash(npm test *)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(echo \"LINT_EXIT=$?\")"
     ]
   }
 }
