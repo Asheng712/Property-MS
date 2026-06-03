@@ -1,5 +1,6 @@
 fixes:
   - "src/::frontend/src/"
+  - "com/wisdom/::backend/wisdom-server/src/main/java/com/wisdom/"
 
 coverage:
   precision: 2
