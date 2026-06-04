@@ -120,6 +120,8 @@ public class RepairServiceImpl implements RepairService {
     public void addRepair(RepairDTO repairDTO) {
         Repair repair = new Repair();
         BeanUtils.copyProperties(repairDTO, repair);
+        // 确保使用数据库自增ID，清除DTO可能带入的ID值
+        repair.setId(null);
 
         Long currentUserId = BaseContext.getCurrentId();
         if (!userService.isCurrentUserAdmin()) {
@@ -136,17 +138,32 @@ public class RepairServiceImpl implements RepairService {
         repair.setStatus(0);
         repair.setCreateTime(LocalDateTime.now());
 
-        RepairAnalysisResult analysisResult = aiService.analyzeRepair(repairDTO.getContent());
-        repair.setPriority(analysisResult.getPriority());
+        // 优先使用人工指定的优先级，未指定时由AI自动判定
+        if (repairDTO.getPriority() != null) {
+            repair.setPriority(repairDTO.getPriority());
+        } else {
+            RepairAnalysisResult analysisResult = aiService.analyzeRepair(repairDTO.getContent());
+            repair.setPriority(analysisResult.getPriority());
+        }
 
         repairMapper.insert(repair);
     }
 
     @Override
     public void dispatchRepair(RepairDispatchDTO repairDispatchDTO) {
+        if (repairDispatchDTO.getId() == null) {
+            throw BusinessException.badRequest("工单ID不能为空");
+        }
+        if (repairDispatchDTO.getWorkerId() == null) {
+            throw BusinessException.badRequest("维修人员ID不能为空");
+        }
         Repair repair = repairMapper.selectById(repairDispatchDTO.getId());
         if (repair == null) {
-            throw new RuntimeException("工单不存在");
+            throw new BusinessException(404, "工单不存在");
+        }
+        User worker = userMapper.selectById(repairDispatchDTO.getWorkerId());
+        if (worker == null) {
+            throw new BusinessException(404, "维修人员不存在");
         }
         repair.setWorkerId(repairDispatchDTO.getWorkerId());
         repair.setStatus(1);
@@ -155,12 +172,15 @@ public class RepairServiceImpl implements RepairService {
 
     @Override
     public void updateRepairStatus(RepairStatusUpdateDTO repairStatusUpdateDTO) {
+        if (repairStatusUpdateDTO.getId() == null) {
+            throw BusinessException.badRequest("工单ID不能为空");
+        }
         Repair repair = repairMapper.selectById(repairStatusUpdateDTO.getId());
         if (repair == null) {
-            throw new RuntimeException("工单不存在");
+            throw new BusinessException(404, "工单不存在");
         }
         repair.setStatus(repairStatusUpdateDTO.getStatus());
-        if (repairStatusUpdateDTO.getStatus() == 2) {
+        if (repairStatusUpdateDTO.getStatus() != null && repairStatusUpdateDTO.getStatus() == 2) {
             repair.setFinishTime(LocalDateTime.now());
         }
         repairMapper.updateById(repair);

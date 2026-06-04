@@ -27,8 +27,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -218,6 +220,63 @@ class RepairServiceImplTest {
     }
 
     @Test
+    void addRepairShouldUseUserSpecifiedPriorityOverAI() {
+        BaseContext.setCurrentId(1L);
+
+        RepairDTO dto = new RepairDTO();
+        dto.setHouseId(100L);
+        dto.setContent("普通维修");
+        dto.setReporter("管理员");
+        dto.setPriority(1); // 用户指定为普通
+
+        RepairAnalysisResult aiResult = new RepairAnalysisResult();
+        aiResult.setPriority(2);  // AI判定为紧急
+        aiResult.setPriorityText("紧急");
+
+        when(userService.isCurrentUserAdmin()).thenReturn(true);
+        // AI不应被调用，因为用户已指定优先级
+        when(aiService.analyzeRepair("普通维修")).thenReturn(aiResult);
+
+        repairService.addRepair(dto);
+
+        ArgumentCaptor<Repair> captor = ArgumentCaptor.forClass(Repair.class);
+        verify(repairMapper).insert(captor.capture());
+        // 应使用用户指定的优先级1，而非AI判定的优先级2
+        assertEquals(Integer.valueOf(1), captor.getValue().getPriority());
+
+        BaseContext.removeCurrentId();
+    }
+
+    @Test
+    void addRepairShouldEnsureIdIsNullBeforeInsert() {
+        BaseContext.setCurrentId(1L);
+
+        RepairDTO dto = new RepairDTO();
+        dto.setHouseId(100L);
+        dto.setContent("测试");
+        dto.setReporter("管理员");
+        dto.setPriority(2);
+
+        // 尝试通过DTO传入ID（模拟潜在的攻击或误用场景）
+        dto.setId(999L);
+
+        RepairAnalysisResult aiResult = new RepairAnalysisResult();
+        aiResult.setPriority(1);
+
+        when(userService.isCurrentUserAdmin()).thenReturn(true);
+        when(aiService.analyzeRepair("测试")).thenReturn(aiResult);
+
+        repairService.addRepair(dto);
+
+        ArgumentCaptor<Repair> captor = ArgumentCaptor.forClass(Repair.class);
+        verify(repairMapper).insert(captor.capture());
+        // 验证ID被清除，确保使用数据库自增
+        assertNull(captor.getValue().getId());
+
+        BaseContext.removeCurrentId();
+    }
+
+    @Test
     void dispatchRepairShouldAssignWorker() {
         RepairDispatchDTO dto = new RepairDispatchDTO();
         dto.setId(1L);
@@ -227,7 +286,12 @@ class RepairServiceImplTest {
         repair.setId(1L);
         repair.setStatus(0);
 
+        User worker = new User();
+        worker.setId(5L);
+        worker.setUsername("维修工张三");
+
         when(repairMapper.selectById(1L)).thenReturn(repair);
+        when(userMapper.selectById(5L)).thenReturn(worker);
 
         repairService.dispatchRepair(dto);
 
