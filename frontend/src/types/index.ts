@@ -68,6 +68,7 @@ export interface AssetQuery extends PageQuery {
   name?: string
   type?: string
   status?: string
+  parentId?: number
 }
 
 export interface AssetPayload {
@@ -272,17 +273,6 @@ export interface NoticePayload {
   status: string
 }
 
-export interface RoleRecord {
-  id: number
-  roleName: string
-  roleKey: string
-  permissions: string
-}
-
-export interface RolePermPayload {
-  permissions: string
-}
-
 export interface AssetRentalStatus {
   type: string
   typeName: string
@@ -323,12 +313,6 @@ export interface ChartSegment {
   label: string
   value: number
   color: string
-}
-
-export interface PermissionGroup {
-  id: string
-  title: string
-  permissions: string[]
 }
 
 export interface LegacyAssetTreeNode {
@@ -406,14 +390,6 @@ export interface LegacyNoticeRecord {
   publishAt: string
   status: 'draft' | 'published'
   summary: string
-}
-
-export interface LegacyRoleRecord {
-  id: string
-  name: string
-  description: string
-  locked?: boolean
-  permissionGroups: PermissionGroup[]
 }
 
 export interface NavigationItem {

@@ -194,11 +194,10 @@ async function loadAssets() {
       name: keyword.value.trim() || undefined,
       status: status.value || undefined,
       type: undefined,
+      parentId: selectedTreeNodeId.value || undefined,
     })
 
-    assets.value = selectedTreeNodeId.value
-      ? result.records.filter((item) => item.parentId === selectedTreeNodeId.value || item.id === selectedTreeNodeId.value)
-      : result.records
+    assets.value = result.records
     total.value = result.total
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '加载资产列表失败')
@@ -209,6 +208,7 @@ async function loadAssets() {
 
 function handleNodeClick(node: AssetTreeNode) {
   selectedTreeNodeId.value = node.id
+  query.page = 1
   void loadAssets()
 }
 
@@ -320,7 +320,7 @@ function resetDraft() {
   draft.name = ''
   draft.type = 'SHOP'
   draft.area = 0
-  draft.status = 'occupied'
+  draft.status = 'OCCUPIED'
   draft.ownerName = ''
   draft.ownerPhone = ''
 }

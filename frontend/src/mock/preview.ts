@@ -10,7 +10,6 @@ import type {
   PageResult,
   PaymentRecord,
   RepairKanban,
-  RoleRecord,
   UserInfo,
 } from '@/types'
 
@@ -94,12 +93,6 @@ const complaints: ComplaintRecord[] = [
 const notices: NoticeRecord[] = [
   { id: 1, title: '6月园区消防演练通知', content: '请各楼栋提前知悉演练安排与疏散路线。', targetType: '全体业主', status: 'published', viewCount: 368, createTime: '2026-05-20 09:00' },
   { id: 2, title: 'A区停车场临时封闭公告', content: '因排水改造，A区停车场将临时封闭 12 小时。', targetType: 'A区车主', status: 'draft', viewCount: 0, createTime: '2026-05-22 18:00' },
-]
-
-const roles: RoleRecord[] = [
-  { id: 1, roleName: '超级管理员', roleKey: 'SUPER_ADMIN', permissions: 'asset:*,finance:*,repair:*,notice:*' },
-  { id: 2, roleName: '财务经理', roleKey: 'FINANCE_MANAGER', permissions: 'finance:read,finance:audit' },
-  { id: 3, roleName: '维修工程部', roleKey: 'REPAIR_TEAM', permissions: 'repair:read,repair:dispatch,repair:update' },
 ]
 
 function page<T>(records: T[]): PageResult<T> {
@@ -219,10 +212,6 @@ export function getPreviewData<T>(path: string): T | null {
 
   if (path === '/api/v1/notices') {
     return page(notices) as T
-  }
-
-  if (path === '/api/v1/roles') {
-    return page(roles) as T
   }
 
   return null

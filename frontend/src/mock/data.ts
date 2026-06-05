@@ -1,14 +1,12 @@
 import {
   Bell,
   Coin,
-  Connection,
   House,
   MagicStick,
   Monitor,
   OfficeBuilding,
   Opportunity,
   Service,
-  SetUp,
 } from '@element-plus/icons-vue'
 import type {
   BillBatch,
@@ -19,7 +17,6 @@ import type {
   LegacyContractRecord,
   LegacyNoticeRecord,
   LegacyPaymentRecord,
-  LegacyRoleRecord,
   NavigationItem,
   QuickStat,
   RepairTicket,
@@ -34,8 +31,6 @@ export const navigationItems: NavigationItem[] = [
   { path: '/repairs', label: '报修工单调度', icon: Service },
   { path: '/complaints', label: '投诉建议闭环', icon: Opportunity },
   { path: '/announcements', label: '定向公告发布', icon: Bell },
-  { path: '/roles', label: '角色权限控制', icon: SetUp },
-  { path: '/monitor', label: '系统监控', icon: Connection },
 ]
 
 export const dashboardStats: QuickStat[] = [
@@ -122,43 +117,5 @@ export const complaintRecords: LegacyComplaintRecord[] = [
 export const noticeRecords: LegacyNoticeRecord[] = [
   { id: 'N-001', title: '4月园区消防演练通知', audience: '全体业主', publishAt: '2024-03-25 09:00', status: 'published', summary: '请各楼栋提前知悉演练安排与疏散路线。' },
   { id: 'N-002', title: 'A区停车场临时封闭公告', audience: 'A区车主', publishAt: '2024-03-26 18:00', status: 'draft', summary: '因排水改造，A区停车场将临时封闭 12 小时。' },
-]
-
-export const roleRecords: LegacyRoleRecord[] = [
-  {
-    id: 'admin',
-    name: '超级管理员',
-    description: '系统最高权限',
-    locked: true,
-    permissionGroups: [
-      { id: 'asset', title: '资产全景管理', permissions: ['查看资产树', '新增/编辑资产', '删除资产'] },
-      { id: 'finance', title: '财务与收费管理', permissions: ['查看账单', '生成批处理账单', '财务核销确认'] },
-      { id: 'service', title: '服务与工单流转', permissions: ['查看报修单', '派发工单', '修改工单状态', '处理投诉建议'] },
-    ],
-  },
-  {
-    id: 'finance-manager',
-    name: '财务经理',
-    description: '仅管理收费与账单',
-    permissionGroups: [
-      { id: 'finance', title: '财务与收费管理', permissions: ['查看账单', '生成批处理账单', '财务核销确认'] },
-    ],
-  },
-  {
-    id: 'repair-team',
-    name: '维修工程部',
-    description: '仅处理报修工单',
-    permissionGroups: [
-      { id: 'service', title: '服务与工单流转', permissions: ['查看报修单', '派发工单', '修改工单状态'] },
-    ],
-  },
-  {
-    id: 'service-desk',
-    name: '前台客服',
-    description: '公告与投诉建议',
-    permissionGroups: [
-      { id: 'notice', title: '公告与投诉闭环', permissions: ['发布公告', '筛选受众', '处理投诉建议'] },
-    ],
-  },
 ]
 

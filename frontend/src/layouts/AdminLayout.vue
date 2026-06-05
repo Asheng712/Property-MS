@@ -58,9 +58,6 @@
           </div>
         </div>
         <div class="topbar__right">
-          <el-button circle plain @click="openSearch">
-            <el-icon><Search /></el-icon>
-          </el-button>
           <el-button circle plain @click="goHome">
             <el-icon><House /></el-icon>
           </el-button>
@@ -93,22 +90,6 @@
       </main>
     </div>
 
-    <el-dialog v-model="searchVisible" title="全局搜索" width="520px">
-      <el-input v-model="searchKeyword" placeholder="搜索页面、模块或功能..." clearable />
-      <div class="search-result">
-        <button
-          v-for="item in filteredNavigation"
-          :key="item.path"
-          type="button"
-          class="search-result__item"
-          @click="goTo(item.path)"
-        >
-          <span>{{ item.label }}</span>
-          <small>{{ item.path }}</small>
-        </button>
-      </div>
-    </el-dialog>
-
     <el-drawer v-model="settingsVisible" title="系统设置" size="420px">
       <div class="settings-list">
         <div class="settings-item">
@@ -137,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowDown, Fold, House, Menu, Search, Setting } from '@element-plus/icons-vue'
+import { ArrowDown, Fold, House, Menu, Setting } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import BrandLogo from '@/components/BrandLogo.vue'
@@ -148,28 +129,12 @@ const appStore = useAppStore()
 const route = useRoute()
 const router = useRouter()
 
-const searchVisible = ref(false)
 const settingsVisible = ref(false)
-const searchKeyword = ref('')
 
 const currentTitle = computed(() => String(route.meta.title ?? '智慧物业管理系统'))
-const filteredNavigation = computed(() =>
-  navigationItems.filter(
-    (item) => !searchKeyword.value || item.label.includes(searchKeyword.value) || item.path.includes(searchKeyword.value),
-  ),
-)
-
-function openSearch() {
-  searchVisible.value = true
-}
 
 function goHome() {
   router.push('/dashboard')
-}
-
-function goTo(path: string) {
-  searchVisible.value = false
-  router.push(path)
 }
 
 function handleCompactChange(value: boolean | string | number) {
@@ -334,33 +299,6 @@ function logout() {
   padding: 0 0 18px;
 }
 
-.search-result {
-  display: grid;
-  gap: 8px;
-  margin-top: 20px;
-}
-
-.search-result__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 18px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-control);
-  background: var(--bg-card);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.search-result__item:hover {
-  background: var(--bg-hover);
-}
-
-.search-result__item small {
-  color: var(--text-subtle);
-}
-
 .settings-list {
   display: grid;
   gap: 24px;
@@ -433,17 +371,8 @@ function logout() {
     display: none;
   }
 
-  :deep(.el-dialog) {
-    width: calc(100vw - 28px) !important;
-  }
-
   :deep(.el-drawer) {
     width: min(100vw, 360px) !important;
-  }
-
-  .search-result__item {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }
 </style>

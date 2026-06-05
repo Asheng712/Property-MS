@@ -4,6 +4,8 @@
 -- ⚠️  所有数据（姓名、手机、邮箱、地址等）均为虚构示例
 -- ============================================
 
+SET NAMES utf8mb4;
+
 -- -------------------------- 演示用户 (密码: 123456) --------------------------
 -- bcrypt hash matches init.sql admin password
 INSERT IGNORE INTO sys_user (id, username, password, real_name, phone, email, role_id, status) VALUES

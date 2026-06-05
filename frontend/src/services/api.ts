@@ -30,8 +30,6 @@ import type {
   RepairKanban,
   RepairPayload,
   RepairStatusPayload,
-  RolePermPayload,
-  RoleRecord,
   UserInfo,
 } from '@/types'
 
@@ -191,35 +189,8 @@ export const noticeApi = {
   },
 }
 
-export const roleApi = {
-  getList(query: PageQuery) {
-    return request<PageResult<RoleRecord>>('/api/v1/roles', {
-      method: 'GET',
-      query,
-    })
-  },
-  updatePermissions(id: number, payload: RolePermPayload) {
-    return request<null>(`/api/v1/roles/${id}/perms`, {
-      method: 'PUT',
-      body: payload,
-    })
-  },
-}
-
 export const dashboardApi = {
   getData() {
     return request<DashboardData>('/api/v1/dashboard/data', { method: 'GET' })
-  },
-}
-
-export interface HealthStatus {
-  status: string
-  timestamp: string
-  version: string
-}
-
-export const monitorApi = {
-  getHealth() {
-    return request<HealthStatus>('/health', { method: 'GET' })
   },
 }

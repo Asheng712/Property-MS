@@ -78,6 +78,10 @@ public class AssetServiceImpl implements AssetService {
         if (assetPageQueryDTO.getStatus() != null) {
             queryWrapper.eq(House::getStatus, assetPageQueryDTO.getStatus());
         }
+        if (assetPageQueryDTO.getParentId() != null) {
+            queryWrapper.and(w -> w.eq(House::getParentId, assetPageQueryDTO.getParentId())
+                    .or().eq(House::getId, assetPageQueryDTO.getParentId()));
+        }
         IPage<House> assetPage = assetMapper.selectPage(page, queryWrapper);
         List<AssetVO> assetVOList = assetPage.getRecords().stream()
                 .map(house -> {

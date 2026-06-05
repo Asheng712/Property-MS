@@ -34,8 +34,6 @@ const router = createRouter({
         { path: 'repairs', name: 'repairs', component: () => import('@/views/repairs/RepairsView.vue'), meta: { title: '报修工单调度' } },
         { path: 'complaints', name: 'complaints', component: () => import('@/views/complaints/ComplaintsView.vue'), meta: { title: '投诉建议闭环' } },
         { path: 'announcements', name: 'announcements', component: () => import('@/views/announcements/AnnouncementsView.vue'), meta: { title: '定向公告发布' } },
-        { path: 'roles', name: 'roles', component: () => import('@/views/roles/RolesView.vue'), meta: { title: '角色权限控制' } },
-        { path: 'monitor', name: 'monitor', component: () => import('@/views/monitor/MonitorView.vue'), meta: { title: '系统监控' } },
         { path: 'profile', name: 'profile', component: () => import('@/views/profile/ProfileView.vue'), meta: { title: '个人中心' } },
       ],
     },

@@ -20,14 +20,14 @@ RUN mvn dependency:go-offline -pl . -B -q
 FROM deps AS dev
 COPY . .
 EXPOSE 8080
-CMD ["sh", "-c", "mvn install -N -DskipTests -q && mvn install -pl wisdom-common,wisdom-pojo -DskipTests -q && mvn spring-boot:run -pl wisdom-server -DskipTests -Dspring-boot.run.jvmArguments=-XX:+UseG1GC"]
+CMD ["sh", "-c", "mvn clean install -N -Dmaven.test.skip=true -q && mvn clean install -pl wisdom-common,wisdom-pojo -Dmaven.test.skip=true -q && mvn clean spring-boot:run -pl wisdom-server -Dmaven.test.skip=true -Dspring-boot.run.jvmArguments=-XX:+UseG1GC"]
 
 # ============================================
 # Stage build — 生产编译（打包可执行 JAR）
 # ============================================
 FROM deps AS build
 COPY . .
-RUN mvn package -pl wisdom-server -am -DskipTests -B -q
+RUN mvn package -pl wisdom-server -am -Dmaven.test.skip=true -B -q
 
 # ============================================
 # Stage runtime — 生产运行（精简 JRE 镜像）
