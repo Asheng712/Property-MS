@@ -60,6 +60,10 @@ public class AssetServiceImpl implements AssetService {
         }
         AssetVO assetVO = new AssetVO();
         BeanUtils.copyProperties(house, assetVO);
+        // 确保状态不为空，前端依赖该字段展示
+        if (assetVO.getStatus() == null || assetVO.getStatus().isEmpty()) {
+            assetVO.setStatus("VACANT");
+        }
         return assetVO;
     }
 
@@ -87,6 +91,10 @@ public class AssetServiceImpl implements AssetService {
                 .map(house -> {
                     AssetVO assetVO = new AssetVO();
                     BeanUtils.copyProperties(house, assetVO);
+                    // 确保状态不为空，前端依赖该字段展示
+                    if (assetVO.getStatus() == null || assetVO.getStatus().isEmpty()) {
+                        assetVO.setStatus("VACANT");
+                    }
                     return assetVO;
                 })
                 .collect(Collectors.toList());
@@ -98,7 +106,12 @@ public class AssetServiceImpl implements AssetService {
     public void saveOrUpdateAsset(AssetDTO assetDTO) {
         House house = new House();
         BeanUtils.copyProperties(assetDTO, house);
-        
+
+        // 确保状态默认为 VACANT，防止前端未传状态导致数据库中出现空值
+        if (house.getStatus() == null || house.getStatus().trim().isEmpty()) {
+            house.setStatus("VACANT");
+        }
+
         if (house.getOwnerName() != null && house.getOwnerName().trim().isEmpty()) {
             house.setOwnerName(null);
         }
@@ -130,6 +143,10 @@ public class AssetServiceImpl implements AssetService {
                 .map(house -> {
                     AssetVO assetVO = new AssetVO();
                     BeanUtils.copyProperties(house, assetVO);
+                    // 确保状态不为空，前端依赖该字段展示
+                    if (assetVO.getStatus() == null || assetVO.getStatus().isEmpty()) {
+                        assetVO.setStatus("VACANT");
+                    }
                     return assetVO;
                 })
                 .collect(Collectors.toList());

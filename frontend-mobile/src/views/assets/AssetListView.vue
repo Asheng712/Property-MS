@@ -18,7 +18,7 @@ const typeLabelMap: Record<string, string> = {
 }
 
 const statusTagMap: Record<string, string> = {
-  VACANT: 'info',
+  VACANT: 'primary',
   SOLD: 'danger',
   RENTING: 'warning',
   DECORATING: 'primary',
@@ -37,8 +37,12 @@ onMounted(async () => {
   loading.value = true
   try {
     const result = await assetApi.getList({ page: 1, pageSize: 100 })
-    // 过滤掉楼栋（BUILDING），只展示可购买/租赁的叶子节点
-    assets.value = result.records.filter(a => a.type !== 'BUILDING')
+    // 过滤掉楼栋（BUILDING）以及已入住/已售资产，仅展示可购买/租赁的叶子节点
+    assets.value = result.records.filter(a =>
+      a.type !== 'BUILDING' &&
+      a.status !== 'OCCUPIED' &&
+      a.status !== 'SOLD'
+    )
   } catch {
     /* ignore */
   } finally {
@@ -65,7 +69,7 @@ onMounted(async () => {
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
             <span style="font-weight: 600; font-size: 15px">{{ item.name }}</span>
             <van-tag :type="(statusTagMap[item.status] || 'default') as any" size="small">
-              {{ statusLabelMap[item.status] || item.status }}
+              {{ statusLabelMap[item.status] || item.status || '未知' }}
             </van-tag>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--van-text-color-weak)">

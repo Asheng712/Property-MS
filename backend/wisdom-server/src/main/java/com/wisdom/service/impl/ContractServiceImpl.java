@@ -17,6 +17,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,13 +72,32 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveOrUpdateContract(ContractDTO contractDTO) {
         Contract contract = new Contract();
         BeanUtils.copyProperties(contractDTO, contract);
         if (contractDTO.getId() == null) {
+            // 新增合同：资产状态设为招租中
             contractMapper.insert(contract);
+            House house = assetMapper.selectById(contract.getHouseId());
+            if (house != null && contract.getContractStatus() != null && contract.getContractStatus() == 1) {
+                house.setStatus("RENTING");
+                house.setOwnerName(contract.getTenantName());
+                assetMapper.updateById(house);
+            }
         } else {
+            // 编辑合同：若合同终止则释放资产为空置
             contractMapper.updateById(contract);
+            if (contract.getContractStatus() != null && contract.getContractStatus() == 0) {
+                House house = assetMapper.selectById(contract.getHouseId());
+                if (house != null) {
+                    house.setStatus("VACANT");
+                    house.setOwnerName(null);
+                    house.setOwnerPhone(null);
+                    house.setOwnerId(null);
+                    assetMapper.updateById(house);
+                }
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ export const useComplaintStore = defineStore('complaint', () => {
   const loading = ref(false)
 
   const pendingComplaints = computed(() => complaints.value.filter((c) => c.status === 0))
-  const completedComplaints = computed(() => complaints.value.filter((c) => c.status === 1))
+  const completedComplaints = computed(() => complaints.value.filter((c) => c.status === 2))
 
   async function fetchComplaints() {
     loading.value = true

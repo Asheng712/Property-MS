@@ -16,7 +16,7 @@ const loading = ref(true)
 const submitting = ref(false)
 
 const statusTagMap: Record<string, string> = {
-  VACANT: 'info',
+  VACANT: 'primary',
   SOLD: 'danger',
   RENTING: 'warning',
   DECORATING: 'primary',

@@ -9,12 +9,16 @@ const complaintStore = useComplaintStore()
 
 const activeTab = ref(0)
 
-const statusMap: Record<number, string> = { 0: '待处理', 1: '已处理' }
-const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'success' }
+const statusMap: Record<number, string> = { 0: '待处理', 1: '处理中', 2: '已办结' }
+const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'warning', 2: 'success' }
+
+// tab 0=全部 1=待处理(status 0) 2=已处理(status 2 已办结)
+const tabStatusMapping: Record<number, number> = { 1: 0, 2: 2 }
 
 function filteredList(): ComplaintRecord[] {
   if (activeTab.value === 0) return complaintStore.complaints
-  return complaintStore.complaints.filter((c) => c.status === activeTab.value - 1)
+  const targetStatus = tabStatusMapping[activeTab.value]
+  return complaintStore.complaints.filter((c) => c.status === targetStatus)
 }
 
 onActivated(() => {

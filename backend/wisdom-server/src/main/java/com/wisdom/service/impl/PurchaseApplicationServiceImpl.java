@@ -149,12 +149,13 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
             contract.setContractStatus(1);
             contractMapper.insert(contract);
 
-            // 将资产所有权转移给申请人
+            // 将资产所有权转移给申请人，并更新资产状态为已售
             House house = assetMapper.selectById(app.getHouseId());
             if (house != null) {
                 house.setOwnerId(app.getApplicantId());
                 house.setOwnerName(app.getApplicantName());
                 house.setOwnerPhone(app.getApplicantPhone());
+                house.setStatus("SOLD");
                 assetMapper.updateById(house);
             }
 

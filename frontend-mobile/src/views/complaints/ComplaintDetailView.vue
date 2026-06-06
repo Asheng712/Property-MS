@@ -10,8 +10,8 @@ const complaintStore = useComplaintStore()
 
 const complaint = ref<ComplaintRecord | null>(null)
 
-const statusMap: Record<number, string> = { 0: '待处理', 1: '已处理' }
-const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'success' }
+const statusMap: Record<number, string> = { 0: '待处理', 1: '处理中', 2: '已办结' }
+const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'warning', 2: 'success' }
 
 onMounted(async () => {
   const id = Number(route.params.id)

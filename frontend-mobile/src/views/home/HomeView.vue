@@ -31,7 +31,7 @@ const typeLabelMap: Record<string, string> = {
 }
 
 const statusTagMap: Record<string, string> = {
-  VACANT: 'info',
+  VACANT: 'primary',
   SOLD: 'danger',
   RENTING: 'warning',
   DECORATING: 'primary',
@@ -66,9 +66,13 @@ async function loadData() {
 
   try {
     const result = await assetApi.getList({ page: 1, pageSize: 20 })
-    // 过滤掉楼栋（BUILDING），只展示可购买/租赁的叶子节点资产
+    // 过滤掉楼栋（BUILDING）以及已入住/已售资产，仅展示可购买/租赁的叶子节点资产
     featuredAssets.value = result.records
-      .filter(a => a.type !== 'BUILDING')
+      .filter(a =>
+        a.type !== 'BUILDING' &&
+        a.status !== 'OCCUPIED' &&
+        a.status !== 'SOLD'
+      )
       .slice(0, 5)
   } catch { /* ignore */ }
 
