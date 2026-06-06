@@ -19,7 +19,11 @@ import type {
   ContractRecord,
   ContractQuery,
   AssetRecord,
+  AssetQuery,
   AssetTreeNode,
+  PurchaseApplicationRecord,
+  PurchaseApplicationQuery,
+  PurchaseApplicationPayload,
   PageResult,
 } from '@/types'
 
@@ -88,5 +92,23 @@ export const assetApi = {
   },
   getMyHouses() {
     return http.get<AssetRecord[]>('/assets/my-houses')
+  },
+  getList(params?: AssetQuery) {
+    return http.get<PageResult<AssetRecord>>('/assets', { params })
+  },
+  getById(id: number) {
+    return http.get<AssetRecord>(`/assets/${id}`)
+  },
+}
+
+export const purchaseApi = {
+  getList(params: PurchaseApplicationQuery) {
+    return http.get<PageResult<PurchaseApplicationRecord>>('/purchase-applications', { params })
+  },
+  getById(id: number) {
+    return http.get<PurchaseApplicationRecord>(`/purchase-applications/${id}`)
+  },
+  create(data: PurchaseApplicationPayload) {
+    return http.post<null>('/purchase-applications', data)
   },
 }

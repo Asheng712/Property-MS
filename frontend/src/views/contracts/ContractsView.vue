@@ -1,6 +1,7 @@
 <template>
   <PageContainer title="合同管理" description="管理租户合同、租期、租金和合同状态。">
     <template #actions>
+      <el-button type="warning" class="btn-warning-gradient" @click="openApproval">购买申请审批</el-button>
       <el-button type="primary" class="btn-primary-gradient" @click="openCreate">新增合同</el-button>
     </template>
 
@@ -91,6 +92,81 @@
       </template>
     </el-dialog>
 
+    <!-- 购买申请审批弹窗 -->
+    <el-dialog v-model="approvalVisible" title="资产购买申请审批" width="800px">
+      <el-table v-loading="approvalLoading" :data="applications">
+        <el-table-column prop="applicationNo" label="申请编号" width="180" />
+        <el-table-column prop="applicantName" label="申请人" min-width="100" />
+        <el-table-column prop="houseName" label="资产名称" min-width="140">
+          <template #default="{ row }">{{ row.houseName || `资产ID: ${row.houseId}` }}</template>
+        </el-table-column>
+        <el-table-column prop="applicantPhone" label="联系电话" min-width="120" />
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <StatusBadge :label="getApplicationStatusText(row.status)" :tone="getApplicationStatusTone(row.status)" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="申请时间" width="160" />
+        <el-table-column label="操作" width="150">
+          <template #default="{ row }">
+            <el-button v-if="row.status === 0" link type="primary" @click="openApproveForm(row)">审批</el-button>
+            <span v-else style="color: var(--el-text-color-secondary); font-size: 13px">已处理</span>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, prev, pager, next"
+          :current-page="approvalQuery.page"
+          :page-size="approvalQuery.pageSize"
+          :total="approvalTotal"
+          @current-change="handleApprovalPageChange"
+        />
+      </div>
+    </el-dialog>
+
+    <!-- 审批表单弹窗 -->
+    <el-dialog v-model="approveFormVisible" :title="`审批申请 - ${approvingApp?.applicationNo || ''}`" width="500px">
+      <el-form label-position="top" class="dialog-form">
+        <el-form-item label="审批结果">
+          <el-radio-group v-model="approveDraft.approved">
+            <el-radio :value="true">通过</el-radio>
+            <el-radio :value="false">拒绝</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <template v-if="approveDraft.approved">
+          <el-form-item label="建议租金（元/月）" required>
+            <el-input-number v-model="approveDraft.proposedPrice" :min="0" :precision="2" class="full-width" />
+          </el-form-item>
+          <el-form-item label="合同开始日期" required>
+            <el-date-picker v-model="approveDraft.startDate" type="date" value-format="YYYY-MM-DD" class="full-width" />
+          </el-form-item>
+          <el-form-item label="合同结束日期" required>
+            <el-date-picker v-model="approveDraft.endDate" type="date" value-format="YYYY-MM-DD" class="full-width" />
+          </el-form-item>
+          <el-form-item label="押金">
+            <el-input-number v-model="approveDraft.deposit" :min="0" :precision="2" class="full-width" />
+          </el-form-item>
+          <el-form-item label="递增比例（%）">
+            <el-input-number v-model="approveDraft.increaseRate" :min="0" :precision="2" class="full-width" />
+          </el-form-item>
+        </template>
+
+        <template v-else>
+          <el-form-item label="拒绝理由" required>
+            <el-input v-model="approveDraft.remark" type="textarea" :rows="3" placeholder="请填写拒绝理由" />
+          </el-form-item>
+        </template>
+      </el-form>
+      <template #footer>
+        <el-button @click="approveFormVisible = false">取消</el-button>
+        <el-button type="primary" :loading="approveSubmitting" @click="submitApproval">确认审批</el-button>
+      </template>
+    </el-dialog>
+
     <el-drawer v-model="detailVisible" title="合同详情" size="420px">
       <InfoList v-if="activeContract" :items="detailItems" />
     </el-drawer>
@@ -105,9 +181,9 @@ import InfoList from '@/components/InfoList.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import PanelCard from '@/components/PanelCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
-import { contractApi } from '@/services/api'
+import { contractApi, purchaseApi } from '@/services/api'
 import { formatCurrency, formatDateRange } from '@/utils/format'
-import type { ContractRecord } from '@/types'
+import type { ContractRecord, PurchaseApplicationRecord, PurchaseApprovalPayload } from '@/types'
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -118,6 +194,31 @@ const status = ref('')
 const total = ref(0)
 const contracts = ref<ContractRecord[]>([])
 const activeContract = ref<ContractRecord | null>(null)
+
+// 购买申请审批相关状态
+const approvalVisible = ref(false)
+const approvalLoading = ref(false)
+const approveFormVisible = ref(false)
+const approveSubmitting = ref(false)
+const applications = ref<PurchaseApplicationRecord[]>([])
+const approvalTotal = ref(0)
+const approvingApp = ref<PurchaseApplicationRecord | null>(null)
+
+const approvalQuery = reactive({
+  page: 1,
+  pageSize: 10,
+})
+
+const approveDraft = reactive({
+  id: undefined as number | undefined,
+  approved: true as boolean,
+  proposedPrice: 0,
+  startDate: '',
+  endDate: '',
+  deposit: 0,
+  increaseRate: 0,
+  remark: '',
+})
 
 const query = reactive({
   page: 1,
@@ -273,6 +374,107 @@ function getStatusText(value: number) {
 
 function getStatusTone(value: number) {
   return value === 1 ? 'success' : 'warning'
+}
+
+// ---- 购买申请审批 ----
+async function openApproval() {
+  approvalVisible.value = true
+  approvalQuery.page = 1
+  await loadApplications()
+}
+
+async function loadApplications() {
+  approvalLoading.value = true
+  try {
+    const result = await purchaseApi.getList({
+      page: approvalQuery.page,
+      pageSize: approvalQuery.pageSize,
+    })
+    applications.value = result.records
+    approvalTotal.value = result.total
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '加载申请列表失败')
+  } finally {
+    approvalLoading.value = false
+  }
+}
+
+function handleApprovalPageChange(page: number) {
+  approvalQuery.page = page
+  void loadApplications()
+}
+
+function openApproveForm(app: PurchaseApplicationRecord) {
+  approvingApp.value = app
+  approveDraft.id = app.id
+  approveDraft.approved = true
+  approveDraft.proposedPrice = 0
+  approveDraft.startDate = ''
+  approveDraft.endDate = ''
+  approveDraft.deposit = 0
+  approveDraft.increaseRate = 0
+  approveDraft.remark = ''
+  approveFormVisible.value = true
+}
+
+async function submitApproval() {
+  if (!approveDraft.id) return
+
+  if (approveDraft.approved) {
+    if (!approveDraft.proposedPrice || approveDraft.proposedPrice <= 0) {
+      ElMessage.warning('请输入建议租金')
+      return
+    }
+    if (!approveDraft.startDate || !approveDraft.endDate) {
+      ElMessage.warning('请选择合同起止日期')
+      return
+    }
+  } else {
+    if (!approveDraft.remark.trim()) {
+      ElMessage.warning('请填写拒绝理由')
+      return
+    }
+  }
+
+  approveSubmitting.value = true
+  try {
+    const payload: PurchaseApprovalPayload = {
+      id: approveDraft.id,
+      approved: approveDraft.approved,
+    }
+    if (approveDraft.approved) {
+      payload.proposedPrice = approveDraft.proposedPrice
+      payload.startDate = approveDraft.startDate
+      payload.endDate = approveDraft.endDate
+      payload.deposit = approveDraft.deposit || undefined
+      payload.increaseRate = approveDraft.increaseRate || undefined
+    } else {
+      payload.remark = approveDraft.remark.trim()
+    }
+    await purchaseApi.approve(payload)
+    ElMessage.success(approveDraft.approved ? '审批通过，合同已生成' : '已拒绝申请')
+    approveFormVisible.value = false
+    await loadApplications()
+    await loadContracts()
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '审批操作失败')
+  } finally {
+    approveSubmitting.value = false
+  }
+}
+
+function getApplicationStatusText(status: number) {
+  if (status === 0) return '待审批'
+  if (status === 1) return '已通过'
+  if (status === 2) return '已拒绝'
+  return '未知'
+}
+
+function getApplicationStatusTone(status: number) {
+  if (status === 0) return 'warning'
+  if (status === 1) return 'success'
+  if (status === 2) return 'danger'
+  return 'info'
 }
 </script>
 

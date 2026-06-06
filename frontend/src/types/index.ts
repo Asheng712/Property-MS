@@ -392,6 +392,40 @@ export interface LegacyNoticeRecord {
   summary: string
 }
 
+export interface PurchaseApplicationRecord {
+  id: number
+  applicationNo: string
+  houseId: number
+  houseName?: string | null
+  applicantId: number
+  applicantName: string
+  applicantPhone: string
+  status: number
+  statusText?: string | null
+  proposedPrice?: number | null
+  startDate?: string | null
+  endDate?: string | null
+  remark?: string | null
+  createdContractId?: number | null
+  createTime?: string | null
+}
+
+export interface PurchaseApplicationQuery extends PageQuery {
+  status?: number
+  applicantName?: string
+}
+
+export interface PurchaseApprovalPayload {
+  id: number
+  approved: boolean
+  proposedPrice?: number
+  startDate?: string
+  endDate?: string
+  deposit?: number
+  increaseRate?: number
+  remark?: string
+}
+
 export interface NavigationItem {
   path: string
   label: string

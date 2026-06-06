@@ -105,6 +105,18 @@ const router = createRouter({
       meta: { title: '合同详情' },
     },
     {
+      path: '/assets',
+      name: 'assets',
+      component: () => import('@/views/assets/AssetListView.vue'),
+      meta: { title: '可购资产' },
+    },
+    {
+      path: '/assets/:id',
+      name: 'asset-detail',
+      component: () => import('@/views/assets/AssetDetailView.vue'),
+      meta: { title: '资产详情' },
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: () => import('@/views/profile/ProfileView.vue'),

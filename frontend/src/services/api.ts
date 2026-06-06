@@ -25,6 +25,9 @@ import type {
   PaymentAuditPayload,
   PaymentQuery,
   PaymentRecord,
+  PurchaseApplicationQuery,
+  PurchaseApplicationRecord,
+  PurchaseApprovalPayload,
   RegisterPayload,
   RepairDispatchPayload,
   RepairKanban,
@@ -186,6 +189,15 @@ export const noticeApi = {
       method: 'POST',
       body: payload,
     })
+  },
+}
+
+export const purchaseApi = {
+  getList(query: PurchaseApplicationQuery) {
+    return request<PageResult<PurchaseApplicationRecord>>('/api/v1/purchase-applications', { method: 'GET', query })
+  },
+  approve(payload: PurchaseApprovalPayload) {
+    return request<null>('/api/v1/purchase-applications/approve', { method: 'PUT', body: payload })
   },
 }
 

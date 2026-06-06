@@ -43,10 +43,21 @@ export interface RegisterPayload {
 
 export interface AssetRecord {
   id: number
+  parentId: number
   name: string
   type: string
-  parentId: number
-  status: number
+  area: number
+  status: string
+  ownerName?: string | null
+  ownerPhone?: string | null
+  ownerId?: number | null
+  createTime?: string | null
+}
+
+export interface AssetQuery extends PageQuery {
+  name?: string
+  type?: string
+  status?: string
 }
 
 export interface AssetTreeNode {
@@ -190,6 +201,34 @@ export interface ContractRecord {
 export interface ContractQuery extends PageQuery {
   tenantName?: string
   contractStatus?: number
+}
+
+export interface PurchaseApplicationRecord {
+  id: number
+  applicationNo: string
+  houseId: number
+  houseName?: string | null
+  applicantId: number
+  applicantName: string
+  applicantPhone: string
+  status: number
+  statusText?: string | null
+  proposedPrice?: number | null
+  startDate?: string | null
+  endDate?: string | null
+  remark?: string | null
+  createTime?: string | null
+}
+
+export interface PurchaseApplicationQuery extends PageQuery {
+  status?: number
+}
+
+export interface PurchaseApplicationPayload {
+  houseId: number
+  applicantName: string
+  applicantPhone: string
+  remark?: string
 }
 
 export interface MobileTabItem {

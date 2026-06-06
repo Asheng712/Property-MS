@@ -191,6 +191,19 @@ a {
   border-color: var(--brand-strong);
 }
 
+.btn-warning-gradient {
+  background: var(--warning-fg);
+  border: 1px solid var(--warning-fg);
+  color: #fff;
+  box-shadow: none;
+}
+
+.btn-warning-gradient:hover {
+  background: #a05a08;
+  border-color: #a05a08;
+  color: #fff;
+}
+
 /* ---- 对话表单 ---- */
 .dialog-form .el-form-item {
   margin-bottom: 22px;
