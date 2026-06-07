@@ -56,7 +56,7 @@ const quickActions = [
 async function loadData() {
   loading.value = true
   try {
-    const result = await noticeApi.getList({ page: 1, pageSize: 3, status: 'PUBLISHED' })
+    const result = await noticeApi.getList({ page: 1, pageSize: 3, status: 'published' })
     notices.value = result.records
   } catch { /* ignore */ }
 
@@ -162,7 +162,7 @@ onActivated(() => {
         />
         <van-cell
           title="处理中投诉"
-          :value="`${complaintStore.pendingComplaints.length} 条`"
+          :value="`${complaintStore.activeComplaints.length} 条`"
           icon="comment-o"
           is-link
           @click="router.push('/complaints')"

@@ -10,10 +10,10 @@ const complaintStore = useComplaintStore()
 const activeTab = ref(0)
 
 const statusMap: Record<number, string> = { 0: '待处理', 1: '处理中', 2: '已办结' }
-const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'warning', 2: 'success' }
+const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'primary', 2: 'success' }
 
-// tab 0=全部 1=待处理(status 0) 2=已处理(status 2 已办结)
-const tabStatusMapping: Record<number, number> = { 1: 0, 2: 2 }
+// tab 0=全部 1=待处理(status 0) 2=处理中(status 1) 3=已办结(status 2)
+const tabStatusMapping: Record<number, number> = { 1: 0, 2: 1, 3: 2 }
 
 function filteredList(): ComplaintRecord[] {
   if (activeTab.value === 0) return complaintStore.complaints
@@ -37,7 +37,8 @@ onActivated(() => {
     <van-tabs v-model:active="activeTab" sticky offset-top="46">
       <van-tab title="全部" />
       <van-tab title="待处理" />
-      <van-tab title="已处理" />
+      <van-tab title="处理中" />
+      <van-tab title="已办结" />
     </van-tabs>
 
     <EmptyState

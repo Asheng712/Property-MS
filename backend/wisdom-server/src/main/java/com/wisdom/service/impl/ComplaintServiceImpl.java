@@ -10,6 +10,8 @@ import com.wisdom.entity.Complaint;
 import com.wisdom.mapper.ComplaintMapper;
 import com.wisdom.result.PageResult;
 import com.wisdom.context.BaseContext;
+import com.wisdom.entity.User;
+import com.wisdom.mapper.UserMapper;
 import com.wisdom.service.ComplaintService;
 import com.wisdom.service.UserService;
 import com.wisdom.vo.ComplaintVO;
@@ -27,6 +29,9 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Autowired
     private ComplaintMapper complaintMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private UserService userService;
@@ -82,12 +87,20 @@ public class ComplaintServiceImpl implements ComplaintService {
 
     @Override
     public void createComplaint(ComplaintCreateDTO complaintCreateDTO) {
+        Long currentUserId = BaseContext.getCurrentId();
+        User user = userMapper.selectById(currentUserId);
+        // 来源优先使用前端传入的真实姓名；若前端传入的是账号名或无意义值，则用数据库中的真实姓名
+        String source = complaintCreateDTO.getSource();
+        if (source == null || source.isEmpty() || "APP".equals(source) || "前台代录".equals(source)) {
+            // 留空或默认值，从用户信息中获取真实姓名
+            source = (user != null && user.getRealName() != null) ? user.getRealName() : source;
+        }
         Complaint complaint = new Complaint();
         complaint.setComplaintNo("CMP-" + LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         complaint.setCategory(complaintCreateDTO.getCategory());
         complaint.setContent(complaintCreateDTO.getContent());
-        complaint.setSource(complaintCreateDTO.getSource());
-        complaint.setReporterId(BaseContext.getCurrentId());
+        complaint.setSource(source);
+        complaint.setReporterId(currentUserId);
         complaint.setStatus(0);
         complaint.setCreateTime(LocalDateTime.now());
         complaintMapper.insert(complaint);

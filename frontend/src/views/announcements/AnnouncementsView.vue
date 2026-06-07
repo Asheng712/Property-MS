@@ -212,16 +212,17 @@ function getTargetText(value: string) {
 }
 
 function getStatusText(value: string) {
+  const normalized = (value || '').toLowerCase()
   const mapping: Record<string, string> = {
     draft: '草稿',
     published: '已发布',
   }
 
-  return mapping[value] ?? value
+  return mapping[normalized] ?? value
 }
 
 function getStatusTone(value: string) {
-  return value === 'published' ? 'success' : 'info'
+  return (value || '').toLowerCase() === 'published' ? 'success' : 'info'
 }
 
 function stripHtml(html: string) {

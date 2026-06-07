@@ -31,7 +31,7 @@ async function onSubmit() {
     await complaintStore.createComplaint({
       category: form.value.category,
       content: form.value.content.trim(),
-      source: userStore.userInfo?.username || 'APP',
+      source: userStore.userInfo?.realName || userStore.userInfo?.username || 'APP',
     })
     router.back()
   } finally {
