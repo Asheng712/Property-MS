@@ -26,7 +26,7 @@ const statusTagMap: Record<string, string> = {
 const statusLabelMap: Record<string, string> = {
   VACANT: '空置',
   SOLD: '已售',
-  RENTING: '招租中',
+  RENTING: '已出租',
   DECORATING: '装修中',
   OCCUPIED: '已入住',
 }

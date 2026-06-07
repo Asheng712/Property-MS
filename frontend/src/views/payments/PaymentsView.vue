@@ -21,7 +21,9 @@
         <el-table-column label="缴费金额" min-width="140">
           <template #default="{ row }">{{ formatCurrency(Number(row.payAmount)) }}</template>
         </el-table-column>
-        <el-table-column prop="payType" label="支付方式" min-width="120" />
+        <el-table-column label="支付方式" min-width="120">
+          <template #default="{ row }">{{ getPayTypeText(row.payType) }}</template>
+        </el-table-column>
         <el-table-column prop="payTime" label="支付时间" min-width="170" />
         <el-table-column label="状态" min-width="120">
           <template #default="{ row }">
@@ -94,7 +96,7 @@ const detailItems = computed(() =>
         { label: '账单号', value: activePayment.value.billNo || '-' },
         { label: '资产名称', value: activePayment.value.houseName || '-' },
         { label: '金额', value: formatCurrency(Number(activePayment.value.payAmount)) },
-        { label: '支付方式', value: activePayment.value.payType },
+        { label: '支付方式', value: getPayTypeText(activePayment.value.payType) },
         { label: '支付时间', value: activePayment.value.payTime || '-' },
         { label: '操作人', value: activePayment.value.operator || '-' },
         { label: '状态', value: activePayment.value.statusText || getStatusText(activePayment.value.status) },
@@ -163,6 +165,20 @@ async function confirmPayment(id: number) {
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '核销失败')
   }
+}
+
+function getPayTypeText(value: string) {
+  const mapping: Record<string, string> = {
+    WECHAT: '微信支付',
+    ALIPAY: '支付宝',
+    TRANSFER: '银行转账',
+    CASH: '现金',
+    微信支付: '微信支付',
+    支付宝: '支付宝',
+    银行转账: '银行转账',
+    现金: '现金',
+  }
+  return mapping[value] || value
 }
 
 function getStatusText(value: number) {

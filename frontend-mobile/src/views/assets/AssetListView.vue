@@ -28,7 +28,7 @@ const statusTagMap: Record<string, string> = {
 const statusLabelMap: Record<string, string> = {
   VACANT: '空置',
   SOLD: '已售',
-  RENTING: '招租中',
+  RENTING: '已出租',
   DECORATING: '装修中',
   OCCUPIED: '已入住',
 }
@@ -37,11 +37,12 @@ onMounted(async () => {
   loading.value = true
   try {
     const result = await assetApi.getList({ page: 1, pageSize: 100 })
-    // 过滤掉楼栋（BUILDING）以及已入住/已售资产，仅展示可购买/租赁的叶子节点
+    // 过滤掉楼栋（BUILDING）以及已入住/已售/已出租资产，仅展示可购买/租赁的叶子节点
     assets.value = result.records.filter(a =>
       a.type !== 'BUILDING' &&
       a.status !== 'OCCUPIED' &&
-      a.status !== 'SOLD'
+      a.status !== 'SOLD' &&
+      a.status !== 'RENTING'
     )
   } catch {
     /* ignore */

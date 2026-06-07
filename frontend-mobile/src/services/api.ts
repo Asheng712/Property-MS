@@ -37,6 +37,9 @@ export const authApi = {
   getInfo() {
     return http.get<UserInfo>('/auth/info')
   },
+  updateProfile(data: Partial<UserInfo>) {
+    return http.put<null>('/auth/profile', data)
+  },
 }
 
 export const billApi = {

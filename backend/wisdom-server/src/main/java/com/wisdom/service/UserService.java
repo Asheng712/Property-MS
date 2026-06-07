@@ -1,5 +1,6 @@
 package com.wisdom.service;
 
+import com.wisdom.dto.UpdateProfileDTO;
 import com.wisdom.dto.UserLoginDTO;
 import com.wisdom.dto.UserRegisterDTO;
 import com.wisdom.vo.UserVO;
@@ -10,6 +11,7 @@ public interface UserService {
     String login(UserLoginDTO userLoginDTO);
     void register(UserRegisterDTO userRegisterDTO);
     UserVO getCurrentUserInfo();
+    void updateProfile(UpdateProfileDTO updateProfileDTO);
     boolean isCurrentUserAdmin();
     Long getRequiredCurrentUserId();
     List<Long> getOwnedHouseIds(Long userId);

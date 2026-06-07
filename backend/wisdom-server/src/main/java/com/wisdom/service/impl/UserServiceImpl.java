@@ -1,12 +1,17 @@
 package com.wisdom.service.impl;
 
 import com.wisdom.context.BaseContext;
+import com.wisdom.dto.UpdateProfileDTO;
 import com.wisdom.dto.UserLoginDTO;
 import com.wisdom.dto.UserRegisterDTO;
+import com.wisdom.entity.Contract;
 import com.wisdom.entity.House;
+import com.wisdom.entity.Role;
 import com.wisdom.entity.User;
 import com.wisdom.exception.BusinessException;
 import com.wisdom.mapper.AssetMapper;
+import com.wisdom.mapper.ContractMapper;
+import com.wisdom.mapper.RoleMapper;
 import com.wisdom.mapper.UserMapper;
 import com.wisdom.service.UserService;
 import com.wisdom.util.JwtTokenUtil;
@@ -28,6 +33,12 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AssetMapper assetMapper;
+
+    @Autowired
+    private ContractMapper contractMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     public UserServiceImpl(UserMapper userMapper, BCryptPasswordEncoder passwordEncoder, JwtTokenUtil jwtTokenUtil) {
         this.userMapper = userMapper;
@@ -79,8 +90,67 @@ public class UserServiceImpl implements UserService {
         userVO.setAvatar(user.getAvatar());
         userVO.setStatus(user.getStatus());
         userVO.setRoleId(user.getRoleId());
-        userVO.setRoleName("SUPER_ADMIN");
+        if (user.getRoleId() != null) {
+            Role role = roleMapper.selectById(user.getRoleId());
+            userVO.setRoleName(role != null ? role.getRoleName() : "未知角色");
+        } else {
+            userVO.setRoleName("未分配角色");
+        }
         return userVO;
+    }
+
+    @Override
+    public void updateProfile(UpdateProfileDTO updateProfileDTO) {
+        Long userId = BaseContext.getCurrentId();
+        if (userId == null) {
+            throw BusinessException.unauthorized();
+        }
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw BusinessException.notFound("USER_NOT_FOUND");
+        }
+
+        boolean nameChanged = updateProfileDTO.getRealName() != null
+                && !updateProfileDTO.getRealName().equals(user.getRealName());
+        boolean phoneChanged = updateProfileDTO.getPhone() != null
+                && !updateProfileDTO.getPhone().equals(user.getPhone());
+
+        if (updateProfileDTO.getRealName() != null) {
+            user.setRealName(updateProfileDTO.getRealName());
+        }
+        if (updateProfileDTO.getPhone() != null) {
+            user.setPhone(updateProfileDTO.getPhone());
+        }
+        if (updateProfileDTO.getEmail() != null) {
+            user.setEmail(updateProfileDTO.getEmail());
+        }
+        if (updateProfileDTO.getAvatar() != null) {
+            user.setAvatar(updateProfileDTO.getAvatar());
+        }
+        userMapper.updateById(user);
+
+        // 同步更新名下的房产信息和合同租户名
+        if (nameChanged || phoneChanged) {
+            List<House> houses = assetMapper.selectHousesByOwnerId(userId);
+            for (House house : houses) {
+                if (nameChanged) {
+                    house.setOwnerName(updateProfileDTO.getRealName());
+                }
+                if (phoneChanged) {
+                    house.setOwnerPhone(updateProfileDTO.getPhone());
+                }
+                assetMapper.updateById(house);
+
+                // 同步该房产关联的合同租户名
+                if (nameChanged) {
+                    List<Contract> contracts = contractMapper.selectByHouseId(house.getId());
+                    for (Contract contract : contracts) {
+                        contract.setTenantName(updateProfileDTO.getRealName());
+                        contractMapper.updateById(contract);
+                    }
+                }
+            }
+        }
     }
 
     @Override

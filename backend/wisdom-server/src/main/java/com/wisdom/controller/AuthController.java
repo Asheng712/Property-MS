@@ -1,6 +1,7 @@
 package com.wisdom.controller;
 
 import com.wisdom.annotation.LoginRequired;
+import com.wisdom.dto.UpdateProfileDTO;
 import com.wisdom.dto.UserLoginDTO;
 import com.wisdom.dto.UserRegisterDTO;
 import com.wisdom.result.Result;
@@ -40,5 +41,13 @@ public class AuthController {
     public Result<UserVO> getCurrentUserInfo() {
         UserVO userVO = userService.getCurrentUserInfo();
         return Result.success(userVO);
+    }
+
+    @PutMapping("/profile")
+    @Operation(summary = "修改个人资料")
+    @LoginRequired
+    public Result<Void> updateProfile(@Valid @RequestBody UpdateProfileDTO updateProfileDTO) {
+        userService.updateProfile(updateProfileDTO);
+        return Result.success(null);
     }
 }

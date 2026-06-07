@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { authApi } from '@/services/api'
 import { showToast } from 'vant'
 
 const router = useRouter()
@@ -15,10 +16,36 @@ const form = ref({
 
 const loading = ref(false)
 
-function onSubmit() {
+async function onSubmit() {
+  if (!form.value.realName.trim()) {
+    showToast('请输入真实姓名')
+    return
+  }
+  if (!form.value.phone.trim()) {
+    showToast('请输入手机号')
+    return
+  }
+
   loading.value = true
-  showToast('该功能暂未开放，请联系管理员')
-  loading.value = false
+  try {
+    await authApi.updateProfile({
+      realName: form.value.realName.trim(),
+      phone: form.value.phone.trim(),
+      email: form.value.email.trim() || undefined,
+    })
+    // 更新本地 store 中的用户信息
+    if (userStore.userInfo) {
+      userStore.userInfo.realName = form.value.realName.trim()
+      userStore.userInfo.phone = form.value.phone.trim()
+      userStore.userInfo.email = form.value.email.trim() || undefined
+    }
+    showToast('保存成功')
+    router.back()
+  } catch (e: any) {
+    showToast(e?.message || '保存失败')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
