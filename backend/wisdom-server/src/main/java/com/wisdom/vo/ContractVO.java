@@ -3,6 +3,7 @@ package com.wisdom.vo;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class ContractVO {
@@ -17,4 +18,5 @@ public class ContractVO {
     private BigDecimal deposit;
     private Integer contractStatus;
     private String contractStatusText;
+    private LocalDateTime createTime;
 }

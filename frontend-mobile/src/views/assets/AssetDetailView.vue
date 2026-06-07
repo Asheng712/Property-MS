@@ -54,13 +54,19 @@ onMounted(async () => {
   }
 })
 
-async function handleApply() {
+async function handleApply(type: 'PURCHASE' | 'RENTAL') {
   if (!asset.value) return
+
+  const isPurchase = type === 'PURCHASE'
+  const title = isPurchase ? '申请购买资产' : '申请租赁资产'
+  const message = isPurchase
+    ? `确认申请购买「${asset.value.name}」吗？提交后管理员将进行审批定价。`
+    : `确认申请租赁「${asset.value.name}」吗？提交后管理员将进行审批。`
 
   try {
     await showDialog({
-      title: '申请购买资产',
-      message: `确认申请购买「${asset.value.name}」吗？提交后管理员将进行审批。`,
+      title,
+      message,
       showCancelButton: true,
       confirmButtonText: '确认申请',
       cancelButtonText: '取消',
@@ -74,6 +80,7 @@ async function handleApply() {
     const userInfo = userStore.userInfo
     await purchaseApi.create({
       houseId: asset.value!.id,
+      type,
       applicantName: userInfo?.realName || userInfo?.username || '',
       applicantPhone: userInfo?.phone || '',
     })
@@ -115,15 +122,24 @@ async function handleApply() {
         </van-cell-group>
       </div>
 
-      <div style="padding: 0 12px">
+      <div style="padding: 0 12px; display: flex; flex-direction: column; gap: 10px">
         <van-button
           type="primary"
           block
           round
           :loading="submitting"
-          @click="handleApply"
+          @click="handleApply('PURCHASE')"
         >
           申请购买
+        </van-button>
+        <van-button
+          type="warning"
+          block
+          round
+          :loading="submitting"
+          @click="handleApply('RENTAL')"
+        >
+          申请租赁
         </van-button>
       </div>
     </template>

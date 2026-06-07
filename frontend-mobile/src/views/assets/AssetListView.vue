@@ -54,7 +54,7 @@ onMounted(async () => {
 
 <template>
   <div class="page-container--with-nav">
-    <van-nav-bar title="可购资产" left-arrow @click-left="router.back()" />
+    <van-nav-bar title="可购/可租资产" left-arrow @click-left="router.back()" />
 
     <PageSkeleton v-if="loading" />
 

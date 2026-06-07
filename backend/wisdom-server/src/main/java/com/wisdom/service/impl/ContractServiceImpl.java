@@ -55,6 +55,7 @@ public class ContractServiceImpl implements ContractService {
             }
             queryWrapper.in(Contract::getHouseId, ownedHouseIds);
         }
+        queryWrapper.orderByDesc(Contract::getCreateTime);
         IPage<Contract> contractPage = contractMapper.selectPage(page, queryWrapper);
         List<ContractVO> contractVOList = contractPage.getRecords().stream()
                 .map(contract -> {

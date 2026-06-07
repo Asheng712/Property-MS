@@ -1,7 +1,7 @@
 <template>
   <PageContainer title="合同管理" description="管理租户合同、租期、租金和合同状态。">
     <template #actions>
-      <el-button type="warning" class="btn-warning-gradient" @click="openApproval">购买申请审批</el-button>
+      <el-button type="warning" class="btn-warning-gradient" @click="openApproval">资产申请审批</el-button>
       <el-button type="primary" class="btn-primary-gradient" @click="openCreate">新增合同</el-button>
     </template>
 
@@ -34,6 +34,7 @@
             <StatusBadge :label="row.contractStatusText || getStatusText(row.contractStatus)" :tone="getStatusTone(row.contractStatus)" />
           </template>
         </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" min-width="160" />
         <el-table-column label="操作" width="140">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">详情</el-button>
@@ -92,10 +93,23 @@
       </template>
     </el-dialog>
 
-    <!-- 购买申请审批弹窗 -->
-    <el-dialog v-model="approvalVisible" title="资产购买申请审批" width="800px">
+    <!-- 资产申请审批弹窗 -->
+    <el-dialog v-model="approvalVisible" title="资产申请审批（购买/租赁）" width="900px" @closed="loadContracts">
+      <div style="margin-bottom: 12px; display: flex; gap: 8px; align-items: center">
+        <span style="font-size: 13px; color: var(--el-text-color-secondary)">申请类型：</span>
+        <el-select v-model="approvalQuery.type" placeholder="全部" clearable style="width: 120px" @change="handleApprovalSearch">
+          <el-option label="购买" value="PURCHASE" />
+          <el-option label="租赁" value="RENTAL" />
+        </el-select>
+        <el-button @click="handleApprovalSearch">查询</el-button>
+      </div>
       <el-table v-loading="approvalLoading" :data="applications">
         <el-table-column prop="applicationNo" label="申请编号" width="180" />
+        <el-table-column label="申请类型" width="90">
+          <template #default="{ row }">
+            <StatusBadge :label="getApplicationTypeText(row.type)" :tone="row.type === 'PURCHASE' ? 'info' : 'warning'" />
+          </template>
+        </el-table-column>
         <el-table-column prop="applicantName" label="申请人" min-width="100" />
         <el-table-column prop="houseName" label="资产名称" min-width="140">
           <template #default="{ row }">{{ row.houseName || `资产ID: ${row.houseId}` }}</template>
@@ -130,6 +144,9 @@
     <!-- 审批表单弹窗 -->
     <el-dialog v-model="approveFormVisible" :title="`审批申请 - ${approvingApp?.applicationNo || ''}`" width="500px">
       <el-form label-position="top" class="dialog-form">
+        <div v-if="approvingApp" style="margin-bottom: 16px; padding: 8px 12px; background: var(--el-color-info-light-9); border-radius: 6px; font-size: 13px">
+          申请类型：<strong>{{ getApplicationTypeText(approvingApp.type) }}</strong>
+        </div>
         <el-form-item label="审批结果">
           <el-radio-group v-model="approveDraft.approved">
             <el-radio :value="true">通过</el-radio>
@@ -138,21 +155,30 @@
         </el-form-item>
 
         <template v-if="approveDraft.approved">
-          <el-form-item label="建议租金（元/月）" required>
-            <el-input-number v-model="approveDraft.proposedPrice" :min="0" :precision="2" class="full-width" />
-          </el-form-item>
-          <el-form-item label="合同开始日期" required>
-            <el-date-picker v-model="approveDraft.startDate" type="date" value-format="YYYY-MM-DD" class="full-width" />
-          </el-form-item>
-          <el-form-item label="合同结束日期" required>
-            <el-date-picker v-model="approveDraft.endDate" type="date" value-format="YYYY-MM-DD" class="full-width" />
-          </el-form-item>
-          <el-form-item label="押金">
-            <el-input-number v-model="approveDraft.deposit" :min="0" :precision="2" class="full-width" />
-          </el-form-item>
-          <el-form-item label="递增比例（%）">
-            <el-input-number v-model="approveDraft.increaseRate" :min="0" :precision="2" class="full-width" />
-          </el-form-item>
+          <!-- 购买申请：只需定价 -->
+          <template v-if="approvingApp?.type === 'PURCHASE'">
+            <el-form-item label="出售价格（元）" required>
+              <el-input-number v-model="approveDraft.proposedPrice" :min="0" :precision="2" class="full-width" />
+            </el-form-item>
+          </template>
+          <!-- 租赁申请：需要租金、日期等 -->
+          <template v-else>
+            <el-form-item label="租金（元/月）" required>
+              <el-input-number v-model="approveDraft.proposedPrice" :min="0" :precision="2" class="full-width" />
+            </el-form-item>
+            <el-form-item label="合同开始日期" required>
+              <el-date-picker v-model="approveDraft.startDate" type="date" value-format="YYYY-MM-DD" class="full-width" />
+            </el-form-item>
+            <el-form-item label="合同结束日期" required>
+              <el-date-picker v-model="approveDraft.endDate" type="date" value-format="YYYY-MM-DD" class="full-width" />
+            </el-form-item>
+            <el-form-item label="押金">
+              <el-input-number v-model="approveDraft.deposit" :min="0" :precision="2" class="full-width" />
+            </el-form-item>
+            <el-form-item label="递增比例（%）">
+              <el-input-number v-model="approveDraft.increaseRate" :min="0" :precision="2" class="full-width" />
+            </el-form-item>
+          </template>
         </template>
 
         <template v-else>
@@ -207,6 +233,7 @@ const approvingApp = ref<PurchaseApplicationRecord | null>(null)
 const approvalQuery = reactive({
   page: 1,
   pageSize: 10,
+  type: '' as string,
 })
 
 const approveDraft = reactive({
@@ -389,6 +416,7 @@ async function loadApplications() {
     const result = await purchaseApi.getList({
       page: approvalQuery.page,
       pageSize: approvalQuery.pageSize,
+      type: approvalQuery.type || undefined,
     })
     applications.value = result.records
     approvalTotal.value = result.total
@@ -397,6 +425,11 @@ async function loadApplications() {
   } finally {
     approvalLoading.value = false
   }
+}
+
+function handleApprovalSearch() {
+  approvalQuery.page = 1
+  void loadApplications()
 }
 
 function handleApprovalPageChange(page: number) {
@@ -420,14 +453,18 @@ function openApproveForm(app: PurchaseApplicationRecord) {
 async function submitApproval() {
   if (!approveDraft.id) return
 
+  const isPurchase = approvingApp.value?.type === 'PURCHASE'
+
   if (approveDraft.approved) {
     if (!approveDraft.proposedPrice || approveDraft.proposedPrice <= 0) {
-      ElMessage.warning('请输入建议租金')
+      ElMessage.warning(isPurchase ? '请输入出售价格' : '请输入租金')
       return
     }
-    if (!approveDraft.startDate || !approveDraft.endDate) {
-      ElMessage.warning('请选择合同起止日期')
-      return
+    if (!isPurchase) {
+      if (!approveDraft.startDate || !approveDraft.endDate) {
+        ElMessage.warning('请选择合同起止日期')
+        return
+      }
     }
   } else {
     if (!approveDraft.remark.trim()) {
@@ -444,15 +481,19 @@ async function submitApproval() {
     }
     if (approveDraft.approved) {
       payload.proposedPrice = approveDraft.proposedPrice
-      payload.startDate = approveDraft.startDate
-      payload.endDate = approveDraft.endDate
-      payload.deposit = approveDraft.deposit || undefined
-      payload.increaseRate = approveDraft.increaseRate || undefined
+      if (!isPurchase) {
+        payload.startDate = approveDraft.startDate
+        payload.endDate = approveDraft.endDate
+        payload.deposit = approveDraft.deposit || undefined
+        payload.increaseRate = approveDraft.increaseRate || undefined
+      }
     } else {
       payload.remark = approveDraft.remark.trim()
     }
     await purchaseApi.approve(payload)
-    ElMessage.success(approveDraft.approved ? '审批通过，合同已生成' : '已拒绝申请')
+    ElMessage.success(approveDraft.approved
+      ? (isPurchase ? '审批通过，资产所有权已转移' : '审批通过，合同已生成')
+      : '已拒绝申请')
     approveFormVisible.value = false
     await loadApplications()
     await loadContracts()
@@ -475,6 +516,12 @@ function getApplicationStatusTone(status: number) {
   if (status === 1) return 'success'
   if (status === 2) return 'danger'
   return 'info'
+}
+
+function getApplicationTypeText(type?: string | null) {
+  if (type === 'PURCHASE') return '购买'
+  if (type === 'RENTAL') return '租赁'
+  return '购买'
 }
 </script>
 

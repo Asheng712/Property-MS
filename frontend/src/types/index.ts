@@ -94,6 +94,7 @@ export interface ContractRecord {
   deposit?: number | null
   contractStatus: number
   contractStatusText?: string | null
+  createTime?: string | null
 }
 
 export interface ContractQuery extends PageQuery {
@@ -395,6 +396,7 @@ export interface LegacyNoticeRecord {
 export interface PurchaseApplicationRecord {
   id: number
   applicationNo: string
+  type?: string | null
   houseId: number
   houseName?: string | null
   applicantId: number
@@ -412,6 +414,7 @@ export interface PurchaseApplicationRecord {
 
 export interface PurchaseApplicationQuery extends PageQuery {
   status?: number
+  type?: string
   applicantName?: string
 }
 

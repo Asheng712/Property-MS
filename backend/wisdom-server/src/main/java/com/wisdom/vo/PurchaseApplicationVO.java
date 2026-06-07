@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class PurchaseApplicationVO {
     private Long id;
     private String applicationNo;
+    private String type;
     private Long houseId;
     private String houseName;
     private Long applicantId;

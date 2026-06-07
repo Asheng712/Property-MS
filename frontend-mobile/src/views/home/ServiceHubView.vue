@@ -32,6 +32,20 @@ const services = [
     color: '#ee0a24',
     path: '/complaints',
   },
+  {
+    title: '资产购买/租赁',
+    desc: '查看可购可租资产，提交申请',
+    icon: 'shop-o',
+    color: '#1989fa',
+    path: '/assets',
+  },
+  {
+    title: '我的资产申请',
+    desc: '查看购买/租赁申请审批进度',
+    icon: 'balance-list-o',
+    color: '#ff976a',
+    path: '/asset-applications',
+  },
 ]
 </script>
 

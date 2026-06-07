@@ -108,13 +108,19 @@ const router = createRouter({
       path: '/assets',
       name: 'assets',
       component: () => import('@/views/assets/AssetListView.vue'),
-      meta: { title: '可购资产' },
+      meta: { title: '可购/可租资产' },
     },
     {
       path: '/assets/:id',
       name: 'asset-detail',
       component: () => import('@/views/assets/AssetDetailView.vue'),
       meta: { title: '资产详情' },
+    },
+    {
+      path: '/asset-applications',
+      name: 'asset-applications',
+      component: () => import('@/views/assets/ApplicationListView.vue'),
+      meta: { title: '资产申请记录' },
     },
     {
       path: '/profile',

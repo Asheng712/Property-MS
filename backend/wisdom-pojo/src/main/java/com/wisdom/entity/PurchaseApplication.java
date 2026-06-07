@@ -20,6 +20,7 @@ public class PurchaseApplication implements Serializable {
     private Long applicantId;
     private String applicantName;
     private String applicantPhone;
+    private String type;
     private Integer status;
     private BigDecimal proposedPrice;
     private LocalDate startDate;

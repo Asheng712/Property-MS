@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class PurchaseApplicationPageQueryDTO extends PageQueryDTO {
     private Integer status;
+    private String type;
     private String applicantName;
     private Long houseId;
 }

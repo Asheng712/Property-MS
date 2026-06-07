@@ -7,6 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @TableName("bus_contract")
@@ -21,4 +22,6 @@ public class Contract implements Serializable {
     private BigDecimal increaseRate;
     private BigDecimal deposit;
     private Integer contractStatus;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

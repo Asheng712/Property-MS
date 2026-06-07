@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -63,6 +64,9 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
         }
         if (dto.getHouseId() != null) {
             queryWrapper.eq(PurchaseApplication::getHouseId, dto.getHouseId());
+        }
+        if (dto.getType() != null && !dto.getType().isEmpty()) {
+            queryWrapper.eq(PurchaseApplication::getType, dto.getType());
         }
         if (!userService.isCurrentUserAdmin()) {
             Long currentUserId = userService.getRequiredCurrentUserId();
@@ -109,8 +113,13 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
         if (user == null) {
             throw BusinessException.unauthorized();
         }
+        String type = dto.getType() != null ? dto.getType() : "PURCHASE";
+        if (!"PURCHASE".equals(type) && !"RENTAL".equals(type)) {
+            throw BusinessException.badRequest("申请类型无效，必须为 PURCHASE 或 RENTAL");
+        }
         PurchaseApplication app = new PurchaseApplication();
         app.setApplicationNo("APP-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+        app.setType(type);
         app.setHouseId(dto.getHouseId());
         app.setApplicantId(currentUserId);
         app.setApplicantName(dto.getApplicantName() != null ? dto.getApplicantName() : user.getRealName());
@@ -134,36 +143,67 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
             throw BusinessException.badRequest("该申请已处理，无法重复审批");
         }
 
+        String appType = app.getType() != null ? app.getType() : "PURCHASE";
+
         if (Boolean.TRUE.equals(dto.getApproved())) {
-            if (dto.getProposedPrice() == null || dto.getStartDate() == null || dto.getEndDate() == null) {
-                throw BusinessException.badRequest("审批通过时，租金、开始日期和结束日期不能为空");
-            }
-            Contract contract = new Contract();
-            contract.setHouseId(app.getHouseId());
-            contract.setTenantName(app.getApplicantName());
-            contract.setRentAmount(dto.getProposedPrice());
-            contract.setStartDate(dto.getStartDate());
-            contract.setEndDate(dto.getEndDate());
-            contract.setDeposit(dto.getDeposit());
-            contract.setIncreaseRate(dto.getIncreaseRate());
-            contract.setContractStatus(1);
-            contractMapper.insert(contract);
+            if ("PURCHASE".equals(appType)) {
+                // 购买申请：定价，转移所有权，创建购买合同
+                if (dto.getProposedPrice() == null || dto.getProposedPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                    throw BusinessException.badRequest("审批通过时，出售价格不能为空且必须大于0");
+                }
+                House house = assetMapper.selectById(app.getHouseId());
+                if (house != null) {
+                    house.setOwnerId(app.getApplicantId());
+                    house.setOwnerName(app.getApplicantName());
+                    house.setOwnerPhone(app.getApplicantPhone());
+                    house.setStatus("SOLD");
+                    assetMapper.updateById(house);
+                }
 
-            // 将资产所有权转移给申请人，并更新资产状态为已售
-            House house = assetMapper.selectById(app.getHouseId());
-            if (house != null) {
-                house.setOwnerId(app.getApplicantId());
-                house.setOwnerName(app.getApplicantName());
-                house.setOwnerPhone(app.getApplicantPhone());
-                house.setStatus("SOLD");
-                assetMapper.updateById(house);
-            }
+                // 创建购买合同记录
+                Contract contract = new Contract();
+                contract.setHouseId(app.getHouseId());
+                contract.setTenantName(app.getApplicantName());
+                contract.setRentAmount(dto.getProposedPrice());
+                contract.setStartDate(LocalDate.now());
+                contract.setContractStatus(1);
+                contractMapper.insert(contract);
 
-            app.setStatus(1);
-            app.setProposedPrice(dto.getProposedPrice());
-            app.setStartDate(dto.getStartDate());
-            app.setEndDate(dto.getEndDate());
-            app.setCreatedContractId(contract.getId());
+                app.setStatus(1);
+                app.setProposedPrice(dto.getProposedPrice());
+                app.setCreatedContractId(contract.getId());
+            } else {
+                // 租赁申请：需要租金、开始日期、结束日期，创建租赁合同
+                if (dto.getProposedPrice() == null || dto.getStartDate() == null || dto.getEndDate() == null) {
+                    throw BusinessException.badRequest("审批通过时，租金、开始日期和结束日期不能为空");
+                }
+                Contract contract = new Contract();
+                contract.setHouseId(app.getHouseId());
+                contract.setTenantName(app.getApplicantName());
+                contract.setRentAmount(dto.getProposedPrice());
+                contract.setStartDate(dto.getStartDate());
+                contract.setEndDate(dto.getEndDate());
+                contract.setDeposit(dto.getDeposit());
+                contract.setIncreaseRate(dto.getIncreaseRate());
+                contract.setContractStatus(1);
+                contractMapper.insert(contract);
+
+                // 更新资产状态为已出租
+                House house = assetMapper.selectById(app.getHouseId());
+                if (house != null) {
+                    house.setOwnerId(app.getApplicantId());
+                    house.setOwnerName(app.getApplicantName());
+                    house.setOwnerPhone(app.getApplicantPhone());
+                    house.setStatus("RENTING");
+                    assetMapper.updateById(house);
+                }
+
+                app.setStatus(1);
+                app.setProposedPrice(dto.getProposedPrice());
+                app.setStartDate(dto.getStartDate());
+                app.setEndDate(dto.getEndDate());
+                app.setCreatedContractId(contract.getId());
+            }
             purchaseApplicationMapper.updateById(app);
         } else {
             app.setStatus(2);
