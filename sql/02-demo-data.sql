@@ -28,25 +28,25 @@ INSERT IGNORE INTO sys_user (id, username, password, real_name, phone, email, ro
 -- owner_id: NULL for buildings, matched user ID for leaf nodes
 INSERT IGNORE INTO bus_house (id, parent_id, name, type, area, status, owner_name, owner_phone, owner_id) VALUES
 (1, 0, 'A栋综合楼',        'BUILDING',    5000.00, 'OCCUPIED', NULL,   NULL,          NULL),
-(2, 1, '101商铺',          'SHOP',         120.50, 'OCCUPIED', '张三', '13800001111', 2),
-(3, 1, '102商铺',          'SHOP',          98.00, 'VACANT',   NULL,   NULL,          NULL),
-(4, 1, '201住宅',          'RESIDENTIAL',   89.50, 'SOLD',     '李四', '13800002222', 3),
+(2, 1, 'A101商铺',         'SHOP',         120.50, 'OCCUPIED', '张三', '13800001111', 2),
+(3, 1, 'A102商铺',         'SHOP',          98.00, 'VACANT',   NULL,   NULL,          NULL),
+(4, 1, 'A201住宅',         'RESIDENTIAL',   89.50, 'SOLD',     '李四', '13800002222', 3),
 (5, 0, 'B栋综合楼',        'BUILDING',    3800.00, 'OCCUPIED', NULL,   NULL,          NULL),
-(6, 5, '101办公楼',        'UNIT',         200.00, 'RENTING',  '王五', '13800003333', 4),
-(7, 5, '202住宅',          'RESIDENTIAL',   76.00, 'VACANT',   NULL,   NULL,          NULL),
-(8, 1, '301住宅',          'RESIDENTIAL',   92.00, 'OCCUPIED', '赵六', '13800004444', 5),
-(9, 1, '302住宅',          'RESIDENTIAL',   88.00, 'RENTING',  '钱七', '13800005555', 6),
-(10, 1, '401住宅',         'RESIDENTIAL',  105.00, 'SOLD',     '孙八', '13800006666', 7),
-(11, 5, '103商铺',         'SHOP',          65.00, 'OCCUPIED', '周九', '13800007777', 8),
-(12, 5, '201办公室',       'UNIT',         150.00, 'RENTING',  '吴十', '13800008888', 9),
+(6, 5, 'B101办公楼',       'UNIT',         200.00, 'RENTING',  '王五', '13800003333', 4),
+(7, 5, 'B202住宅',         'RESIDENTIAL',   76.00, 'VACANT',   NULL,   NULL,          NULL),
+(8, 1, 'A301住宅',         'RESIDENTIAL',   92.00, 'OCCUPIED', '赵六', '13800004444', 5),
+(9, 1, 'A302住宅',         'RESIDENTIAL',   88.00, 'RENTING',  '钱七', '13800005555', 6),
+(10, 1, 'A401住宅',         'RESIDENTIAL',  105.00, 'SOLD',     '孙八', '13800006666', 7),
+(11, 5, 'B103商铺',         'SHOP',          65.00, 'OCCUPIED', '周九', '13800007777', 8),
+(12, 5, 'B201办公室',       'UNIT',         150.00, 'RENTING',  '吴十', '13800008888', 9),
 (13, 0, 'C栋住宅楼',       'BUILDING',    4200.00, 'OCCUPIED', NULL,   NULL,          NULL),
-(14, 13, '101住宅',        'RESIDENTIAL',   78.00, 'OCCUPIED', '郑十一', '13800009999',10),
-(15, 13, '102住宅',        'RESIDENTIAL',   82.00, 'SOLD',     '冯十二', '13800010000',11),
-(16, 13, '201住宅',        'RESIDENTIAL',   78.00, 'RENTING',  '陈十三', '13800011111',12),
-(17, 13, '301住宅',        'RESIDENTIAL',   95.00, 'OCCUPIED', '褚十四', '13800012222',13),
+(14, 13, 'C101住宅',        'RESIDENTIAL',   78.00, 'OCCUPIED', '郑十一', '13800009999',10),
+(15, 13, 'C102住宅',        'RESIDENTIAL',   82.00, 'SOLD',     '冯十二', '13800010000',11),
+(16, 13, 'C201住宅',        'RESIDENTIAL',   78.00, 'RENTING',  '陈十三', '13800011111',12),
+(17, 13, 'C301住宅',        'RESIDENTIAL',   95.00, 'OCCUPIED', '褚十四', '13800012222',13),
 (18, 0, 'D栋商业楼',       'BUILDING',    3600.00, 'OCCUPIED', NULL,   NULL,          NULL),
-(19, 18, '101商铺',        'SHOP',         180.00, 'OCCUPIED', '卫十五', '13800013333',14),
-(20, 18, '102商铺',        'SHOP',         150.00, 'RENTING',  '蒋十六', '13800014444',15);
+(19, 18, 'D101商铺',        'SHOP',         180.00, 'OCCUPIED', '卫十五', '13800013333',14),
+(20, 18, 'D102商铺',        'SHOP',         150.00, 'RENTING',  '蒋十六', '13800014444',15);
 
 -- -------------------------- 合同数据 --------------------------
 INSERT INTO bus_contract (id, house_id, tenant_name, rent_amount, start_date, end_date, increase_rate, deposit, contract_status) VALUES

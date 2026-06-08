@@ -10,6 +10,7 @@ import com.wisdom.entity.Role;
 import com.wisdom.entity.User;
 import com.wisdom.exception.BusinessException;
 import com.wisdom.mapper.AssetMapper;
+import com.wisdom.mapper.ComplaintMapper;
 import com.wisdom.mapper.ContractMapper;
 import com.wisdom.mapper.RoleMapper;
 import com.wisdom.mapper.UserMapper;
@@ -36,6 +37,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ContractMapper contractMapper;
+
+    @Autowired
+    private ComplaintMapper complaintMapper;
 
     @Autowired
     private RoleMapper roleMapper;
@@ -149,6 +153,11 @@ public class UserServiceImpl implements UserService {
                         contractMapper.updateById(contract);
                     }
                 }
+            }
+
+            // 同步更新投诉记录中的来源字段
+            if (nameChanged) {
+                complaintMapper.updateSourceByReporterId(userId, updateProfileDTO.getRealName());
             }
         }
     }

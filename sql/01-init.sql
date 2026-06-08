@@ -177,9 +177,9 @@ INSERT INTO sys_user (id, username, password, real_name, role_id, status) VALUES
 -- 基础资产数据
 INSERT INTO bus_house (id, parent_id, name, type, area, status, owner_name, owner_phone) VALUES
 (1, 0, 'A栋综合楼',        'BUILDING',    5000.00, 'OCCUPIED', NULL,   NULL),
-(2, 1, '101商铺',          'SHOP',         120.50, 'OCCUPIED', '张三', '13800001111'),
-(3, 1, '102商铺',          'SHOP',          98.00, 'VACANT',   NULL,   NULL),
-(4, 1, '201住宅',          'RESIDENTIAL',   89.50, 'SOLD',     '李四', '13800002222'),
+(2, 1, 'A101商铺',         'SHOP',         120.50, 'OCCUPIED', '张三', '13800001111'),
+(3, 1, 'A102商铺',         'SHOP',          98.00, 'VACANT',   NULL,   NULL),
+(4, 1, 'A201住宅',         'RESIDENTIAL',   89.50, 'SOLD',     '李四', '13800002222'),
 (5, 0, 'B栋综合楼',        'BUILDING',    3800.00, 'OCCUPIED', NULL,   NULL),
-(6, 5, '101办公楼',        'UNIT',         200.00, 'RENTING',  '王五', '13800003333'),
-(7, 5, '202住宅',          'RESIDENTIAL',   76.00, 'VACANT',   NULL,   NULL);
+(6, 5, 'B101办公楼',       'UNIT',         200.00, 'RENTING',  '王五', '13800003333'),
+(7, 5, 'B202住宅',         'RESIDENTIAL',   76.00, 'VACANT',   NULL,   NULL);

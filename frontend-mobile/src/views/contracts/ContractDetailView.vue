@@ -10,8 +10,8 @@ const route = useRoute()
 
 const contract = ref<ContractRecord | null>(null)
 
-const statusMap: Record<number, string> = { 0: '草稿', 1: '生效中', 2: '已终止' }
-const statusTagMap: Record<number, string> = { 0: 'default', 1: 'success', 2: 'danger' }
+const statusMap: Record<number, string> = { 0: '过期/终止', 1: '生效中' }
+const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'success' }
 
 onMounted(async () => {
   const id = Number(route.params.id)

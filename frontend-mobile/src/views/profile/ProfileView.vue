@@ -20,19 +20,9 @@ function handleLogout() {
     <van-nav-bar title="个人中心" fixed placeholder />
 
     <div style="padding: 24px 16px; text-align: center; background: linear-gradient(135deg, #1989fa, #07c160); color: #fff; margin: 12px; border-radius: 12px">
-      <van-image
-        round
-        width="64"
-        height="64"
-        :src="userStore.userInfo?.avatar || ''"
-        style="margin-bottom: 12px; border: 3px solid rgba(255,255,255,0.4)"
-      >
-        <template #error>
-          <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff">
-            {{ (userStore.userInfo?.realName || userStore.userInfo?.username || '?')[0] }}
-          </div>
-        </template>
-      </van-image>
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; border: 3px solid rgba(255,255,255,0.4)">
+        <van-icon name="manager" size="36" color="#fff" />
+      </div>
       <h3 style="font-size: 20px; margin-bottom: 4px">{{ userStore.currentUser }}</h3>
       <p style="font-size: 13px; opacity: 0.8">{{ userStore.userInfo?.roleName || '业主' }}</p>
       <van-button
@@ -57,7 +47,7 @@ function handleLogout() {
           <van-switch v-model="notificationEnabled" size="24px" />
         </template>
       </van-cell>
-      <van-cell title="关于我们" icon="info-o" is-link value="v0.1.0" />
+      <van-cell title="关于我们" icon="info-o" is-link value="v1.1.6" @click="router.push('/profile/about')" />
       <van-cell
         title="退出登录"
         icon="revoke"

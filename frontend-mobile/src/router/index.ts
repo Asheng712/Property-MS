@@ -135,6 +135,12 @@ const router = createRouter({
       meta: { title: '编辑资料' },
     },
     {
+      path: '/profile/about',
+      name: 'profile-about',
+      component: () => import('@/views/profile/AboutView.vue'),
+      meta: { title: '关于我们' },
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       redirect: '/home',
