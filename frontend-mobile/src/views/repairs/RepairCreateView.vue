@@ -29,13 +29,13 @@ onMounted(async () => {
 })
 
 const housePickerColumns = computed(() =>
-  houses.value.map((h) => ({ text: h.name, id: h.id }))
+  houses.value.map((h) => ({ text: h.name, value: h.id }))
 )
 
 function onHouseConfirm({ selectedOptions }: any) {
-  const selected = selectedOptions[0]
+  const selected = selectedOptions?.[0]
   if (selected) {
-    form.value.houseId = selected.id
+    form.value.houseId = selected.value
     selectedHouseName.value = selected.text
   }
   showHousePicker.value = false
