@@ -4,7 +4,6 @@ import type {
   AssetQuery,
   AssetRecord,
   AssetTreeNode,
-  BillBatchRecord,
   BillGeneratePayload,
   BillQuery,
   BillRecord,
@@ -20,7 +19,6 @@ import type {
   NoticePayload,
   NoticeQuery,
   NoticeRecord,
-  PageQuery,
   PageResult,
   PaymentCancelPayload,
   PaymentQuery,
@@ -103,7 +101,7 @@ export const contractApi = {
 
 export const financeApi = {
   generateBills(payload: BillGeneratePayload) {
-    return request<any>('/api/v1/bills/generate', {
+    return request<null>('/api/v1/bills/generate', {
       method: 'POST',
       body: payload,
     })

@@ -27,13 +27,14 @@ interface FilterOption {
 
 const props = withDefaults(
   defineProps<{
-    keyword: string
+    keyword?: string
     status?: string
     placeholder?: string
     selectPlaceholder?: string
     filters?: FilterOption[]
   }>(),
   {
+    keyword: '',
     status: '',
     placeholder: '请输入关键词',
     selectPlaceholder: '筛选状态',

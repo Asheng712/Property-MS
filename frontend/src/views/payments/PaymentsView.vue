@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import DataToolbar from '@/components/DataToolbar.vue'
 import PageContainer from '@/components/PageContainer.vue'
@@ -197,9 +197,9 @@ function getStatusText(status: number) {
   const map: Record<number, string> = { 0: '待核销', 1: '已核销', 2: '已驳回', 3: '已撤销' }
   return map[status] || '未知'
 }
-function getStatusTone(status: number) {
-  const map: Record<number, string> = { 0: 'warning', 1: 'success', 2: 'danger', 3: 'info' }
-  return map[status] || 'info'
+function getStatusTone(status: number): 'success' | 'warning' | 'info' | 'danger' {
+  const map: Record<number, 'success' | 'warning' | 'info' | 'danger'> = { 0: 'warning', 1: 'success', 2: 'danger', 3: 'info' }
+  return map[status] ?? 'info'
 }
 </script>
 

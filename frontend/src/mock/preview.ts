@@ -8,7 +8,7 @@ import type {
   DashboardData,
   NoticeRecord,
   PageResult,
-  PaymentRecord,
+  PaymentRecordVO,
   RepairKanban,
   UserInfo,
 } from '@/types'
@@ -64,13 +64,13 @@ const billBatches: BillBatchRecord[] = [
 ]
 
 const bills: BillRecord[] = [
-  { id: 1, billNo: 'BILL-2605-001', houseId: 2, houseName: 'A1-101 星河咖啡', amount: 12800, type: '商铺租金', payStatus: 0, payStatusText: '待缴费', deadline: '2026-05-31', createTime: '2026-05-01 10:00' },
-  { id: 2, billNo: 'BILL-2605-002', houseId: 5, houseName: '2-1201', amount: 680, type: '物业费', payStatus: 1, payStatusText: '已缴费', deadline: '2026-05-31', createTime: '2026-05-01 10:02' },
+  { id: 1, userId: 1, billNo: 'BILL-2605-001', houseId: 2, houseName: 'A1-101 星河咖啡', amount: 12800, feeType: 1, feeTypeText: '商铺租金', status: 0, statusText: '待缴费', dueDate: '2026-05-31', createTime: '2026-05-01 10:00' },
+  { id: 2, userId: 1, billNo: 'BILL-2605-002', houseId: 5, houseName: '2-1201', amount: 680, feeType: 4, feeTypeText: '物业费', status: 2, statusText: '已缴费', dueDate: '2026-05-31', createTime: '2026-05-01 10:02' },
 ]
 
-const payments: PaymentRecord[] = [
-  { id: 1, trxNo: 'PAY-2605-001', billId: 2, billNo: 'BILL-2605-002', houseId: 5, houseName: '2-1201', payAmount: 680, payType: '微信支付', status: 1, statusText: '已核销', payTime: '2026-05-03 09:15', operator: 'preview' },
-  { id: 2, trxNo: 'PAY-2605-002', billId: 1, billNo: 'BILL-2605-001', houseId: 2, houseName: 'A1-101 星河咖啡', payAmount: 12800, payType: '银行转账', status: 0, statusText: '待核销', payTime: '2026-05-05 11:20', operator: 'preview' },
+const payments: PaymentRecordVO[] = [
+  { id: 1, paymentNo: 'PAY-2605-001', userId: 1, userName: 'preview', amount: 680, payMethod: 1, payMethodText: '微信支付', status: 1, statusText: '已核销', payTime: '2026-05-03 09:15', createTime: '2026-05-03 09:15' },
+  { id: 2, paymentNo: 'PAY-2605-002', userId: 1, userName: 'preview', amount: 12800, payMethod: 3, payMethodText: '银行转账', status: 0, statusText: '待核销', payTime: '2026-05-05 11:20', createTime: '2026-05-05 11:20' },
 ]
 
 const repairKanban: RepairKanban = {

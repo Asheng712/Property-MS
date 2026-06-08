@@ -142,7 +142,7 @@ const nextMonth = computed(() => {
 const billQuery = reactive({
   page: 1,
   pageSize: 20,
-  feeType: undefined as number | undefined,
+  feeType: undefined as string | undefined,
 })
 
 const generateDraft = reactive({
@@ -179,7 +179,7 @@ async function loadBills() {
     const result = await financeApi.getBills({
       page: billQuery.page,
       pageSize: billQuery.pageSize,
-      feeType: billQuery.feeType,
+      feeType: billQuery.feeType !== undefined ? Number(billQuery.feeType) : undefined,
     })
     bills.value = result.records
     billTotal.value = result.total
@@ -248,9 +248,9 @@ function getStatusText(status: number) {
   return map[status] || '未知'
 }
 
-function getStatusTone(status: number) {
-  const map: Record<number, string> = { 0: 'warning', 1: 'info', 2: 'success', 3: 'danger', 4: 'info' }
-  return map[status] || 'info'
+function getStatusTone(status: number): 'success' | 'warning' | 'info' | 'danger' {
+  const map: Record<number, 'success' | 'warning' | 'info' | 'danger'> = { 0: 'warning', 1: 'info', 2: 'success', 3: 'danger', 4: 'info' }
+  return map[status] ?? 'info'
 }
 </script>
 
