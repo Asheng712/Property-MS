@@ -17,21 +17,24 @@ import com.wisdom.enumeration.BillStatusEnum;
 import com.wisdom.enumeration.FeeTypeEnum;
 import com.wisdom.exception.BusinessException;
 import com.wisdom.mapper.AssetMapper;
+import com.wisdom.mapper.BillBatchMapper;
 import com.wisdom.mapper.BillMapper;
 import com.wisdom.mapper.ContractMapper;
 import com.wisdom.mapper.PaymentRecordBillMapper;
 import com.wisdom.mapper.PaymentRecordMapper;
 import com.wisdom.mapper.PropertyFeeConfigMapper;
+import com.wisdom.mapper.UserMapper;
 import com.wisdom.result.PageResult;
 import com.wisdom.service.UserService;
 import com.wisdom.vo.BillVO;
 import com.wisdom.vo.PaymentRecordVO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,6 +49,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class FinanceServiceImplTest {
 
     @Mock
@@ -68,6 +72,12 @@ class FinanceServiceImplTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private UserMapper userMapper;
+
+    @Mock
+    private BillBatchMapper billBatchMapper;
 
     @InjectMocks
     private FinanceServiceImpl financeService;
@@ -115,8 +125,7 @@ class FinanceServiceImplTest {
 
         when(assetMapper.selectById(1L)).thenReturn(house);
 
-        financeService.generateBills(dto);
-
+        assertThrows(BusinessException.class, () -> financeService.generateBills(dto));
         verify(billMapper, never()).insert(any(Bill.class));
     }
 
@@ -192,8 +201,14 @@ class FinanceServiceImplTest {
         bill.setAmount(new BigDecimal("500"));
         bill.setStatus(BillStatusEnum.PENDING.getCode());
 
+        com.wisdom.entity.User mockUser = new com.wisdom.entity.User();
+        mockUser.setId(2L);
+        mockUser.setUsername("testuser");
+        mockUser.setRealName("测试");
+
         when(userService.getRequiredCurrentUserId()).thenReturn(2L);
         when(billMapper.selectBatchIds(List.of(100L))).thenReturn(List.of(bill));
+        when(userMapper.selectById(2L)).thenReturn(mockUser);
 
         PaymentRecordVO result = financeService.submitPayment(dto);
 
@@ -312,6 +327,11 @@ class FinanceServiceImplTest {
         payment.setPayMethod(1);
         payment.setStatus(0);
 
+        com.wisdom.entity.User mockUser = new com.wisdom.entity.User();
+        mockUser.setId(1L);
+        mockUser.setUsername("test");
+        mockUser.setRealName("测试");
+
         Page<PaymentRecord> page = new Page<>(1, 10);
         page.setRecords(List.of(payment));
         page.setTotal(1);
@@ -319,6 +339,7 @@ class FinanceServiceImplTest {
         when(userService.isCurrentUserAdmin()).thenReturn(true);
         when(paymentRecordMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
         when(paymentRecordBillMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of());
+        when(userMapper.selectById(1L)).thenReturn(mockUser);
 
         PageResult<PaymentRecordVO> result = financeService.getPaymentList(dto);
 

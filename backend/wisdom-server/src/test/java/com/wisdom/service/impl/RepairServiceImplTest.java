@@ -19,6 +19,9 @@ import com.wisdom.vo.RepairVO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,13 +33,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class RepairServiceImplTest {
 
     @Mock
@@ -79,8 +82,8 @@ class RepairServiceImplTest {
 
         when(userService.isCurrentUserAdmin()).thenReturn(true);
         when(repairMapper.selectList(null)).thenReturn(List.of(pending, processing, completed));
-        when(assetMapper.selectById(anyLong())).thenReturn(null);
-        when(userMapper.selectById(anyLong())).thenReturn(null);
+        when(assetMapper.selectById(any())).thenReturn(null);
+        when(userMapper.selectById(any())).thenReturn(null);
 
         RepairKanbanVO kanban = repairService.getRepairKanban();
 
@@ -97,8 +100,8 @@ class RepairServiceImplTest {
         when(userService.isCurrentUserAdmin()).thenReturn(false);
         when(userService.getRequiredCurrentUserId()).thenReturn(10L);
         when(repairMapper.selectList(null)).thenReturn(List.of(ownRepair, otherRepair));
-        when(assetMapper.selectById(anyLong())).thenReturn(null);
-        when(userMapper.selectById(anyLong())).thenReturn(null);
+        when(assetMapper.selectById(any())).thenReturn(null);
+        when(userMapper.selectById(any())).thenReturn(null);
 
         RepairKanbanVO kanban = repairService.getRepairKanban();
 
@@ -114,8 +117,8 @@ class RepairServiceImplTest {
 
         when(userService.isCurrentUserAdmin()).thenReturn(true);
         when(repairMapper.selectList(null)).thenReturn(List.of(repairA, repairB));
-        when(assetMapper.selectById(anyLong())).thenReturn(null);
-        when(userMapper.selectById(anyLong())).thenReturn(null);
+        when(assetMapper.selectById(any())).thenReturn(null);
+        when(userMapper.selectById(any())).thenReturn(null);
 
         RepairKanbanVO kanban = repairService.getRepairKanban("李四");
 

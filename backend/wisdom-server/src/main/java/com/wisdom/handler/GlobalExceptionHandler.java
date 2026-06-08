@@ -29,7 +29,9 @@ public class GlobalExceptionHandler {
             default  -> HttpStatus.OK;
         };
 
-        return ResponseEntity.status(status).body(Result.error(ex.getMessage()));
+        Result<Void> body = Result.error(ex.getMessage());
+        body.setCode(ex.getCode());
+        return ResponseEntity.status(status).body(body);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

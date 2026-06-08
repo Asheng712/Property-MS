@@ -93,7 +93,7 @@ class ComplaintControllerApiTest {
 
         mockMvc.perform(get("/api/v1/complaints"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(500))
+                .andExpect(jsonPath("$.code").value(400))
                 .andExpect(jsonPath("$.msg").value("COMPLAINT_QUERY_FAILED"));
     }
 
@@ -128,7 +128,7 @@ class ComplaintControllerApiTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(complaintHandleDTO)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(500))
+                .andExpect(jsonPath("$.code").value(400))
                 .andExpect(jsonPath("$.msg").value("COMPLAINT_HANDLE_FAILED"));
     }
 }

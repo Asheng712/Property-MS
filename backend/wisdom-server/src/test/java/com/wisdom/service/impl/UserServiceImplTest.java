@@ -3,7 +3,9 @@ package com.wisdom.service.impl;
 import com.wisdom.context.BaseContext;
 import com.wisdom.dto.UserLoginDTO;
 import com.wisdom.dto.UserRegisterDTO;
+import com.wisdom.entity.Role;
 import com.wisdom.entity.User;
+import com.wisdom.mapper.RoleMapper;
 import com.wisdom.mapper.UserMapper;
 import com.wisdom.util.JwtTokenUtil;
 import com.wisdom.vo.UserVO;
@@ -31,6 +33,9 @@ class UserServiceImplTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private RoleMapper roleMapper;
+
     private BCryptPasswordEncoder passwordEncoder;
     private JwtTokenUtil jwtTokenUtil;
     private UserServiceImpl userService;
@@ -41,6 +46,7 @@ class UserServiceImplTest {
         passwordEncoder = new BCryptPasswordEncoder();
         jwtTokenUtil = new JwtTokenUtil("test-secret-key-for-jwt-token-generation-256-bit-minimum-length", 86400000L);
         userService = new UserServiceImpl(userMapper, passwordEncoder, jwtTokenUtil);
+        org.springframework.test.util.ReflectionTestUtils.setField(userService, "roleMapper", roleMapper);
     }
 
     @AfterEach
@@ -156,6 +162,11 @@ class UserServiceImplTest {
         user.setRoleId(1L);
 
         when(userMapper.selectById(1L)).thenReturn(user);
+
+        Role adminRole = new Role();
+        adminRole.setId(1L);
+        adminRole.setRoleName("SUPER_ADMIN");
+        when(roleMapper.selectById(1L)).thenReturn(adminRole);
 
         UserVO result = userService.getCurrentUserInfo();
 
