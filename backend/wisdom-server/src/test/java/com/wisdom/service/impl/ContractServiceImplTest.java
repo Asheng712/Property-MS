@@ -9,6 +9,7 @@ import com.wisdom.entity.House;
 import com.wisdom.mapper.AssetMapper;
 import com.wisdom.mapper.ContractMapper;
 import com.wisdom.result.PageResult;
+import com.wisdom.service.FinanceService;
 import com.wisdom.service.UserService;
 import com.wisdom.vo.ContractVO;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ class ContractServiceImplTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private FinanceService financeService;
 
     @InjectMocks
     private ContractServiceImpl contractService;

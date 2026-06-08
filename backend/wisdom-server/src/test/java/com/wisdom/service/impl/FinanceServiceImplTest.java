@@ -2,27 +2,30 @@ package com.wisdom.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wisdom.context.BaseContext;
 import com.wisdom.dto.BillGenerateDTO;
 import com.wisdom.dto.BillPageQueryDTO;
-import com.wisdom.dto.PageQueryDTO;
-import com.wisdom.dto.PaymentAuditDTO;
-import com.wisdom.dto.PaymentCreateDTO;
+import com.wisdom.dto.PaymentCancelDTO;
 import com.wisdom.dto.PaymentPageQueryDTO;
+import com.wisdom.dto.PaymentSubmitDTO;
 import com.wisdom.entity.Bill;
-import com.wisdom.entity.BillBatch;
+import com.wisdom.entity.Contract;
 import com.wisdom.entity.House;
 import com.wisdom.entity.PaymentRecord;
+import com.wisdom.entity.PaymentRecordBill;
+import com.wisdom.entity.PropertyFeeConfig;
+import com.wisdom.enumeration.BillStatusEnum;
+import com.wisdom.enumeration.FeeTypeEnum;
 import com.wisdom.exception.BusinessException;
 import com.wisdom.mapper.AssetMapper;
-import com.wisdom.mapper.BillBatchMapper;
 import com.wisdom.mapper.BillMapper;
+import com.wisdom.mapper.ContractMapper;
+import com.wisdom.mapper.PaymentRecordBillMapper;
 import com.wisdom.mapper.PaymentRecordMapper;
+import com.wisdom.mapper.PropertyFeeConfigMapper;
 import com.wisdom.result.PageResult;
 import com.wisdom.service.UserService;
-import com.wisdom.vo.BatchRecordVO;
 import com.wisdom.vo.BillVO;
-import com.wisdom.vo.PaymentVO;
+import com.wisdom.vo.PaymentRecordVO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -32,24 +35,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FinanceServiceImplTest {
-
-    @Mock
-    private BillBatchMapper billBatchMapper;
 
     @Mock
     private BillMapper billMapper;
@@ -58,7 +55,16 @@ class FinanceServiceImplTest {
     private PaymentRecordMapper paymentRecordMapper;
 
     @Mock
+    private PaymentRecordBillMapper paymentRecordBillMapper;
+
+    @Mock
+    private PropertyFeeConfigMapper propertyFeeConfigMapper;
+
+    @Mock
     private AssetMapper assetMapper;
+
+    @Mock
+    private ContractMapper contractMapper;
 
     @Mock
     private UserService userService;
@@ -66,82 +72,70 @@ class FinanceServiceImplTest {
     @InjectMocks
     private FinanceServiceImpl financeService;
 
+    // ======================== 账单生成 ========================
+
     @Test
-    void batchGenerateBillsShouldCreateBillsForAllHouses() {
+    void generateBillsShouldCreateBillsForGivenHouse() {
         BillGenerateDTO dto = new BillGenerateDTO();
-        dto.setFeeType("物业费");
-        dto.setTargetRange("全部");
+        dto.setFeeType(FeeTypeEnum.RENT.getCode());
+        dto.setBillMonth("2026-06");
+        dto.setHouseId(1L);
 
-        House house1 = new House();
-        house1.setId(1L);
-        house1.setName("1栋101");
-        House house2 = new House();
-        house2.setId(2L);
-        house2.setName("1栋102");
+        House house = new House();
+        house.setId(1L);
+        house.setOwnerId(10L);
+        house.setType("SHOP");
+        house.setArea(new BigDecimal("100"));
 
-        when(assetMapper.selectAllAssets()).thenReturn(List.of(house1, house2));
+        Contract contract = new Contract();
+        contract.setId(1L);
+        contract.setRentAmount(new BigDecimal("5000"));
+        contract.setDeposit(new BigDecimal("10000"));
 
-        BatchRecordVO result = financeService.batchGenerateBills(dto);
+        when(assetMapper.selectById(1L)).thenReturn(house);
+        when(billMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
+        when(contractMapper.selectByHouseId(1L)).thenReturn(List.of(contract));
 
-        // Verify batch created
-        ArgumentCaptor<BillBatch> batchCaptor = ArgumentCaptor.forClass(BillBatch.class);
-        verify(billBatchMapper, times(1)).insert(batchCaptor.capture());
-        assertEquals("物业费", batchCaptor.getValue().getFeeType());
-        assertEquals("全部", batchCaptor.getValue().getTargetRange());
-        assertNotNull(batchCaptor.getValue().getBatchNo());
+        financeService.generateBills(dto);
 
-        // Verify 2 bills created
-        verify(billMapper, times(2)).insert(any(Bill.class));
-
-        // Verify batch updated with totals
-        verify(billBatchMapper, times(1)).updateById(any(BillBatch.class));
-
-        assertNotNull(result);
-        assertEquals("物业费", result.getFeeType());
+        verify(billMapper).insert(any(Bill.class));
     }
 
     @Test
-    void getBatchLogsShouldReturnMappedPage() {
-        PageQueryDTO dto = new PageQueryDTO();
-        dto.setPage(1);
-        dto.setPageSize(10);
+    void generateBillsShouldSkipBuildingType() {
+        BillGenerateDTO dto = new BillGenerateDTO();
+        dto.setFeeType(FeeTypeEnum.RENT.getCode());
+        dto.setBillMonth("2026-06");
+        dto.setHouseId(1L);
 
-        BillBatch batch = new BillBatch();
-        batch.setId(1L);
-        batch.setBatchNo("BAT-001");
-        batch.setFeeType("物业费");
-        batch.setStatus("COMPLETED");
-        batch.setTotalCount(100);
-        batch.setTotalAmount(new BigDecimal("50000"));
+        House house = new House();
+        house.setId(1L);
+        house.setOwnerId(10L);
+        house.setType("BUILDING");
 
-        Page<BillBatch> page = new Page<>(1, 10);
-        page.setRecords(List.of(batch));
-        page.setTotal(1);
+        when(assetMapper.selectById(1L)).thenReturn(house);
 
-        when(billBatchMapper.selectPage(any(Page.class), isNull())).thenReturn(page);
+        financeService.generateBills(dto);
 
-        PageResult<BatchRecordVO> result = financeService.getBatchLogs(dto);
-
-        assertEquals(1, result.getTotal());
-        assertEquals("BAT-001", result.getRecords().get(0).getBatchNo());
-        assertEquals("物业费", result.getRecords().get(0).getFeeType());
+        verify(billMapper, never()).insert(any(Bill.class));
     }
+
+    // ======================== 账单查询 ========================
 
     @Test
     void getBillListShouldReturnMappedPageWhenAdmin() {
         BillPageQueryDTO dto = new BillPageQueryDTO();
         dto.setPage(1);
         dto.setPageSize(10);
-        dto.setBillNo("BILL-001");
 
         Bill bill = new Bill();
         bill.setId(1L);
         bill.setBillNo("BILL-001");
         bill.setHouseId(100L);
+        bill.setFeeType(FeeTypeEnum.RENT.getCode());
         bill.setAmount(new BigDecimal("500"));
-        bill.setPayStatus(0);
-        bill.setType("物业费");
-        bill.setDeadline(LocalDate.now().plusDays(10));
+        bill.setStatus(BillStatusEnum.PENDING.getCode());
+        bill.setDueDate(LocalDate.now().plusDays(10));
 
         Page<Bill> page = new Page<>(1, 10);
         page.setRecords(List.of(bill));
@@ -161,33 +155,6 @@ class FinanceServiceImplTest {
         BillVO vo = result.getRecords().get(0);
         assertEquals("BILL-001", vo.getBillNo());
         assertEquals("1栋101", vo.getHouseName());
-        assertEquals("未缴", vo.getPayStatusText());
-    }
-
-    @Test
-    void getBillListShouldReturnPaidText() {
-        BillPageQueryDTO dto = new BillPageQueryDTO();
-        Bill bill = new Bill();
-        bill.setId(1L);
-        bill.setBillNo("BILL-002");
-        bill.setHouseId(200L);
-        bill.setPayStatus(1);
-
-        Page<Bill> page = new Page<>(1, 10);
-        page.setRecords(List.of(bill));
-        page.setTotal(1);
-
-        House house = new House();
-        house.setId(200L);
-        house.setName("2栋202");
-
-        when(userService.isCurrentUserAdmin()).thenReturn(true);
-        when(billMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
-        when(assetMapper.selectById(200L)).thenReturn(house);
-
-        PageResult<BillVO> result = financeService.getBillList(dto);
-
-        assertEquals("已缴", result.getRecords().get(0).getPayStatusText());
     }
 
     @Test
@@ -196,7 +163,7 @@ class FinanceServiceImplTest {
 
         when(userService.isCurrentUserAdmin()).thenReturn(false);
         when(userService.getRequiredCurrentUserId()).thenReturn(2L);
-        when(userService.getOwnedHouseIds(2L)).thenReturn(List.of(100L, 101L));
+        when(userService.getOwnedHouseIds(2L)).thenReturn(List.of(100L));
 
         Page<Bill> page = new Page<>(1, 10);
         page.setRecords(List.of());
@@ -209,185 +176,181 @@ class FinanceServiceImplTest {
         verify(billMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
     }
 
-    @Test
-    void getBillListShouldReturnEmptyWhenNonAdminHasNoHouses() {
-        BillPageQueryDTO dto = new BillPageQueryDTO();
-
-        when(userService.isCurrentUserAdmin()).thenReturn(false);
-        when(userService.getRequiredCurrentUserId()).thenReturn(3L);
-        when(userService.getOwnedHouseIds(3L)).thenReturn(Collections.emptyList());
-
-        PageResult<BillVO> result = financeService.getBillList(dto);
-
-        assertEquals(0, result.getTotal());
-        assertEquals(0, result.getRecords().size());
-    }
+    // ======================== 提交缴费 ========================
 
     @Test
-    void auditPaymentShouldUpdatePaymentAndBill() {
-        PaymentAuditDTO dto = new PaymentAuditDTO();
-        dto.setStatus(1);
-        dto.setOperator("财务员");
-
-        PaymentRecord payment = new PaymentRecord();
-        payment.setId(1L);
-        payment.setBillId(100L);
+    void submitPaymentShouldCreatePaymentAndMarkBillsSubmitted() {
+        PaymentSubmitDTO dto = new PaymentSubmitDTO();
+        dto.setBillIds(List.of(100L));
+        dto.setPayMethod(1);
+        dto.setVoucherUrl("http://img/test.jpg");
 
         Bill bill = new Bill();
         bill.setId(100L);
-        bill.setPayStatus(0);
-
-        when(paymentRecordMapper.selectById(1L)).thenReturn(payment);
-        when(billMapper.selectById(100L)).thenReturn(bill);
-
-        financeService.auditPayment(1L, dto);
-
-        ArgumentCaptor<PaymentRecord> paymentCaptor = ArgumentCaptor.forClass(PaymentRecord.class);
-        verify(paymentRecordMapper).updateById(paymentCaptor.capture());
-        assertEquals(1, paymentCaptor.getValue().getStatus());
-        assertEquals("财务员", paymentCaptor.getValue().getOperator());
-
-        ArgumentCaptor<Bill> billCaptor = ArgumentCaptor.forClass(Bill.class);
-        verify(billMapper).updateById(billCaptor.capture());
-        assertEquals(1, billCaptor.getValue().getPayStatus());
-    }
-
-    @Test
-    void auditPaymentShouldThrowWhenPaymentNotFound() {
-        PaymentAuditDTO dto = new PaymentAuditDTO();
-        dto.setStatus(1);
-
-        when(paymentRecordMapper.selectById(404L)).thenReturn(null);
-
-        assertThrows(RuntimeException.class, () -> financeService.auditPayment(404L, dto));
-
-        verify(paymentRecordMapper, never()).updateById(any(PaymentRecord.class));
-        verify(billMapper, never()).updateById(any(Bill.class));
-    }
-
-    @Test
-    void createPaymentShouldCreatePaymentAndMarkBillPaid() {
-        PaymentCreateDTO dto = new PaymentCreateDTO();
-        dto.setBillId(100L);
-        dto.setPayAmount(new BigDecimal("500"));
-        dto.setPayType("微信");
-
-        Bill bill = new Bill();
-        bill.setId(100L);
+        bill.setUserId(2L);
         bill.setBillNo("BILL-001");
-        bill.setHouseId(200L);
-        bill.setPayStatus(0);
+        bill.setAmount(new BigDecimal("500"));
+        bill.setStatus(BillStatusEnum.PENDING.getCode());
 
-        when(billMapper.selectById(100L)).thenReturn(bill);
+        when(userService.getRequiredCurrentUserId()).thenReturn(2L);
+        when(billMapper.selectBatchIds(List.of(100L))).thenReturn(List.of(bill));
 
-        House house = new House();
-        house.setId(200L);
-        house.setName("1栋101");
+        PaymentRecordVO result = financeService.submitPayment(dto);
 
-        when(assetMapper.selectById(200L)).thenReturn(house);
-
-        PaymentVO result = financeService.createPayment(dto);
-
-        ArgumentCaptor<PaymentRecord> captor = ArgumentCaptor.forClass(PaymentRecord.class);
-        verify(paymentRecordMapper).insert(captor.capture());
-        assertEquals(100L, captor.getValue().getBillId());
-        assertEquals(new BigDecimal("500"), captor.getValue().getPayAmount());
-        assertEquals("微信", captor.getValue().getPayType());
-        assertEquals(0, captor.getValue().getStatus());
-        assertNotNull(captor.getValue().getTrxNo());
-
+        verify(paymentRecordMapper).insert(any(PaymentRecord.class));
+        verify(paymentRecordBillMapper).insert(any(PaymentRecordBill.class));
         verify(billMapper).updateById(any(Bill.class));
 
         assertNotNull(result);
-        assertEquals("1栋101", result.getHouseName());
-        assertEquals("BILL-001", result.getBillNo());
-        assertEquals("待核销", result.getStatusText());
     }
 
     @Test
-    void createPaymentShouldThrowWhenBillNotFound() {
-        PaymentCreateDTO dto = new PaymentCreateDTO();
-        dto.setBillId(404L);
+    void submitPaymentShouldThrowWhenBillNotFound() {
+        PaymentSubmitDTO dto = new PaymentSubmitDTO();
+        dto.setBillIds(List.of(404L));
 
-        when(billMapper.selectById(404L)).thenReturn(null);
+        when(userService.getRequiredCurrentUserId()).thenReturn(2L);
+        when(billMapper.selectBatchIds(List.of(404L))).thenReturn(List.of());
 
-        assertThrows(BusinessException.class, () -> financeService.createPayment(dto));
+        assertThrows(BusinessException.class, () -> financeService.submitPayment(dto));
 
         verify(paymentRecordMapper, never()).insert(any(PaymentRecord.class));
     }
 
     @Test
-    void createPaymentShouldThrowWhenBillAlreadyPaid() {
-        PaymentCreateDTO dto = new PaymentCreateDTO();
-        dto.setBillId(100L);
+    void submitPaymentShouldThrowWhenBillNotOwnedByUser() {
+        PaymentSubmitDTO dto = new PaymentSubmitDTO();
+        dto.setBillIds(List.of(100L));
 
         Bill bill = new Bill();
         bill.setId(100L);
-        bill.setPayStatus(1);
+        bill.setUserId(99L); // different user
+        bill.setStatus(BillStatusEnum.PENDING.getCode());
 
+        when(userService.getRequiredCurrentUserId()).thenReturn(2L);
+        when(billMapper.selectBatchIds(List.of(100L))).thenReturn(List.of(bill));
+
+        assertThrows(BusinessException.class, () -> financeService.submitPayment(dto));
+    }
+
+    // ======================== 核销 ========================
+
+    @Test
+    void verifyPaymentShouldUpdatePaymentAndBills() {
+        PaymentRecord payment = new PaymentRecord();
+        payment.setId(1L);
+        payment.setStatus(0); // pending
+
+        PaymentRecordBill prb = new PaymentRecordBill();
+        prb.setBillId(100L);
+        prb.setPaymentRecordId(1L);
+
+        Bill bill = new Bill();
+        bill.setId(100L);
+        bill.setStatus(BillStatusEnum.SUBMITTED.getCode());
+
+        when(paymentRecordMapper.selectById(1L)).thenReturn(payment);
+        when(paymentRecordBillMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(prb));
         when(billMapper.selectById(100L)).thenReturn(bill);
 
-        assertThrows(BusinessException.class, () -> financeService.createPayment(dto));
+        financeService.verifyPayment(1L);
+
+        verify(paymentRecordMapper).updateById(any(PaymentRecord.class));
+        verify(billMapper).updateById(any(Bill.class));
     }
 
     @Test
-    void getPaymentListShouldReturnMappedPageWhenAdmin() {
+    void verifyPaymentShouldThrowWhenNotFound() {
+        when(paymentRecordMapper.selectById(404L)).thenReturn(null);
+
+        assertThrows(BusinessException.class, () -> financeService.verifyPayment(404L));
+    }
+
+    // ======================== 撤销核销 ========================
+
+    @Test
+    void cancelPaymentShouldRevertPaymentAndBills() {
+        PaymentCancelDTO dto = new PaymentCancelDTO();
+        dto.setId(1L);
+        dto.setCancelReason("误操作");
+
+        PaymentRecord payment = new PaymentRecord();
+        payment.setId(1L);
+        payment.setStatus(1); // verified
+
+        PaymentRecordBill prb = new PaymentRecordBill();
+        prb.setBillId(100L);
+        prb.setPaymentRecordId(1L);
+
+        Bill bill = new Bill();
+        bill.setId(100L);
+        bill.setStatus(BillStatusEnum.PAID.getCode());
+
+        when(paymentRecordMapper.selectById(1L)).thenReturn(payment);
+        when(paymentRecordBillMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of(prb));
+        when(billMapper.selectById(100L)).thenReturn(bill);
+
+        financeService.cancelPayment(dto);
+
+        verify(paymentRecordMapper).updateById(any(PaymentRecord.class));
+        verify(billMapper).updateById(any(Bill.class));
+    }
+
+    // ======================== 支付记录查询 ========================
+
+    @Test
+    void getPaymentListShouldReturnMappedPage() {
         PaymentPageQueryDTO dto = new PaymentPageQueryDTO();
         dto.setPage(1);
         dto.setPageSize(10);
 
         PaymentRecord payment = new PaymentRecord();
         payment.setId(1L);
-        payment.setTrxNo("TRX-001");
-        payment.setBillId(100L);
-        payment.setHouseId(200L);
-        payment.setPayAmount(new BigDecimal("500"));
-        payment.setPayType("微信");
+        payment.setPaymentNo("PAY-001");
+        payment.setUserId(1L);
+        payment.setAmount(new BigDecimal("500"));
+        payment.setPayMethod(1);
         payment.setStatus(0);
 
         Page<PaymentRecord> page = new Page<>(1, 10);
         page.setRecords(List.of(payment));
         page.setTotal(1);
 
-        House house = new House();
-        house.setId(200L);
-        house.setName("1栋101");
-
-        Bill bill = new Bill();
-        bill.setId(100L);
-        bill.setBillNo("BILL-001");
-
         when(userService.isCurrentUserAdmin()).thenReturn(true);
         when(paymentRecordMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
-        when(assetMapper.selectById(200L)).thenReturn(house);
-        when(billMapper.selectById(100L)).thenReturn(bill);
+        when(paymentRecordBillMapper.selectList(any(LambdaQueryWrapper.class))).thenReturn(List.of());
 
-        PageResult<PaymentVO> result = financeService.getPaymentList(dto);
+        PageResult<PaymentRecordVO> result = financeService.getPaymentList(dto);
 
         assertEquals(1, result.getTotal());
-        PaymentVO vo = result.getRecords().get(0);
-        assertEquals("TRX-001", vo.getTrxNo());
-        assertEquals("1栋101", vo.getHouseName());
-        assertEquals("BILL-001", vo.getBillNo());
-        assertEquals("待核销", vo.getStatusText());
+        PaymentRecordVO vo = result.getRecords().get(0);
+        assertEquals("PAY-001", vo.getPaymentNo());
+    }
+
+    // ======================== 物业费配置 ========================
+
+    @Test
+    void setPropertyFeeConfigShouldInsertConfig() {
+        com.wisdom.dto.PropertyFeeConfigDTO dto = new com.wisdom.dto.PropertyFeeConfigDTO();
+        dto.setUnitPrice(new BigDecimal("3.50"));
+
+        financeService.setPropertyFeeConfig(dto);
+
+        verify(propertyFeeConfigMapper).insert(any(PropertyFeeConfig.class));
     }
 
     @Test
-    void getPaymentListShouldFilterByOwnedHousesWhenNonAdmin() {
-        PaymentPageQueryDTO dto = new PaymentPageQueryDTO();
+    void getCurrentPropertyFeeConfigShouldReturnLatest() {
+        PropertyFeeConfig config = new PropertyFeeConfig();
+        config.setId(1L);
+        config.setUnitPrice(new BigDecimal("2.00"));
+        config.setEffectiveMonth("2026-06");
 
-        when(userService.isCurrentUserAdmin()).thenReturn(false);
-        when(userService.getRequiredCurrentUserId()).thenReturn(2L);
-        when(userService.getOwnedHouseIds(2L)).thenReturn(List.of(200L));
+        when(propertyFeeConfigMapper.getEffectiveConfig(any(String.class))).thenReturn(config);
 
-        Page<PaymentRecord> page = new Page<>(1, 10);
-        page.setRecords(List.of());
-        page.setTotal(0);
+        var result = financeService.getCurrentPropertyFeeConfig();
 
-        when(paymentRecordMapper.selectPage(any(Page.class), any(LambdaQueryWrapper.class))).thenReturn(page);
-
-        financeService.getPaymentList(dto);
-
-        verify(paymentRecordMapper).selectPage(any(Page.class), any(LambdaQueryWrapper.class));
+        assertNotNull(result);
+        assertEquals(new BigDecimal("2.00"), result.getUnitPrice());
     }
 }

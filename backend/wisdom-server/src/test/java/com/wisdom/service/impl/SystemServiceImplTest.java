@@ -119,15 +119,15 @@ class SystemServiceImplTest {
         Bill pendingBill = new Bill();
         pendingBill.setId(1L);
         pendingBill.setAmount(new BigDecimal("500"));
-        pendingBill.setPayStatus(0);
-        pendingBill.setDeadline(LocalDate.now().plusDays(10));
+        pendingBill.setStatus(0);
+        pendingBill.setDueDate(LocalDate.now().plusDays(10));
 
         // Overdue bill
         Bill overdueBill = new Bill();
         overdueBill.setId(2L);
         overdueBill.setAmount(new BigDecimal("300"));
-        overdueBill.setPayStatus(0);
-        overdueBill.setDeadline(LocalDate.now().minusDays(5));
+        overdueBill.setStatus(0);
+        overdueBill.setDueDate(LocalDate.now().minusDays(5));
 
         // Complaint
         Complaint complaint = new Complaint();
