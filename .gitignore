@@ -43,3 +43,4 @@ backend/local-maven-settings.xml
 
 # Local Docker secrets
 secrets/
+hw.pdf
