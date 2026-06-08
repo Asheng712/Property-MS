@@ -1,17 +1,30 @@
 -- ============================================
--- 缴费功能重构 — 数据库迁移
+-- 缴费功能重构 — 数据库迁移（仅对已有旧表结构的数据库执行）
 -- 日期: 2026-06-08
 -- 说明: 按 payment-feature-design.md 重构账单与支付表
+-- 兼容: 新库（01-init.sql 已含最终结构）会自动跳过
 -- ============================================
 
 SET NAMES utf8mb4;
 
--- -------------------------- 2.1 备份旧表 --------------------------
-RENAME TABLE bus_bill TO bus_bill_old;
-RENAME TABLE bus_payment_record TO bus_payment_record_old;
+-- 检查是否为旧库迁移（旧 bus_bill 表的 status 列类型为 INT 而非 TINYINT）
+-- 若已是最新结构则跳过整个迁移
+DROP PROCEDURE IF EXISTS migrate_payment_redesign;
+DELIMITER //
+CREATE PROCEDURE migrate_payment_redesign()
+BEGIN
+  DECLARE has_old_bill INT DEFAULT 0;
+  SELECT COUNT(*) INTO has_old_bill FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bus_bill' AND COLUMN_NAME = 'status' AND DATA_TYPE = 'int';
+  IF has_old_bill = 0 THEN
+    SELECT '06-payment-redesign: 已是最新结构，跳过迁移' AS info;
+  ELSE
+    -- -------------------------- 2.1 备份旧表 --------------------------
+    RENAME TABLE bus_bill TO bus_bill_old;
+    RENAME TABLE bus_payment_record TO bus_payment_record_old;
 
--- -------------------------- 2.2 新账单表 --------------------------
-CREATE TABLE bus_bill (
+    -- -------------------------- 2.2 新账单表 --------------------------
+    CREATE TABLE bus_bill (
     id          BIGINT          AUTO_INCREMENT PRIMARY KEY,
     user_id     BIGINT          NOT NULL COMMENT '用户ID',
     house_id    BIGINT          NOT NULL COMMENT '房屋ID',
@@ -86,3 +99,8 @@ INSERT INTO bus_property_fee_config (unit_price, effective_month, status) VALUES
 
 -- -------------------------- 2.7 迁移旧数据（demo data 不做全量迁移，仅保留结构备份） --------------------------
 -- bus_bill_old 和 bus_payment_record_old 保留作为历史参考，后续可手动清理
+  END IF;
+END//
+DELIMITER ;
+CALL migrate_payment_redesign();
+DROP PROCEDURE IF EXISTS migrate_payment_redesign;
