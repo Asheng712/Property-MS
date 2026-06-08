@@ -2,21 +2,20 @@
 import { ref, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { useBillStore } from '@/stores/bill'
 import { useRepairStore } from '@/stores/repair'
 import { useComplaintStore } from '@/stores/complaint'
-import { noticeApi, assetApi } from '@/services/api'
+import { noticeApi, assetApi, billApi } from '@/services/api'
 import { formatCurrency } from '@/utils/format'
 import type { NoticeRecord, AssetRecord } from '@/types'
 
 const router = useRouter()
 const userStore = useUserStore()
-const billStore = useBillStore()
 const repairStore = useRepairStore()
 const complaintStore = useComplaintStore()
 
 const notices = ref<NoticeRecord[]>([])
 const featuredAssets = ref<AssetRecord[]>([])
+const pendingBillCount = ref(0)
 const loading = ref(true)
 
 const swipeImages = ['#1989fa', '#07c160', '#ff976a']
@@ -60,7 +59,10 @@ async function loadData() {
     notices.value = result.records
   } catch { /* ignore */ }
 
-  try { await billStore.fetchBills({ page: 1, pageSize: 10 }) } catch { /* ignore */ }
+  try {
+    const result = await billApi.getList({ page: 1, pageSize: 1, status: 0 })
+    pendingBillCount.value = result.total
+  } catch { /* ignore */ }
   try { await repairStore.fetchRepairs() } catch { /* ignore */ }
   try { await complaintStore.fetchComplaints() } catch { /* ignore */ }
 
@@ -148,7 +150,7 @@ onActivated(() => {
       <van-cell-group style="margin: 0 12px; border-radius: 8px; overflow: hidden">
         <van-cell
           title="待缴账单"
-          :value="`${billStore.bills.filter(b => b.payStatus === 0).length} 笔`"
+          :value="`${pendingBillCount} 笔`"
           icon="gold-coin-o"
           is-link
           @click="router.push('/bills')"

@@ -99,7 +99,7 @@ public class SystemServiceImpl implements SystemService {
         
         // 获取待收费数据
         LambdaQueryWrapper<Bill> pendingChargeWrapper = new LambdaQueryWrapper<>();
-        pendingChargeWrapper.eq(Bill::getPayStatus, 0);
+        pendingChargeWrapper.eq(Bill::getStatus, 0);
         List<Bill> pendingChargeBills = billMapper.selectList(pendingChargeWrapper);
         dashboardVO.setPendingChargeCount(pendingChargeBills.size());
         double pendingChargeAmount = pendingChargeBills.stream()
@@ -109,8 +109,8 @@ public class SystemServiceImpl implements SystemService {
         
         // 获取欠费数据（假设deadline小于当前日期且未缴费）
         LambdaQueryWrapper<Bill> overdueWrapper = new LambdaQueryWrapper<>();
-        overdueWrapper.eq(Bill::getPayStatus, 0)
-                .lt(Bill::getDeadline, LocalDate.now());
+        overdueWrapper.eq(Bill::getStatus, 0)
+                .lt(Bill::getDueDate, LocalDate.now());
         List<Bill> overdueBills = billMapper.selectList(overdueWrapper);
         dashboardVO.setOverdueCount(overdueBills.size());
         double overdueAmount = overdueBills.stream()

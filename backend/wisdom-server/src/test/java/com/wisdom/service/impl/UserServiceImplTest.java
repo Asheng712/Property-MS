@@ -39,7 +39,7 @@ class UserServiceImplTest {
     void setUp() {
         BaseContext.setCurrentId(1L);
         passwordEncoder = new BCryptPasswordEncoder();
-        jwtTokenUtil = new JwtTokenUtil("test-secret-key-for-jwt-token-generation-256-bit-minimum-length");
+        jwtTokenUtil = new JwtTokenUtil("test-secret-key-for-jwt-token-generation-256-bit-minimum-length", 86400000L);
         userService = new UserServiceImpl(userMapper, passwordEncoder, jwtTokenUtil);
     }
 

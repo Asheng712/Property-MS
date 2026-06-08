@@ -1,11 +1,11 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { billApi, paymentApi } from '@/services/api'
-import type { BillRecord, BillQuery, PaymentRecord, PaymentQuery } from '@/types'
+import type { BillRecord, BillQuery, PaymentRecordVO, PaymentQuery } from '@/types'
 
 export const useBillStore = defineStore('bill', () => {
   const bills = ref<BillRecord[]>([])
-  const payments = ref<PaymentRecord[]>([])
+  const payments = ref<PaymentRecordVO[]>([])
   const currentBill = ref<BillRecord | null>(null)
   const loading = ref(false)
   const refreshing = ref(false)
@@ -17,15 +17,20 @@ export const useBillStore = defineStore('bill', () => {
   async function fetchBills(params?: Partial<BillQuery>) {
     loading.value = true
     try {
+      // 如果调用方指定了 page，同步更新 store 中的 page
+      if (params?.page !== undefined) {
+        page.value = params.page
+      }
       const query: BillQuery = {
         page: page.value,
         pageSize,
         ...params,
       }
+      // Tab 0: 待缴费(status=0), Tab 1: 已缴费(status=2)
       if (activeTab.value === 0) {
-        query.payStatus = 0
+        query.status = 0
       } else if (activeTab.value === 1) {
-        query.payStatus = 1
+        query.status = 2
       }
       const result = await billApi.getList(query)
       if (page.value === 1) {

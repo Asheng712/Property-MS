@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wisdom.context.BaseContext;
+import com.wisdom.dto.BillGenerateDTO;
 import com.wisdom.dto.PurchaseApplicationDTO;
 import com.wisdom.dto.PurchaseApplicationPageQueryDTO;
 import com.wisdom.dto.PurchaseApprovalDTO;
@@ -11,12 +12,14 @@ import com.wisdom.entity.Contract;
 import com.wisdom.entity.House;
 import com.wisdom.entity.PurchaseApplication;
 import com.wisdom.entity.User;
+import com.wisdom.enumeration.FeeTypeEnum;
 import com.wisdom.exception.BusinessException;
 import com.wisdom.mapper.AssetMapper;
 import com.wisdom.mapper.ContractMapper;
 import com.wisdom.mapper.PurchaseApplicationMapper;
 import com.wisdom.mapper.UserMapper;
 import com.wisdom.result.PageResult;
+import com.wisdom.service.FinanceService;
 import com.wisdom.service.PurchaseApplicationService;
 import com.wisdom.service.UserService;
 import com.wisdom.vo.PurchaseApplicationVO;
@@ -48,6 +51,9 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FinanceService financeService;
 
     @Override
     public PageResult<PurchaseApplicationVO> getList(PurchaseApplicationPageQueryDTO dto) {
@@ -172,6 +178,23 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
                 app.setStatus(1);
                 app.setProposedPrice(dto.getProposedPrice());
                 app.setCreatedContractId(contract.getId());
+
+                // 自动生成账单：买房金额 + 物业费
+                String startMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+                try {
+                    BillGenerateDTO purchaseDTO = new BillGenerateDTO();
+                    purchaseDTO.setFeeType(FeeTypeEnum.PURCHASE.getCode());
+                    purchaseDTO.setBillMonth(startMonth);
+                    purchaseDTO.setHouseId(app.getHouseId());
+                    financeService.generateBillsSafe(purchaseDTO);
+                } catch (Exception e) { /* 账单生成失败不阻塞审批 */ }
+                try {
+                    BillGenerateDTO propertyDTO = new BillGenerateDTO();
+                    propertyDTO.setFeeType(FeeTypeEnum.PROPERTY.getCode());
+                    propertyDTO.setBillMonth(startMonth);
+                    propertyDTO.setHouseId(app.getHouseId());
+                    financeService.generateBillsSafe(propertyDTO);
+                } catch (Exception e) { /* 账单生成失败不阻塞审批 */ }
             } else {
                 // 租赁申请：需要租金、开始日期、结束日期，创建租赁合同
                 if (dto.getProposedPrice() == null || dto.getStartDate() == null || dto.getEndDate() == null) {
@@ -203,6 +226,34 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
                 app.setStartDate(dto.getStartDate());
                 app.setEndDate(dto.getEndDate());
                 app.setCreatedContractId(contract.getId());
+
+                // 自动生成账单：租金 + 押金 + 物业费
+                String rentStartMonth = dto.getStartDate() != null
+                    ? dto.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+                    : LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+                try {
+                    BillGenerateDTO rentDTO = new BillGenerateDTO();
+                    rentDTO.setFeeType(FeeTypeEnum.RENT.getCode());
+                    rentDTO.setBillMonth(rentStartMonth);
+                    rentDTO.setHouseId(app.getHouseId());
+                    financeService.generateBillsSafe(rentDTO);
+                } catch (Exception e) { /* 账单生成失败不阻塞审批 */ }
+                if (dto.getDeposit() != null && dto.getDeposit().compareTo(java.math.BigDecimal.ZERO) > 0) {
+                    try {
+                        BillGenerateDTO depositDTO = new BillGenerateDTO();
+                        depositDTO.setFeeType(FeeTypeEnum.DEPOSIT.getCode());
+                        depositDTO.setBillMonth(rentStartMonth);
+                        depositDTO.setHouseId(app.getHouseId());
+                        financeService.generateBillsSafe(depositDTO);
+                    } catch (Exception e) { /* 账单生成失败不阻塞审批 */ }
+                }
+                try {
+                    BillGenerateDTO propertyDTO = new BillGenerateDTO();
+                    propertyDTO.setFeeType(FeeTypeEnum.PROPERTY.getCode());
+                    propertyDTO.setBillMonth(rentStartMonth);
+                    propertyDTO.setHouseId(app.getHouseId());
+                    financeService.generateBillsSafe(propertyDTO);
+                } catch (Exception e) { /* 账单生成失败不阻塞审批 */ }
             }
             purchaseApplicationMapper.updateById(app);
         } else {

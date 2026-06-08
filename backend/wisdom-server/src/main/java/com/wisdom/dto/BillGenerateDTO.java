@@ -4,7 +4,8 @@ import lombok.Data;
 
 @Data
 public class BillGenerateDTO {
-    private String feeType;
-    private String targetRange;
-    private String month;
+    private Integer feeType;
+    private String billMonth;
+    private Long houseId;
+    private String remark;
 }

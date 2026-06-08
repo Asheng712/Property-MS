@@ -3,14 +3,17 @@ package com.wisdom.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wisdom.dto.BillGenerateDTO;
 import com.wisdom.dto.ContractDTO;
 import com.wisdom.dto.ContractPageQueryDTO;
 import com.wisdom.entity.Contract;
 import com.wisdom.entity.House;
+import com.wisdom.enumeration.FeeTypeEnum;
 import com.wisdom.mapper.ContractMapper;
 import com.wisdom.mapper.AssetMapper;
 import com.wisdom.result.PageResult;
 import com.wisdom.service.ContractService;
+import com.wisdom.service.FinanceService;
 import com.wisdom.service.UserService;
 import com.wisdom.vo.ContractVO;
 import org.springframework.beans.BeanUtils;
@@ -33,6 +36,9 @@ public class ContractServiceImpl implements ContractService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FinanceService financeService;
 
     @Override
     public PageResult<ContractVO> getContractList(ContractPageQueryDTO contractPageQueryDTO) {
@@ -78,13 +84,44 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = new Contract();
         BeanUtils.copyProperties(contractDTO, contract);
         if (contractDTO.getId() == null) {
-            // 新增合同：资产状态设为招租中
+            // 新增合同
             contractMapper.insert(contract);
             House house = assetMapper.selectById(contract.getHouseId());
             if (house != null && contract.getContractStatus() != null && contract.getContractStatus() == 1) {
                 house.setStatus("RENTING");
                 house.setOwnerName(contract.getTenantName());
                 assetMapper.updateById(house);
+
+                // 自动生成账单
+                String startMonth = contract.getStartDate() != null
+                    ? contract.getStartDate().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"))
+                    : java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM"));
+                boolean isRental = contract.getDeposit() != null
+                    && contract.getDeposit().compareTo(java.math.BigDecimal.ZERO) > 0;
+
+                try {
+                    BillGenerateDTO primaryDTO = new BillGenerateDTO();
+                    primaryDTO.setFeeType(isRental ? FeeTypeEnum.RENT.getCode() : FeeTypeEnum.PURCHASE.getCode());
+                    primaryDTO.setBillMonth(startMonth);
+                    primaryDTO.setHouseId(contract.getHouseId());
+                    financeService.generateBillsSafe(primaryDTO);
+                } catch (Exception e) { /* 不阻塞 */ }
+                if (isRental) {
+                    try {
+                        BillGenerateDTO depositDTO = new BillGenerateDTO();
+                        depositDTO.setFeeType(FeeTypeEnum.DEPOSIT.getCode());
+                        depositDTO.setBillMonth(startMonth);
+                        depositDTO.setHouseId(contract.getHouseId());
+                        financeService.generateBillsSafe(depositDTO);
+                    } catch (Exception e) { /* 不阻塞 */ }
+                }
+                try {
+                    BillGenerateDTO propertyDTO = new BillGenerateDTO();
+                    propertyDTO.setFeeType(FeeTypeEnum.PROPERTY.getCode());
+                    propertyDTO.setBillMonth(startMonth);
+                    propertyDTO.setHouseId(contract.getHouseId());
+                    financeService.generateBillsSafe(propertyDTO);
+                } catch (Exception e) { /* 不阻塞 */ }
             }
         } else {
             // 编辑合同：若合同终止则释放资产为空置

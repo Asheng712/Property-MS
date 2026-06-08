@@ -6,24 +6,16 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("bus_bill")
-public class Bill implements Serializable {
+@TableName("bus_property_fee_config")
+public class PropertyFeeConfig implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private Long userId;
-    private Long houseId;
-    private Long contractId;
-    private Integer feeType;
-    private String billNo;
-    private String billMonth;
-    private BigDecimal amount;
+    private BigDecimal unitPrice;
+    private String effectiveMonth;
     private Integer status;
-    private LocalDate dueDate;
-    private String remark;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

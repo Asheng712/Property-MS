@@ -22,9 +22,11 @@ import type {
   NoticeRecord,
   PageQuery,
   PageResult,
-  PaymentAuditPayload,
+  PaymentCancelPayload,
   PaymentQuery,
-  PaymentRecord,
+  PaymentRecordVO,
+  PropertyFeeConfigVO,
+  PropertyFeeConfigPayload,
   PurchaseApplicationQuery,
   PurchaseApplicationRecord,
   PurchaseApprovalPayload,
@@ -101,15 +103,9 @@ export const contractApi = {
 
 export const financeApi = {
   generateBills(payload: BillGeneratePayload) {
-    return request<BillBatchRecord>('/api/v1/bills/batch-generate', {
+    return request<any>('/api/v1/bills/generate', {
       method: 'POST',
       body: payload,
-    })
-  },
-  getBatchLogs(query: PageQuery) {
-    return request<PageResult<BillBatchRecord>>('/api/v1/bills/batch-logs', {
-      method: 'GET',
-      query,
     })
   },
   getBills(query: BillQuery) {
@@ -119,14 +115,35 @@ export const financeApi = {
     })
   },
   getPayments(query: PaymentQuery) {
-    return request<PageResult<PaymentRecord>>('/api/v1/finance/payments', {
+    return request<PageResult<PaymentRecordVO>>('/api/v1/payments', {
       method: 'GET',
       query,
     })
   },
-  auditPayment(id: number, payload: PaymentAuditPayload) {
-    return request<null>(`/api/v1/finance/audit/${id}`, {
+  getPaymentDetail(id: number) {
+    return request<PaymentRecordVO>(`/api/v1/payments/${id}`, {
+      method: 'GET',
+    })
+  },
+  verifyPayment(id: number) {
+    return request<null>(`/api/v1/payments/${id}/verify`, {
       method: 'PUT',
+    })
+  },
+  cancelPayment(id: number, payload: PaymentCancelPayload) {
+    return request<null>(`/api/v1/payments/${id}/cancel`, {
+      method: 'PUT',
+      body: payload,
+    })
+  },
+  getPropertyFeeConfig() {
+    return request<PropertyFeeConfigVO>('/api/v1/property-fee-config', {
+      method: 'GET',
+    })
+  },
+  setPropertyFeeConfig(payload: PropertyFeeConfigPayload) {
+    return request<null>('/api/v1/property-fee-config', {
+      method: 'POST',
       body: payload,
     })
   },

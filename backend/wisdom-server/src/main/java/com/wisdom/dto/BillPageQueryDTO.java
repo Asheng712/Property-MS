@@ -6,6 +6,7 @@ import lombok.Data;
 public class BillPageQueryDTO extends PageQueryDTO {
     private String billNo;
     private Long houseId;
-    private Integer payStatus;
-    private String type;
+    private Integer feeType;
+    private Integer status;
+    private String billMonth;
 }

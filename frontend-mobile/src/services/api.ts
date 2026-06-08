@@ -5,9 +5,10 @@ import type {
   RegisterPayload,
   BillRecord,
   BillQuery,
-  PaymentRecord,
+  PaymentRecordVO,
   PaymentQuery,
-  PaymentCreatePayload,
+  PaymentSubmitPayload,
+  PropertyFeeConfigVO,
   RepairKanban,
   RepairPayload,
   RepairRecord,
@@ -50,10 +51,19 @@ export const billApi = {
 
 export const paymentApi = {
   getList(params: PaymentQuery) {
-    return http.get<PageResult<PaymentRecord>>('/finance/payments', { params })
+    return http.get<PageResult<PaymentRecordVO>>('/payments', { params })
   },
-  create(data: PaymentCreatePayload) {
-    return http.post<PaymentRecord>('/finance/payments', data)
+  getDetail(id: number) {
+    return http.get<PaymentRecordVO>(`/payments/${id}`)
+  },
+  submit(data: PaymentSubmitPayload) {
+    return http.post<PaymentRecordVO>('/payments', data)
+  },
+}
+
+export const propertyFeeApi = {
+  getConfig() {
+    return http.get<PropertyFeeConfigVO>('/property-fee-config')
   },
 }
 

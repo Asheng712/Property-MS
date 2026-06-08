@@ -9,23 +9,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("bus_payment_record")
-public class PaymentRecord implements Serializable {
+@TableName("bus_payment_record_bill")
+public class PaymentRecordBill implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String paymentNo;
-    private Long userId;
+    private Long paymentRecordId;
+    private Long billId;
     private BigDecimal amount;
-    private Integer payMethod;
-    private LocalDateTime payTime;
-    private Integer status;
-    private String voucherUrl;
-    private String remark;
-    private Long verifyUser;
-    private LocalDateTime verifyTime;
-    private Long cancelUser;
-    private LocalDateTime cancelTime;
-    private String cancelReason;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

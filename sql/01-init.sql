@@ -65,45 +65,68 @@ CREATE TABLE IF NOT EXISTS bus_contract (
 
 -- -------------------------- 2.3 财务与计费模块 --------------------------
 
-CREATE TABLE IF NOT EXISTS bus_bill_batch (
-    id           BIGINT          AUTO_INCREMENT PRIMARY KEY,
-    batch_no     VARCHAR(50)     NOT NULL UNIQUE,
-    fee_type     VARCHAR(50)     DEFAULT '',
-    target_range VARCHAR(100)    DEFAULT '',
-    total_count  INT             DEFAULT 0,
-    total_amount DECIMAL(12,2)   DEFAULT 0.00,
-    status       VARCHAR(20)     DEFAULT '',
-    operator     VARCHAR(50)     DEFAULT '',
-    create_time  DATETIME        DEFAULT CURRENT_TIMESTAMP,
-    update_time  DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单批处理记录';
-
 CREATE TABLE IF NOT EXISTS bus_bill (
     id          BIGINT          AUTO_INCREMENT PRIMARY KEY,
-    batch_id    BIGINT          DEFAULT NULL,
-    house_id    BIGINT          NOT NULL,
+    user_id     BIGINT          NOT NULL COMMENT '用户ID',
+    house_id    BIGINT          NOT NULL COMMENT '房屋ID',
+    contract_id BIGINT          DEFAULT NULL COMMENT '合同ID',
+    fee_type    TINYINT         NOT NULL COMMENT '1=租金 2=买房金额 3=押金 4=物业费',
     bill_no     VARCHAR(50)     NOT NULL UNIQUE,
-    amount      DECIMAL(10,2)   NOT NULL,
-    type        VARCHAR(20)     DEFAULT '',
-    pay_status  TINYINT         DEFAULT 0,
-    deadline    DATE            DEFAULT NULL,
+    bill_month  VARCHAR(10)     DEFAULT NULL COMMENT '账单月份 如2026-07',
+    amount      DECIMAL(12,2)   NOT NULL,
+    status      TINYINT         DEFAULT 0 COMMENT '0=待缴费 1=待核销 2=已缴费 3=已撤销 4=已作废',
+    due_date    DATE            DEFAULT NULL,
+    remark      VARCHAR(500)    DEFAULT '',
     create_time DATETIME        DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单明细表';
+    update_time DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_bill_user (user_id),
+    INDEX idx_bill_house (house_id),
+    UNIQUE KEY uk_house_fee_month (house_id, fee_type, bill_month)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账单表';
 
 CREATE TABLE IF NOT EXISTS bus_payment_record (
-    id          BIGINT              AUTO_INCREMENT PRIMARY KEY,
-    trx_no      VARCHAR(50)         NOT NULL UNIQUE,
-    bill_id     BIGINT              DEFAULT NULL,
-    house_id    BIGINT              DEFAULT NULL,
-    pay_amount  DECIMAL(10,2)       NOT NULL,
-    pay_type    ENUM('CASH','WECHAT','ALIPAY','TRANSFER') DEFAULT NULL,
-    status      TINYINT             DEFAULT 0,
-    pay_time    DATETIME            DEFAULT NULL,
-    operator    VARCHAR(50)         DEFAULT '',
-    create_time DATETIME            DEFAULT CURRENT_TIMESTAMP,
-    update_time DATETIME            DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='缴费流水表';
+    id              BIGINT          AUTO_INCREMENT PRIMARY KEY,
+    payment_no      VARCHAR(50)     NOT NULL UNIQUE,
+    user_id         BIGINT          NOT NULL,
+    amount          DECIMAL(12,2)   NOT NULL,
+    pay_method      TINYINT         NOT NULL COMMENT '1=微信 2=支付宝 3=银行卡 4=现金',
+    pay_time        DATETIME        DEFAULT NULL,
+    status          TINYINT         DEFAULT 0 COMMENT '0=待核销 1=已核销 2=已驳回 3=已撤销',
+    voucher_url     VARCHAR(255)    DEFAULT '',
+    remark          VARCHAR(500)    DEFAULT '',
+    verify_user     BIGINT          DEFAULT NULL,
+    verify_time     DATETIME        DEFAULT NULL,
+    cancel_user     BIGINT          DEFAULT NULL,
+    cancel_time     DATETIME        DEFAULT NULL,
+    cancel_reason   VARCHAR(500)    DEFAULT '',
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP,
+    update_time     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_pr_user (user_id),
+    INDEX idx_pr_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付记录表';
+
+CREATE TABLE IF NOT EXISTS bus_payment_record_bill (
+    id                  BIGINT          AUTO_INCREMENT PRIMARY KEY,
+    payment_record_id   BIGINT          NOT NULL,
+    bill_id             BIGINT          NOT NULL,
+    amount              DECIMAL(12,2)   NOT NULL,
+    create_time         DATETIME        DEFAULT CURRENT_TIMESTAMP,
+    update_time         DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_prb_payment (payment_record_id),
+    INDEX idx_prb_bill (bill_id),
+    FOREIGN KEY (payment_record_id) REFERENCES bus_payment_record(id),
+    FOREIGN KEY (bill_id) REFERENCES bus_bill(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付明细表';
+
+CREATE TABLE IF NOT EXISTS bus_property_fee_config (
+    id              BIGINT          AUTO_INCREMENT PRIMARY KEY,
+    unit_price      DECIMAL(12,2)   NOT NULL,
+    effective_month VARCHAR(10)     NOT NULL,
+    status          TINYINT         DEFAULT 1,
+    create_time     DATETIME        DEFAULT CURRENT_TIMESTAMP,
+    update_time     DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_pfc_month (effective_month)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='物业费配置表';
 
 -- -------------------------- 2.4 服务模块 --------------------------
 

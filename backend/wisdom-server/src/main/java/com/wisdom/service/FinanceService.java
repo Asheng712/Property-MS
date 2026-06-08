@@ -1,21 +1,25 @@
 package com.wisdom.service;
 
-import com.wisdom.dto.BillGenerateDTO;
-import com.wisdom.dto.BillPageQueryDTO;
-import com.wisdom.dto.PageQueryDTO;
-import com.wisdom.dto.PaymentAuditDTO;
-import com.wisdom.dto.PaymentCreateDTO;
-import com.wisdom.dto.PaymentPageQueryDTO;
+import com.wisdom.dto.*;
 import com.wisdom.result.PageResult;
-import com.wisdom.vo.BatchRecordVO;
 import com.wisdom.vo.BillVO;
-import com.wisdom.vo.PaymentVO;
+import com.wisdom.vo.PaymentRecordVO;
+import com.wisdom.vo.PropertyFeeConfigVO;
 
 public interface FinanceService {
-    BatchRecordVO batchGenerateBills(BillGenerateDTO billGenerateDTO);
-    PageResult<BatchRecordVO> getBatchLogs(PageQueryDTO pageQueryDTO);
-    PageResult<BillVO> getBillList(BillPageQueryDTO billPageQueryDTO);
-    void auditPayment(Long id, PaymentAuditDTO paymentAuditDTO);
-    PageResult<PaymentVO> getPaymentList(PaymentPageQueryDTO paymentPageQueryDTO);
-    PaymentVO createPayment(PaymentCreateDTO paymentCreateDTO);
+    // 账单
+    void generateBills(BillGenerateDTO dto);
+    void generateBillsSafe(BillGenerateDTO dto);
+    PageResult<BillVO> getBillList(BillPageQueryDTO dto);
+
+    // 支付记录
+    PaymentRecordVO submitPayment(PaymentSubmitDTO dto);
+    void verifyPayment(Long id);
+    void cancelPayment(PaymentCancelDTO dto);
+    PageResult<PaymentRecordVO> getPaymentList(PaymentPageQueryDTO dto);
+    PaymentRecordVO getPaymentDetail(Long id);
+
+    // 物业费配置
+    void setPropertyFeeConfig(PropertyFeeConfigDTO dto);
+    PropertyFeeConfigVO getCurrentPropertyFeeConfig();
 }

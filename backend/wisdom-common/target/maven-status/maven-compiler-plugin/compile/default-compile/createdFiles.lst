@@ -1,5 +1,9 @@
 com/wisdom/result/Result.class
+com/wisdom/enumeration/FeeTypeEnum.class
 com/wisdom/ai/AIService.class
+com/wisdom/enumeration/BillStatusEnum.class
+com/wisdom/result/PageResult.class
 com/wisdom/ai/RepairAnalysisResult.class
 com/wisdom/context/BaseContext.class
-com/wisdom/result/PageResult.class
+com/wisdom/enumeration/PaymentStatusEnum.class
+com/wisdom/enumeration/PayMethodEnum.class

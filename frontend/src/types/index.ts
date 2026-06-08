@@ -127,57 +127,100 @@ export interface BillBatchRecord {
 }
 
 export interface BillGeneratePayload {
-  feeType: string
-  targetRange: string
-  month: string
+  feeType: number
+  billMonth?: string
+  houseId?: number
+  remark?: string
 }
 
 export interface BillRecord {
   id: number
-  billNo: string
+  userId: number
   houseId: number
   houseName?: string | null
+  contractId?: number | null
+  feeType: number
+  feeTypeText?: string | null
+  billNo: string
+  billMonth?: string | null
   amount: number
-  type: string
-  payStatus: number
-  payStatusText?: string | null
-  deadline?: string | null
+  status: number
+  statusText?: string | null
+  dueDate?: string | null
+  remark?: string | null
   createTime?: string | null
 }
 
 export interface BillQuery extends PageQuery {
   billNo?: string
   houseId?: number
-  payStatus?: number
-  type?: string
+  feeType?: number
+  status?: number
+  billMonth?: string
 }
 
-export interface PaymentRecord {
+export interface PaymentRecordVO {
   id: number
-  trxNo: string
-  billId: number
-  billNo?: string | null
-  houseId: number
-  houseName?: string | null
-  payAmount: number
-  payType: string
+  paymentNo: string
+  userId: number
+  userName?: string | null
+  amount: number
+  payMethod: number
+  payMethodText?: string | null
+  payTime?: string | null
   status: number
   statusText?: string | null
-  payTime?: string | null
-  operator?: string | null
+  voucherUrl?: string | null
+  remark?: string | null
+  verifyUser?: number | null
+  verifyUserName?: string | null
+  verifyTime?: string | null
+  cancelUser?: number | null
+  cancelUserName?: string | null
+  cancelTime?: string | null
+  cancelReason?: string | null
+  bills?: PaymentRecordDetailVO[]
+  createTime?: string | null
+}
+
+export interface PaymentRecordDetailVO {
+  id: number
+  billId: number
+  billNo?: string | null
+  houseName?: string | null
+  feeType?: number | null
+  feeTypeText?: string | null
+  billMonth?: string | null
+  amount: number
 }
 
 export interface PaymentQuery extends PageQuery {
-  trxNo?: string
-  houseId?: number
+  paymentNo?: string
   status?: number
-  payType?: string
+  payMethod?: number
 }
 
-export interface PaymentAuditPayload {
-  id?: number
+export interface PaymentSubmitPayload {
+  billIds: number[]
+  payMethod: number
+  voucherUrl?: string
+  remark?: string
+}
+
+export interface PaymentCancelPayload {
+  cancelReason: string
+}
+
+export interface PropertyFeeConfigVO {
+  id: number
+  unitPrice: number
+  effectiveMonth?: string | null
   status: number
-  operator: string
+  createTime?: string | null
+}
+
+export interface PropertyFeeConfigPayload {
+  unitPrice: number
 }
 
 export interface RepairRecord {

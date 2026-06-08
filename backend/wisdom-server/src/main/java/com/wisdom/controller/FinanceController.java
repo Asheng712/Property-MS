@@ -1,15 +1,9 @@
 package com.wisdom.controller;
 
 import com.wisdom.annotation.LoginRequired;
-import com.wisdom.dto.BillGenerateDTO;
-import com.wisdom.dto.BillPageQueryDTO;
-import com.wisdom.dto.PageQueryDTO;
-import com.wisdom.dto.PaymentAuditDTO;
-import com.wisdom.dto.PaymentCreateDTO;
-import com.wisdom.dto.PaymentPageQueryDTO;
+import com.wisdom.dto.*;
 import com.wisdom.result.Result;
 import com.wisdom.service.FinanceService;
-import com.wisdom.vo.PaymentVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,50 +12,83 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1")
-@Tag(name = "财务与计费模块", description = "账单生成、在线缴费、财务流水核销等接口")
+@Tag(name = "财务与计费模块", description = "账单生成、在线缴费、核销等接口")
 public class FinanceController {
 
     @Autowired
     private FinanceService financeService;
 
-    @PostMapping("/bills/batch-generate")
-    @Operation(summary = "批量生成月度账单")
-    public Result<?> batchGenerateBills(@RequestBody BillGenerateDTO billGenerateDTO) {
-        return Result.success(financeService.batchGenerateBills(billGenerateDTO));
-    }
+    // ======================== 账单 ========================
 
-    @GetMapping("/bills/batch-logs")
-    @Operation(summary = "查询账单批处理历史")
-    public Result<?> getBatchLogs(PageQueryDTO pageQueryDTO) {
-        return Result.success(financeService.getBatchLogs(pageQueryDTO));
-    }
-
-    @GetMapping("/bills")
-    @Operation(summary = "分页查询账单明细")
+    @PostMapping("/bills/generate")
+    @Operation(summary = "生成账单（根据合同和费用类型）")
     @LoginRequired
-    public Result<?> getBillList(BillPageQueryDTO billPageQueryDTO) {
-        return Result.success(financeService.getBillList(billPageQueryDTO));
-    }
-
-    @PostMapping("/finance/payments")
-    @Operation(summary = "业主在线缴费")
-    @LoginRequired
-    public Result<PaymentVO> createPayment(@Valid @RequestBody PaymentCreateDTO paymentCreateDTO) {
-        PaymentVO paymentVO = financeService.createPayment(paymentCreateDTO);
-        return Result.success(paymentVO);
-    }
-
-    @PutMapping("/finance/audit/{id}")
-    @Operation(summary = "财务流水核销确认")
-    public Result<Void> auditPayment(@PathVariable Long id, @RequestBody PaymentAuditDTO paymentAuditDTO) {
-        financeService.auditPayment(id, paymentAuditDTO);
+    public Result<Void> generateBills(@RequestBody BillGenerateDTO dto) {
+        financeService.generateBills(dto);
         return Result.success(null);
     }
 
-    @GetMapping("/finance/payments")
-    @Operation(summary = "分页查询缴费流水")
+    @GetMapping("/bills")
+    @Operation(summary = "分页查询账单")
     @LoginRequired
-    public Result<?> getPaymentList(PaymentPageQueryDTO paymentPageQueryDTO) {
-        return Result.success(financeService.getPaymentList(paymentPageQueryDTO));
+    public Result<?> getBillList(BillPageQueryDTO dto) {
+        return Result.success(financeService.getBillList(dto));
+    }
+
+    // ======================== 支付记录 ========================
+
+    @PostMapping("/payments")
+    @Operation(summary = "用户提交缴费（支持多账单合并）")
+    @LoginRequired
+    public Result<?> submitPayment(@Valid @RequestBody PaymentSubmitDTO dto) {
+        return Result.success(financeService.submitPayment(dto));
+    }
+
+    @GetMapping("/payments")
+    @Operation(summary = "分页查询支付记录")
+    @LoginRequired
+    public Result<?> getPaymentList(PaymentPageQueryDTO dto) {
+        return Result.success(financeService.getPaymentList(dto));
+    }
+
+    @GetMapping("/payments/{id}")
+    @Operation(summary = "支付记录详情（含账单明细）")
+    @LoginRequired
+    public Result<?> getPaymentDetail(@PathVariable Long id) {
+        return Result.success(financeService.getPaymentDetail(id));
+    }
+
+    @PutMapping("/payments/{id}/verify")
+    @Operation(summary = "管理员核销支付记录")
+    @LoginRequired
+    public Result<Void> verifyPayment(@PathVariable Long id) {
+        financeService.verifyPayment(id);
+        return Result.success(null);
+    }
+
+    @PutMapping("/payments/{id}/cancel")
+    @Operation(summary = "管理员撤销已核销支付记录")
+    @LoginRequired
+    public Result<Void> cancelPayment(@PathVariable Long id, @Valid @RequestBody PaymentCancelDTO dto) {
+        dto.setId(id);
+        financeService.cancelPayment(dto);
+        return Result.success(null);
+    }
+
+    // ======================== 物业费配置 ========================
+
+    @PostMapping("/property-fee-config")
+    @Operation(summary = "设置物业费单价（下月生效）")
+    @LoginRequired
+    public Result<Void> setPropertyFeeConfig(@Valid @RequestBody PropertyFeeConfigDTO dto) {
+        financeService.setPropertyFeeConfig(dto);
+        return Result.success(null);
+    }
+
+    @GetMapping("/property-fee-config")
+    @Operation(summary = "查询当前生效的物业费配置")
+    @LoginRequired
+    public Result<?> getCurrentPropertyFeeConfig() {
+        return Result.success(financeService.getCurrentPropertyFeeConfig());
     }
 }

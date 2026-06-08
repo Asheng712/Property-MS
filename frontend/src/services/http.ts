@@ -91,11 +91,11 @@ export async function request<T>(path: string, options: RequestOptions = {}) {
       handleAuthExpired()
     }
 
-    if (!response.ok) {
-      throw new Error(`请求失败: ${response.status}`)
-    }
-
     const result = (await response.json()) as ApiResponse<T>
+
+    if (!response.ok) {
+      throw new Error(result.msg || `请求失败: ${response.status}`)
+    }
 
     if (result.code !== 200) {
       if (AUTH_EXPIRED_CODES.has(result.code)) {

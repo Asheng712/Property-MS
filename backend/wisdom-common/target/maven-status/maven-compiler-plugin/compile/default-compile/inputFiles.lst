@@ -1,5 +1,9 @@
 /app/wisdom-common/src/main/java/com/wisdom/ai/AIService.java
 /app/wisdom-common/src/main/java/com/wisdom/result/PageResult.java
+/app/wisdom-common/src/main/java/com/wisdom/enumeration/PayMethodEnum.java
 /app/wisdom-common/src/main/java/com/wisdom/ai/RepairAnalysisResult.java
 /app/wisdom-common/src/main/java/com/wisdom/context/BaseContext.java
+/app/wisdom-common/src/main/java/com/wisdom/enumeration/PaymentStatusEnum.java
 /app/wisdom-common/src/main/java/com/wisdom/result/Result.java
+/app/wisdom-common/src/main/java/com/wisdom/enumeration/FeeTypeEnum.java
+/app/wisdom-common/src/main/java/com/wisdom/enumeration/BillStatusEnum.java

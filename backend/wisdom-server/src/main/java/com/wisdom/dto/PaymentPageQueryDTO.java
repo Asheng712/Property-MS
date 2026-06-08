@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class PaymentPageQueryDTO extends PageQueryDTO {
-    private String trxNo;
+    private String paymentNo;
     private Long houseId;
     private Integer status;
-    private String payType;
+    private Integer payMethod;
 }
