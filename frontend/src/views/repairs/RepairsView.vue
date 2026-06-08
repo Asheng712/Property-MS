@@ -24,7 +24,8 @@
           <h3>{{ ticket.content }}</h3>
           <p>位置: {{ ticket.houseName || `房屋ID: ${ticket.houseId}` }}</p>
           <footer>
-            <span>跟进人: {{ ticket.workerName || ticket.reporter }}</span>
+            <span v-if="ticket.workerName">跟进人: {{ ticket.workerName }}</span>
+            <span v-else style="color: var(--text-subtle)">待派单 · 报修人: {{ ticket.reporter || '未知' }}</span>
             <el-button v-if="column.key === 'pending'" plain size="small" @click="openAssignDialog(ticket.id)">立即派单</el-button>
             <el-button v-else-if="column.key === 'processing'" link type="primary" @click="completeTicket(ticket.id)">完成维修</el-button>
             <el-button v-else link type="info" @click="openDetail(ticket)">回访记录</el-button>
@@ -48,6 +49,7 @@
           <el-select v-model="ticketDraft.priority">
             <el-option label="普通" :value="1" />
             <el-option label="紧急" :value="2" />
+            <el-option label="非常紧急" :value="3" />
           </el-select>
         </el-form-item>
       </el-form>

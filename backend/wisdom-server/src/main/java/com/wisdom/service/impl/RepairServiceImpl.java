@@ -90,9 +90,19 @@ public class RepairServiceImpl implements RepairService {
         if (house != null) {
             repairVO.setHouseName(house.getName());
         }
+        // 维修人姓名：用真实姓名而非登录名
         User worker = userMapper.selectById(repair.getWorkerId());
         if (worker != null) {
-            repairVO.setWorkerName(worker.getUsername());
+            repairVO.setWorkerName(worker.getRealName() != null ? worker.getRealName() : worker.getUsername());
+        }
+        // 报修人姓名：优先用真实姓名，其次用 reporter 字段，最后用用户名
+        if (repair.getReporterId() != null) {
+            User reporter = userMapper.selectById(repair.getReporterId());
+            if (reporter != null && reporter.getRealName() != null) {
+                repairVO.setReporter(reporter.getRealName());
+            } else if (reporter != null) {
+                repairVO.setReporter(reporter.getUsername());
+            }
         }
         repairVO.setStatusText(getStatusText(repair.getStatus()));
         repairVO.setPriorityText(getPriorityText(repair.getPriority()));
@@ -112,6 +122,7 @@ public class RepairServiceImpl implements RepairService {
         switch (priority) {
             case 1: return "普通";
             case 2: return "紧急";
+            case 3: return "非常紧急";
             default: return "未知";
         }
     }

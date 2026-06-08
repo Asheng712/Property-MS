@@ -96,7 +96,8 @@ async function onSubmit() {
       <van-cell-group title="优先级" style="margin-top: 12px">
         <van-radio-group v-model="form.priority" direction="horizontal" style="padding: 12px 16px">
           <van-radio :name="1">普通</van-radio>
-          <van-radio :name="2" style="margin-left: 24px">紧急</van-radio>
+          <van-radio :name="2" style="margin-left: 16px">紧急</van-radio>
+          <van-radio :name="3" style="margin-left: 16px">非常紧急</van-radio>
         </van-radio-group>
       </van-cell-group>
 

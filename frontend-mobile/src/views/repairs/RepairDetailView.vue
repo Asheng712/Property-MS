@@ -19,7 +19,7 @@ const statusSteps = [
 
 const statusMap: Record<number, string> = { 0: '待处理', 1: '处理中', 2: '已完成' }
 const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'primary', 2: 'success' }
-const priorityMap: Record<number, string> = { 1: '普通', 2: '紧急' }
+const priorityMap: Record<number, string> = { 1: '普通', 2: '紧急', 3: '非常紧急' }
 
 onMounted(async () => {
   const id = Number(route.params.id)
@@ -39,7 +39,7 @@ onMounted(async () => {
         <van-cell title="报修内容" :value="repair.content" />
         <van-cell title="优先级">
           <template #value>
-            <van-tag :type="repair.priority === 2 ? 'danger' : 'default'" size="small">
+            <van-tag :type="repair.priority >= 2 ? 'danger' : 'default'" size="small">
               {{ priorityMap[repair.priority] }}
             </van-tag>
           </template>

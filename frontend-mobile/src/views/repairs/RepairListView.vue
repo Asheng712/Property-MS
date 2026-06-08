@@ -11,7 +11,7 @@ const activeTab = ref(0)
 
 const statusMap: Record<number, string> = { 0: '待处理', 1: '处理中', 2: '已完成' }
 const statusTagMap: Record<number, string> = { 0: 'warning', 1: 'primary', 2: 'success' }
-const priorityMap: Record<number, string> = { 1: '普通', 2: '紧急' }
+const priorityMap: Record<number, string> = { 1: '普通', 2: '紧急', 3: '非常紧急' }
 
 function filteredList(): RepairRecord[] {
   if (activeTab.value === 0) return repairStore.myRepairs
@@ -50,7 +50,7 @@ onActivated(() => {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
           <span style="font-weight: 600; font-size: 15px">{{ item.repairNo }}</span>
           <div style="display: flex; gap: 6px">
-            <van-tag :type="priorityMap[item.priority] === '紧急' ? 'danger' : 'default'" size="small">
+            <van-tag :type="item.priority >= 2 ? 'danger' : 'default'" size="small">
               {{ priorityMap[item.priority] }}
             </van-tag>
             <van-tag :type="statusTagMap[item.status] as any" size="small">
