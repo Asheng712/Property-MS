@@ -107,7 +107,7 @@ describe('http request client', () => {
       ),
     )
 
-    await expect(request('/api/v1/assets', { method: 'GET' })).rejects.toThrow('500')
+    await expect(request('/api/v1/assets', { method: 'GET' })).rejects.toThrow('Server error')
   })
 
   it('clears auth state when the API reports an expired login', async () => {
