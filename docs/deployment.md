@@ -1,124 +1,97 @@
-# 云服务部署说明
+# 部署说明
 
 ## 概述
 
-本文档描述智慧物业管理系统(WisdomPM)的云服务部署方案，涵盖**前端**（Vue 3 + Vite）的 Vercel 部署和**后端**的 Docker 部署。
+智慧物业管理系统 (WisdomPM) 支持 **Docker Compose 一键部署**（开发/生产），以及 **Vercel/Docker** 单独部署前端。
 
 ---
 
-## 一、平台选择
+## 一、Docker Compose 部署（推荐）
 
-| 服务   | 平台       | 说明                     |
-| ------ | ---------- | ------------------------ |
-| 前端   | Vercel     | 免费静态托管 + 自动部署  |
-| 前端   | Docker     | 自托管 Nginx 镜像        |
-| 后端   | Docker     | Railway / Render 部署    |
+### 开发环境
 
----
-
-## 二、前端部署
-
-### 方式一：Vercel（推荐）
-
-Vercel 原生支持 Vite 项目，配置简单、自动 HTTPS、全球 CDN。
-
-#### 配置文件
-
-`frontend/vercel.json`:
-
-```json
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev -- --host 0.0.0.0",
-  "framework": "vite",
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ]
-}
+```bash
+cp .env.example .env         # 编辑数据库密码和 JWT 密钥
+docker compose up -d --build  # 启动全部服务
 ```
 
-- `rewrites` 配置 SPA 路由回退，所有非 `/api/` 请求指向 `index.html`
-- 生产环境 `VITE_API_URL` 需在 Vercel Settings → Environment Variables 中配置
+启动后访问:
+- PC 管理端: `http://localhost:5173`
+- 移动端: `http://localhost:5174`
+- 后端 API: `http://localhost:8080`
+- API 文档: `http://localhost:8080/doc.html`
 
-#### 部署步骤
+### 生产环境
 
-1. 推送代码至 GitHub 仓库
-2. 在 [Vercel](https://vercel.com) 注册并连接 GitHub
-3. 导入仓库，选择 `frontend` 目录作为 Root Directory
-4. Vercel 自动检测 Vite 框架，应用 `vercel.json` 配置
-5. 配置环境变量 `VITE_API_URL`（指向后端 API 地址）
-6. 部署完成，获得 `https://xxx.vercel.app` 访问地址
+```bash
+cp .env.secrets.example .env.secrets   # 编辑密钥
+mkdir -p secrets
+echo "your-password" > secrets/db_password.txt
+echo "your-root-password" > secrets/mysql_root_password.txt
+docker compose -f compose.prod.yaml up -d --build
+```
 
-#### 自动部署
+### 服务架构
 
-Vercel 默认启用 Git 自动部署：
-- 推送到 `main` 分支 → 自动触发生产部署
-- 创建 PR → 自动生成预览环境
+| 服务 | 镜像 | 端口 |
+|------|------|------|
+| frontend | Nginx (Vite 构建产物) | 80 |
+| mobile | Vite dev server | 5174 |
+| backend | Spring Boot (Maven) | 8080 |
+| db | MySQL 8.4 | 3306 (内部) |
 
-### 方式二：Docker
+后端通过环境变量注入数据库连接和 JWT 密钥。数据库初始化脚本位于 `sql/` 目录，容器首次启动时自动执行。
 
-使用已有的 `frontend/Dockerfile` 构建 Nginx 静态镜像。
+---
 
-#### 构建与运行
+## 二、前端单独部署
 
+### PC 管理端
+
+**Vercel**:
+1. 导入 GitHub 仓库，Root Directory 设为 `frontend`
+2. 配置环境变量 `VITE_API_URL` 指向后端地址
+3. 自动部署
+
+**Docker**:
 ```bash
 cd frontend
 docker build -t wisdompm-frontend .
 docker run -d -p 8080:8080 wisdompm-frontend
 ```
 
-#### Docker 多阶段构建
+### 移动端
 
-- **deps**: 安装 Node.js 依赖
-- **build**: 执行 `npm run build` 生成 `dist/`
-- **runtime**: Nginx 提供静态文件服务，暴露 8080 端口
-
-#### Nginx 配置要点
-
-- SPA 路由支持：`try_files $uri $uri/ /index.html`
-- API 代理：`/api/` → `http://backend:8080`
-- 健康检查：`/health` 返回 200
-
----
-
-## 三、环境变量配置
-
-### 前端环境变量
-
-| 变量           | 说明              | 开发值                  | 生产值                            |
-| -------------- | ----------------- | ----------------------- | --------------------------------- |
-| `VITE_API_URL` | 后端 API 基地址   | `http://localhost:8080` | `https://backend.onrender.com`    |
-
-**Vercel 配置方式**: Settings → Environment Variables → 添加 Key/Value
-
-**Docker 配置方式**: `docker run -e VITE_API_URL=https://api.example.com ...`
-
-注意：Vite 的 `VITE_` 前缀变量会在构建时注入，运行时无法变更。如需运行时配置，应在 Nginx 层处理。
-
----
-
-## 四、自动部署流程
-
-```
-Git Push (main) → Vercel 检测变更 → npm run build → 部署 dist/ → 生效
+```bash
+cd frontend-mobile
+docker build -t wisdompm-mobile .
+docker run -d -p 5174:5174 wisdompm-mobile
 ```
 
-1. 代码推送至 `origin/main`
-2. Vercel 通过 Webhook 感知变更
-3. 执行 `npm run build`（含 `vue-tsc` 类型检查 + `vite build`）
-4. 构建产物 `dist/` 部署至 CDN
-5. 自动 HTTPS 证书续期
+---
+
+## 三、CI/CD 流水线
+
+| 工作流 | 触发条件 | 内容 |
+|--------|----------|------|
+| `ci.yml` | Push/PR to main/develop | 后端测试(89个) + 前端 lint+test |
+| `security.yml` | Push/PR to main | Gitleaks 密钥扫描 + npm audit |
+| `deploy.yml` | Push to main / tag v* | CI 通过后 SSH 部署到生产服务器 |
+
+CI 失败时自动发送邮件通知（需配置 `MAIL_USERNAME` / `MAIL_PASSWORD` Secrets）。
 
 ---
 
-## 五、文件清单
+## 四、文件清单
 
-| 文件                              | 说明                     |
-| --------------------------------- | ------------------------ |
-| `frontend/vercel.json`            | Vercel 部署配置          |
-| `frontend/.env.production`        | 生产环境变量模板         |
-| `frontend/.env.example`           | 本地环境变量模板         |
-| `frontend/Dockerfile`             | Docker 多阶段构建       |
-| `frontend/nginx.conf`             | Nginx 配置文件          |
-| `docs/deployment.md`              | 本文档                  |
+| 文件 | 说明 |
+|------|------|
+| `compose.yaml` | 开发环境 Docker Compose |
+| `compose.prod.yaml` | 生产环境 Docker Compose |
+| `.env.example` | 开发环境变量模板 |
+| `.env.secrets.example` | 生产环境变量模板 |
+| `sql/01-init.sql` | 数据库初始化 DDL + 种子数据 |
+| `backend/Dockerfile` | 后端多阶段构建 (dev/build/runtime) |
+| `frontend/Dockerfile` | 前端 Nginx 镜像 |
+| `frontend-mobile/Dockerfile` | 移动端 Vite 镜像 |
+| `.github/workflows/` | CI/CD 配置 |

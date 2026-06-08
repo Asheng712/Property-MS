@@ -3,172 +3,123 @@
 ## 1. 通用说明
 
 ### 1.1 基础信息
-
-* **网关地址**: `http://localhost:8080/api/v1`
-* **数据格式**: `Content-Type: application/json`
-* **认证方式**: 请求头携带 `Authorization: Bearer <JWT_TOKEN>`
+- **网关地址**: `http://localhost:8080/api/v1`
+- **数据格式**: `Content-Type: application/json`
+- **认证方式**: `Authorization: Bearer <JWT_TOKEN>`
+- **接口文档**: 启动后端后访问 `http://localhost:8080/doc.html` (Knife4j)
 
 ### 1.2 统一返回格式 (`Result<T>`)
-
-所有接口必须返回以下结构的 JSON：
-
 ```json
 {
-  "code": 200,      // 业务状态码: 200-成功, 401-未登录, 403-无权限, 500-系统异常
-  "msg": "操作成功", // 提示信息
-  "data": {}        // 具体的业务数据 (Object 或 Array)
+  "code": 200,
+  "msg": "success",
+  "data": {}
 }
 ```
+状态码: 200-成功, 400-参数错误, 401-未登录, 403-无权限, 404-未找到, 500-系统异常
 
 ---
 
 ## 2. 模块 API 设计
 
-### 2.1 认证与权限模块 (Auth & RBAC)
+### 2.1 认证与权限 (Auth)
 
-| 功能       | 方法     | 路径                  | DTO (入参)            | VO (出参)              |
-|:-------- |:------ |:------------------- |:------------------- |:-------------------- |
-| 用户登录     | `POST` | `/auth/login`       | `UserLoginDTO`      | `String (Token)`     |
-| 用户注册     | `POST` | `/auth/register`    | `UserRegisterDTO`   | -                    |
-| 获取当前用户信息 | `GET`  | `/auth/info`        | -                   | `UserVO`             |
-| 分页获取角色列表 | `GET`  | `/roles`            | `PageQueryDTO`      | `PageResult<RoleVO>` |
-| 更新角色权限   | `PUT`  | `/roles/{id}/perms` | `RolePermUpdateDTO` | -                    |
+| 功能 | 方法 | 路径 | 说明 |
+|:---|:---|:---|:---|
+| 用户登录 | `POST` | `/auth/login` | 返回 JWT Token |
+| 用户注册 | `POST` | `/auth/register` | - |
+| 获取当前用户信息 | `GET` | `/auth/info` | 需登录 |
+| 更新个人资料 | `PUT` | `/auth/profile` | 需登录 |
 
----
+### 2.2 资产与合同 (Asset & Contract)
 
-### 2.2 资产与合同模块 (Asset & Contract)
+| 功能 | 方法 | 路径 | 说明 |
+|:---|:---|:---|:---|
+| 获取资产空间树 | `GET` | `/assets/tree` | 楼栋→单元→房间层级 |
+| 获取名下房屋 | `GET` | `/assets/my-houses` | 当前用户拥有的房屋列表 |
+| 查询资产详情 | `GET` | `/assets/{id}` | - |
+| 分页查询资产 | `GET` | `/assets` | 支持类型/状态/名称筛选 |
+| 新增/编辑资产 | `POST/PUT` | `/assets` | - |
+| 删除资产 | `DELETE` | `/assets/{id}` | - |
+| 分页查询合同 | `GET` | `/contracts` | 非admin自动过滤名下房屋 |
+| 新增合同 | `POST` | `/contracts` | **自动生成当月账单** |
+| 终止合同 | `PUT` | `/contracts` | 释放资产为空置 |
 
-| 功能       | 方法         | 路径             | DTO (入参)               | VO (出参)                  |
-|:-------- |:---------- |:-------------- |:---------------------- |:------------------------ |
-| 获取资产空间树  | `GET`      | `/assets/tree`     | -                      | `List<AssetTreeVO>`      |
-| 获取名下房屋    | `GET`      | `/assets/my-houses` | - (需登录)        | `List<AssetVO>`          |
-| 查询资产详情    | `GET`      | `/assets/{id}`       | -                 | `AssetVO`                |
-| 分页查询资产列表 | `GET`      | `/assets`            | `AssetPageQueryDTO`| `PageResult<AssetVO>`    |
-| 新增/编辑资产  | `POST/PUT` | `/assets`            | `AssetDTO`         | -                        |
-| 删除资产     | `DELETE`   | `/assets/{id}`       | -                  | -                        |
-| 分页查询合同   | `GET`      | `/contracts`   | `ContractPageQueryDTO` | `PageResult<ContractVO>` |
-| 新增/终止合同  | `POST/PUT` | `/contracts`   | `ContractDTO`          | -                        |
+### 2.3 资产申请审批 (Purchase Application)
 
----
+| 功能 | 方法 | 路径 | 说明 |
+|:---|:---|:---|:---|
+| 分页查询申请 | `GET` | `/purchase-applications` | 支持类型/状态筛选 |
+| 查询申请详情 | `GET` | `/purchase-applications/{id}` | - |
+| 提交购买/租赁申请 | `POST` | `/purchase-applications` | 移动端用户申请 |
+| 审批申请 | `PUT` | `/purchase-applications/approve` | **通过后自动创建合同+生成账单** |
 
-### 2.3 财务与计费模块 (Finance & Billing)
+### 2.4 财务与缴费 (Finance)
 
-| 功能        | 方法     | 路径                      | DTO (入参)              | VO (出参)                     |
-|:--------- |:------ |:----------------------- |:--------------------- |:--------------------------- |
-| 批量生成月度账单  | `POST` | `/bills/batch-generate` | `BillGenerateDTO`     | `BatchRecordVO`             |
-| 查询账单批处理历史 | `GET`  | `/bills/batch-logs`     | `PageQueryDTO`        | `PageResult<BatchRecordVO>` |
-| 分页查询账单明细  | `GET`  | `/bills`                | `BillPageQueryDTO`    | `PageResult<BillVO>`        |
-| 业主在线缴费    | `POST` | `/finance/payments`     | `PaymentCreateDTO`    | `PaymentVO`                 |
-| 财务流水核销确认  | `PUT`  | `/finance/audit/{id}`   | `PaymentAuditDTO`     | -                           |
-| 分页查询缴费流水  | `GET`  | `/finance/payments`     | `PaymentPageQueryDTO` | `PageResult<PaymentVO>`     |
+| 功能 | 方法 | 路径 | 说明 |
+|:---|:---|:---|:---|
+| 生成账单 | `POST` | `/bills/generate` | 按费用类型+月份+房屋生成 |
+| 分页查询账单 | `GET` | `/bills` | 非admin自动过滤本人账单 |
+| 提交缴费 | `POST` | `/payments` | 支持多账单合并支付 |
+| 分页查询支付记录 | `GET` | `/payments` | - |
+| 支付记录详情 | `GET` | `/payments/{id}` | 含关联账单明细 |
+| 核销支付 | `PUT` | `/payments/{id}/verify` | 管理员操作，账单→已缴费 |
+| 撤销核销 | `PUT` | `/payments/{id}/cancel` | 管理员操作，账单→待缴费 |
+| 设置物业费单价 | `POST` | `/property-fee-config` | 下月生效 |
+| 查询当前单价 | `GET` | `/property-fee-config` | - |
 
----
-
-### 2.4 服务模块 (Repair & Complaint)
-
-| 功能        | 方法     | 路径                   | DTO (入参)                | VO (出参)                   |
-|:--------- |:------ |:-------------------- |:----------------------- |:------------------------- |
-| 获取报修看板数据  | `GET`  | `/repairs/kanban`    | - (非admin自动按用户过滤) | `RepairKanbanVO`          |
-| 录入/代录工单   | `POST` | `/repairs`           | `RepairDTO` (仅可报名下房屋) | -                  |
-| 派发工单/指派师傅 | `PUT`  | `/repairs/dispatch`  | `RepairDispatchDTO`     | -                         |
-| 更新工单状态    | `PUT`  | `/repairs/status`    | `RepairStatusUpdateDTO` | -                         |
-| 分页查询投诉建议  | `GET`  | `/complaints`        | `ComplaintPageQueryDTO` | `PageResult<ComplaintVO>` |
-| 提交投诉建议    | `POST` | `/complaints`        | `ComplaintCreateDTO`    | - (reporterId由后端自动填)  |
-| 处理并反馈投诉   | `PUT`  | `/complaints/handle` | `ComplaintHandleDTO`    | -                         |
-
----
-
-### 2.5 公告与系统模块 (Notice & System)
-
-| 功能       | 方法     | 路径                       | DTO (入参)             | VO (出参)                  |
-|:-------- |:------ |:------------------------ |:-------------------- |:------------------------ |
-| 分页查询公告历史 | `GET`  | `/notices`               | `NoticePageQueryDTO` | `PageResult<NoticeVO>`   |
-| 发布/暂存公告  | `POST` | `/notices`               | `NoticeDTO`          | -                        |
-| 获取导入导出任务 | `GET`  | `/system/tasks`          | `PageQueryDTO`       | `PageResult<FileTaskVO>` |
-| 导出财务报表   | `GET`  | `/system/export/finance` | `ReportExportDTO`    | `File (Resource)`        |
-| 导入资产数据   | `POST` | `/system/import/assets`  | `MultipartFile`      | `ImportResultVO`         |
-
-* * *
-
-### 2.6 仪表盘模块 (Dashboard)
-
-| 功能       | 方法    | 路径                | DTO (入参) | VO (出参)               |
-| -------- | ----- | ----------------- | -------- | --------------------- |
-| 分页查询公告历史 | `GET` | `/dashboard/data` | `-`      | `Result<DashboardVO>` |
-
----
-
-### 2.7 AI辅助功能模块 (Notice & Finance & Repair)
-
-| 功能       | 方法     | 路径                    | DTO (入参)                        | VO (出参)                   |
-| -------- | ------ | --------------------- | ------------------------------- | ------------------------- |
-| AI辅助生成公告 | `POST` | `/ai/notice/generate` | `String(topic),String(content)` | `String(generatedNotice)` |
-| 发布/暂存公告  | `POST` | `/ai/finance/analyze` | `String(reportData)`            | `String(analysis)`        |
-| 获取导入导出任务 | `POST` | `/ai/repair/analyze`  | `String(description)`           | `RepairAnalysisResult`    |
-
-### ER图
-
-<img width="968" height="894" alt="image" src="https://github.com/user-attachments/assets/8c24617b-7f58-44ec-bde1-be902a8ca722" />
-
-## 3. 典型对象定义 (POJO 示例)
-
-### 3.1 DTO (接收参数)
-
-```typescript
-// ComplaintCreateDTO (业主提交投诉)
-{
-  category: string;    // 分类: 噪音扰民/环境卫生/安全隐患/物业服务/设施维修/其他
-  content: string;     // 投诉内容
-  source: string;      // 来源: APP / 业主用户名
-}
-
-// PaymentCreateDTO (业主模拟缴费)
-{
-  billId: number;      // 账单ID
-  payType: string;     // 支付方式: 微信支付/支付宝/银行卡
-  payAmount: number;   // 支付金额
-}
-
-// AssetPageQueryDTO
-{
-  page: number;
-  pageSize: number;
-  name?: string;       // 房号模糊查询
-  type?: string;       // SHOP, RESIDENTIAL
-  status?: string;     // VACANT, SOLD等
-}
+#### 缴费状态流转
+```
+用户提交缴费 → 支付记录:待核销(0), 账单:待核销(1)
+管理员核销   → 支付记录:已核销(1), 账单:已缴费(2)
+管理员撤销   → 支付记录:已撤销(3), 账单:待缴费(0)
 ```
 
-### 3.2 VO (返回参数)
+### 2.5 服务模块 (Repair & Complaint)
 
-```typescript
-// AssetTreeVO (递归结构)
-{
-  id: number;
-  name: string;
-  type: string;
-  children: AssetTreeVO[];
-}
+| 功能 | 方法 | 路径 | 说明 |
+|:---|:---|:---|:---|
+| 获取报修看板 | `GET` | `/repairs/kanban` | 待处理/处理中/已办结分组 |
+| 提交报修 | `POST` | `/repairs` | 仅可报修名下房屋 |
+| 派发工单 | `PUT` | `/repairs/dispatch` | 指派师傅 |
+| 更新工单状态 | `PUT` | `/repairs/status` | - |
+| 分页查询投诉 | `GET` | `/complaints` | - |
+| 提交投诉 | `POST` | `/complaints` | reporterId 后端自动填 |
+| 处理投诉 | `PUT` | `/complaints/handle` | - |
 
-// RepairKanbanVO (状态看板)
-{
-  pending: RepairVO[];    // 待处理
-  processing: RepairVO[]; // 处理中
-  completed: RepairVO[];  // 已办结
-}
-```
+### 2.6 公告与系统 (Notice & System)
+
+| 功能 | 方法 | 路径 | 说明 |
+|:---|:---|:---|:---|
+| 分页查询公告 | `GET` | `/notices` | - |
+| 发布/暂存公告 | `POST` | `/notices` | - |
+| 获取导入导出任务 | `GET` | `/system/tasks` | - |
+| 导出财务报表 | `GET` | `/system/export/finance` | - |
+| 导入资产数据 | `POST` | `/system/import/assets` | MultipartFile |
+
+### 2.7 运营看板 (Dashboard)
+
+| 功能 | 方法 | 路径 | 说明 |
+|:---|:---|:---|:---|
+| 获取看板数据 | `GET` | `/dashboard/data` | 待收费/欠费/投诉/报修/资产租售占比 |
 
 ---
 
-## 4. 开发注意事项
+## 3. 典型 DTO 示例
 
-1. **路径占位符**: 使用 `{id}` 表示路径参数，Java 端需使用 `@PathVariable` 接收。
-2. **分页封装**: `PageResult` 统一包含 `total` (总数) 和 `records` (当前页数据列表)。
-3. **状态码规范**:
-   * `200`: 成功。
-   * `400`: 参数校验失败（前端传参有误）。
-   * `401`: JWT 缺失或过期，前端需引导至登录页。
-   * `403`: 角色权限不足。
-   * `500`: 后端代码异常或数据库报错。
-4. **Swagger/Knife4j**: 所有接口开发完成后，需及时在 Controller 增加 `@Operation` 注解，确保在线文档 `doc.html` 实时更新。
-5. **数据隔离**: 非管理员用户查询账单/缴费/报修/投诉/合同时，后端自动按用户身份过滤，仅返回其名下房屋或本人提交的数据。管理员不受限制。
+```typescript
+// BillGenerateDTO
+{ feeType: number; billMonth: string; houseId?: number; remark?: string }
+
+// PaymentSubmitDTO (多账单合并支付)
+{ billIds: number[]; payMethod: number; voucherUrl?: string; remark?: string }
+
+// PaymentCancelDTO (撤销核销)
+{ id: number; cancelReason: string }
+
+// PurchaseApprovalDTO (审批)
+{ id: number; approved: boolean; proposedPrice?: number; startDate?: string; endDate?: string; deposit?: number }
+```
+
+## 4. 数据隔离规则
+非管理员用户查询账单/缴费/报修/投诉/合同时，后端自动按 `userId` 过滤，仅返回本人名下数据。报修创建时校验房屋归属 (`owner_id`)。
