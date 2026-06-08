@@ -91,17 +91,27 @@ jobs:
   notify:
     name: Notify
     needs: [backend, frontend]
-    if: failure()
+    if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Send failure notification
+      - name: Set status
+        id: status
+        run: |
+          if [ "${{ needs.backend.result }}" = "success" ] && [ "${{ needs.frontend.result }}" = "success" ]; then
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "result=通过" >> $GITHUB_OUTPUT
+          else
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "result=失败" >> $GITHUB_OUTPUT
+          fi
+      - name: Send notification
         uses: dawidd6/action-send-mail@v4
         with:
           server_address: ${{ secrets.MAIL_SERVER || 'smtp.163.com' }}
           server_port: ${{ secrets.MAIL_PORT || '587' }}
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "❌ CI 构建失败 — ${{ github.repository }}"
+          subject: "${{ steps.status.outputs.emoji }} CI 构建${{ steps.status.outputs.result }} — ${{ github.repository }}"
           to: ${{ secrets.MAIL_TO || secrets.MAIL_USERNAME }}
           from: ${{ secrets.MAIL_FROM || secrets.MAIL_USERNAME }}
           body: |
@@ -109,6 +119,7 @@ jobs:
             分支：${{ github.ref_name }}
             提交：${{ github.sha }}
             作者：${{ github.actor }}
+            结果：${{ steps.status.outputs.result }}
 
             工作流：${{ github.workflow }}
             详情：${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
