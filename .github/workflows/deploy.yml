@@ -7,14 +7,6 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 部署环境
-        type: choice
-        options:
-          - production
-          - staging
-        default: production
 
 permissions:
   contents: read
@@ -29,8 +21,6 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    environment: production
-    continue-on-error: true
 
     steps:
       - name: Check Deployment Config
@@ -52,11 +42,14 @@ jobs:
           script: |
             set -e
 
-            cd /opt/wisdom-pm 2>/dev/null && git pull || \
-              git clone https://github.com/${{ github.repository }}.git /opt/wisdom-pm
-
-            cd /opt/wisdom-pm
-            git checkout main && git pull
+            if [ -d /opt/wisdom-pm/.git ]; then
+              cd /opt/wisdom-pm
+              git fetch origin main
+              git reset --hard origin/main
+            else
+              git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git /opt/wisdom-pm
+              cd /opt/wisdom-pm
+            fi
 
             # 生产部署
             docker compose -f compose.prod.yaml up -d --build --remove-orphans
