@@ -6,5 +6,4 @@ import lombok.Data;
 public class NoticePageQueryDTO extends PageQueryDTO {
     private String title;
     private String status;
-    private String targetType;
 }

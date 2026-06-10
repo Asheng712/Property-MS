@@ -29,4 +29,11 @@ public class NoticeController {
         noticeService.saveNotice(noticeDTO);
         return Result.success(null);
     }
+
+    @PutMapping("/{id}/view")
+    @Operation(summary = "递增公告浏览量")
+    public Result<Void> incrementViewCount(@PathVariable Long id) {
+        noticeService.incrementViewCount(id);
+        return Result.success(null);
+    }
 }

@@ -14,7 +14,6 @@ public class Notice implements Serializable {
     private Long id;
     private String title;
     private String content;
-    private String targetType;
     private String status;
     private Integer viewCount;
     private LocalDateTime createTime;

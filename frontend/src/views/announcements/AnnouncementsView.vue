@@ -15,7 +15,7 @@
         <h3>{{ notice.title }}</h3>
         <p class="content-preview">{{ stripHtml(notice.content) }}</p>
         <footer>
-          <span>投递对象: {{ getTargetText(notice.targetType) }}</span>
+          <span class="muted-text">👁 浏览 {{ notice.viewCount }}</span>
           <div>
             <el-button link type="primary" @click="openEdit(notice)">编辑</el-button>
             <el-button link type="primary" @click="openDetail(notice)">详情</el-button>
@@ -41,13 +41,6 @@
       <el-form label-position="top" class="dialog-form">
         <el-form-item label="公告标题">
           <el-input v-model="draft.title" />
-        </el-form-item>
-        <el-form-item label="推送对象">
-          <el-select v-model="draft.targetType">
-            <el-option label="全体业主" value="ALL" />
-            <el-option label="住户" value="RESIDENT" />
-            <el-option label="商铺租户" value="TENANT" />
-          </el-select>
         </el-form-item>
         <el-form-item label="公告状态">
           <el-select v-model="draft.status">
@@ -95,7 +88,6 @@ const activeNotice = ref<NoticeRecord | null>(null)
 const draft = reactive({
   id: undefined as number | undefined,
   title: '',
-  targetType: 'ALL',
   status: 'draft',
   content: '',
 })
@@ -109,7 +101,6 @@ const detailItems = computed(() =>
   activeNotice.value
     ? [
         { label: '公告标题', value: activeNotice.value.title },
-        { label: '推送对象', value: getTargetText(activeNotice.value.targetType) },
         { label: '公告状态', value: getStatusText(activeNotice.value.status) },
         { label: '浏览量', value: String(activeNotice.value.viewCount) },
         { label: '发布时间', value: activeNotice.value.createTime || '-' },
@@ -156,7 +147,6 @@ function handleSizeChange(size: number) {
 function openEdit(notice: NoticeRecord) {
   draft.id = notice.id
   draft.title = notice.title
-  draft.targetType = notice.targetType
   draft.status = notice.status
   draft.content = notice.content
   dialogVisible.value = true
@@ -178,7 +168,6 @@ async function saveNotice() {
     await noticeApi.save({
       id: draft.id,
       title: draft.title.trim(),
-      targetType: draft.targetType,
       status: draft.status,
       content: draft.content.trim(),
     })
@@ -196,19 +185,8 @@ async function saveNotice() {
 function resetDraft() {
   draft.id = undefined
   draft.title = ''
-  draft.targetType = 'ALL'
   draft.status = 'draft'
   draft.content = ''
-}
-
-function getTargetText(value: string) {
-  const mapping: Record<string, string> = {
-    ALL: '全体业主',
-    RESIDENT: '住户',
-    TENANT: '商铺租户',
-  }
-
-  return mapping[value] ?? value
 }
 
 function getStatusText(value: string) {

@@ -134,7 +134,6 @@ const noticeRecords = [
     id: 801,
     title: '停水通知',
     content: '4月22日 09:00-12:00 例行检修停水。',
-    targetType: 'ALL',
     status: 'PUBLISHED',
     viewCount: 62,
     createTime: now,
@@ -208,6 +207,7 @@ function route(method, path) {
 
   if (method === 'GET' && path === '/api/v1/notices') return ok(page(noticeRecords))
   if (method === 'POST' && path === '/api/v1/notices') return ok(null)
+  if (method === 'PUT' && path.match(/^\/api\/v1\/notices\/\d+\/view$/)) return ok(null)
 
   if (method === 'GET' && path === '/api/v1/roles') return ok(page(roleRecords))
   if (method === 'PUT' && path.match(/^\/api\/v1\/roles\/\d+\/perms$/)) return ok(null)

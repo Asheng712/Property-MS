@@ -59,7 +59,6 @@ class NoticeControllerApiTest {
         noticeVO.setId(1L);
         noticeVO.setTitle("Water outage");
         noticeVO.setStatus("PUBLISHED");
-        noticeVO.setTargetType("OWNER");
         noticeVO.setCreateTime(LocalDateTime.of(2026, 4, 26, 12, 0));
 
         PageResult<NoticeVO> pageResult = new PageResult<>(1, List.of(noticeVO));
@@ -98,7 +97,6 @@ class NoticeControllerApiTest {
         NoticeDTO noticeDTO = new NoticeDTO();
         noticeDTO.setTitle("Elevator maintenance");
         noticeDTO.setContent("Maintenance will start tomorrow.");
-        noticeDTO.setTargetType("OWNER");
         noticeDTO.setStatus("DRAFT");
 
         doNothing().when(noticeService).saveNotice(any(NoticeDTO.class));

@@ -37,9 +37,6 @@ public class NoticeServiceImpl implements NoticeService {
         if (noticePageQueryDTO.getStatus() != null) {
             queryWrapper.eq(Notice::getStatus, noticePageQueryDTO.getStatus());
         }
-        if (noticePageQueryDTO.getTargetType() != null) {
-            queryWrapper.eq(Notice::getTargetType, noticePageQueryDTO.getTargetType());
-        }
         IPage<Notice> noticePage = noticeMapper.selectPage(page, queryWrapper);
         List<NoticeVO> noticeVOList = noticePage.getRecords().stream()
                 .map(notice -> {
@@ -60,7 +57,23 @@ public class NoticeServiceImpl implements NoticeService {
             notice.setCreateTime(LocalDateTime.now());
             noticeMapper.insert(notice);
         } else {
+            // 保留原有的 viewCount 和 createTime，避免更新时被覆盖为 null
+            Notice existing = noticeMapper.selectById(noticeDTO.getId());
+            if (existing != null) {
+                notice.setViewCount(existing.getViewCount());
+                notice.setCreateTime(existing.getCreateTime());
+            }
             noticeMapper.updateById(notice);
         }
+    }
+
+    @Override
+    public void incrementViewCount(Long id) {
+        Notice notice = noticeMapper.selectById(id);
+        if (notice == null) {
+            return;
+        }
+        notice.setViewCount(notice.getViewCount() + 1);
+        noticeMapper.updateById(notice);
     }
 }

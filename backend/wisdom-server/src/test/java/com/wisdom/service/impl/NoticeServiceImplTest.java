@@ -41,14 +41,12 @@ class NoticeServiceImplTest {
         dto.setPageSize(5);
         dto.setTitle("停车");
         dto.setStatus("published");
-        dto.setTargetType("owner");
 
         Notice notice = new Notice();
         notice.setId(1L);
         notice.setTitle("停车通知");
         notice.setContent("地下车库维护");
         notice.setStatus("published");
-        notice.setTargetType("owner");
         notice.setViewCount(7);
 
         Page<Notice> page = new Page<>(2, 5);
@@ -66,7 +64,6 @@ class NoticeServiceImplTest {
         assertEquals("停车通知", vo.getTitle());
         assertEquals("地下车库维护", vo.getContent());
         assertEquals("published", vo.getStatus());
-        assertEquals("owner", vo.getTargetType());
         assertEquals(7, vo.getViewCount());
 
         ArgumentCaptor<Page<Notice>> pageCaptor = ArgumentCaptor.forClass(Page.class);
@@ -100,7 +97,6 @@ class NoticeServiceImplTest {
         dto.setTitle("缴费提醒");
         dto.setContent("请按时缴纳物业费");
         dto.setStatus("draft");
-        dto.setTargetType("owner");
 
         noticeService.saveNotice(dto);
 
@@ -112,7 +108,6 @@ class NoticeServiceImplTest {
         assertEquals("缴费提醒", saved.getTitle());
         assertEquals("请按时缴纳物业费", saved.getContent());
         assertEquals("draft", saved.getStatus());
-        assertEquals("owner", saved.getTargetType());
         assertEquals(0, saved.getViewCount());
         assertNotNull(saved.getCreateTime());
     }
@@ -124,7 +119,6 @@ class NoticeServiceImplTest {
         dto.setTitle("更新通知");
         dto.setContent("内容已更新");
         dto.setStatus("published");
-        dto.setTargetType("all");
 
         noticeService.saveNotice(dto);
 
@@ -137,6 +131,5 @@ class NoticeServiceImplTest {
         assertEquals("更新通知", updated.getTitle());
         assertEquals("内容已更新", updated.getContent());
         assertEquals("published", updated.getStatus());
-        assertEquals("all", updated.getTargetType());
     }
 }

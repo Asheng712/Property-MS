@@ -8,4 +8,5 @@ import com.wisdom.vo.NoticeVO;
 public interface NoticeService {
     PageResult<NoticeVO> getNoticeList(NoticePageQueryDTO noticePageQueryDTO);
     void saveNotice(NoticeDTO noticeDTO);
+    void incrementViewCount(Long id);
 }

@@ -7,7 +7,7 @@
 | PC 管理端 | `frontend/` | Vue 3 + Vite + Element Plus + Pinia + Vue Router | 5173 | 物业管理员后台 |
 | 移动端业主端 | `frontend-mobile/` | Vue 3 + Vite + Vant 4 + Pinia + Vue Router | 5174 | 业主自服务端 |
 
-两个项目共享后端 API (`localhost:8080/api/v1`)，通过 Nginx 反向代理或 Vite proxy 转发。当前版本: **v2.1.1**。
+两个项目共享后端 API (`localhost:8080/api/v1`)，通过 Nginx 反向代理或 Vite proxy 转发。当前版本: **v2.1.2**。
 
 ## 2. PC 管理端 (`frontend/`)
 
@@ -40,7 +40,7 @@
 - 公告：公告列表、公告详情
 - 合同：合同列表（按当前用户过滤）
 - 资产：资产列表、资产详情、购买/租赁申请
-- 个人中心：用户信息、编辑资料、关于我们（v2.1.1）
+- 个人中心：用户信息、编辑资料、关于我们（v2.1.2）
 
 ### 技术要点
 - keep-alive 缓存 Tab 页
@@ -74,4 +74,4 @@ docker compose up -d --build
 
 ---
 
-**更新时间**: 2026-06-08 — v2.1.1
+**更新时间**: 2026-06-08 — v2.1.2

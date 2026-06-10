@@ -91,6 +91,9 @@ export const noticeApi = {
   getList(params: NoticeQuery) {
     return http.get<PageResult<NoticeRecord>>('/notices', { params })
   },
+  incrementView(id: number) {
+    return http.put<null>(`/notices/${id}/view`)
+  },
 }
 
 export const contractApi = {

@@ -12,15 +12,6 @@ onActivated(() => {
   }
 })
 
-function targetTypeLabel(value: string) {
-  const mapping: Record<string, string> = {
-    ALL: '全体业主',
-    RESIDENT: '住户',
-    TENANT: '商铺租户',
-    BUILDING: '楼栋',
-  }
-  return mapping[value] || value
-}
 </script>
 
 <template>
@@ -50,7 +41,6 @@ function targetTypeLabel(value: string) {
                 {{ item.createTime || '-' }}
               </span>
               <div style="display: flex; align-items: center; gap: 8px">
-                <van-tag v-if="item.targetType" type="primary" size="small" plain>{{ targetTypeLabel(item.targetType) }}</van-tag>
                 <span style="font-size: 12px; color: var(--van-text-color-weak)">
                   <van-icon name="eye-o" size="12" /> {{ item.viewCount }}
                 </span>

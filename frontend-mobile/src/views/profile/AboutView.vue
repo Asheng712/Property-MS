@@ -16,7 +16,7 @@ const router = useRouter()
       <p style="font-size: 13px; color: var(--van-text-color-weak); margin-bottom: 24px">Wisdom Property Management</p>
 
       <van-cell-group style="border-radius: 8px; overflow: hidden">
-        <van-cell title="版本号" value="v2.1.1" />
+        <van-cell title="版本号" value="v2.1.2" />
         <van-cell title="技术栈" value="Vue3 + Vant + SpringBoot" />
         <van-cell title="联系我们" value="400-888-0000" />
       </van-cell-group>

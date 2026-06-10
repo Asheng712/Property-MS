@@ -47,7 +47,7 @@ function handleLogout() {
           <van-switch v-model="notificationEnabled" size="24px" />
         </template>
       </van-cell>
-      <van-cell title="关于我们" icon="info-o" is-link value="v2.1.1" @click="router.push('/profile/about')" />
+      <van-cell title="关于我们" icon="info-o" is-link value="v2.1.2" @click="router.push('/profile/about')" />
       <van-cell
         title="退出登录"
         icon="revoke"

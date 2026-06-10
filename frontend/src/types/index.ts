@@ -297,7 +297,6 @@ export interface NoticeRecord {
   id: number
   title: string
   content: string
-  targetType: string
   status: string
   viewCount: number
   createTime?: string | null
@@ -306,14 +305,12 @@ export interface NoticeRecord {
 export interface NoticeQuery extends PageQuery {
   title?: string
   status?: string
-  targetType?: string
 }
 
 export interface NoticePayload {
   id?: number
   title: string
   content: string
-  targetType: string
   status: string
 }
 

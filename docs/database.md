@@ -198,7 +198,6 @@
 | id | BIGINT | PK, 自增 | 公告ID |
 | title | VARCHAR(200) | NOT NULL | 公告标题 |
 | content | LONGTEXT | - | HTML富文本内容 |
-| target_type | VARCHAR(50) | - | 推送范围 |
 | status | VARCHAR(20) | - | PUBLISHED / ARCHIVED |
 | view_count | INT | DEFAULT 0 | 阅读次数 |
 | create_time | DATETIME | DEFAULT NOW | 发布时间 |

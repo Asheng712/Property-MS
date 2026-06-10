@@ -167,7 +167,6 @@ CREATE TABLE IF NOT EXISTS sys_notice (
     id          BIGINT          AUTO_INCREMENT PRIMARY KEY,
     title       VARCHAR(200)    NOT NULL,
     content     LONGTEXT,
-    target_type VARCHAR(50)     DEFAULT '',
     status      VARCHAR(20)     DEFAULT '',
     view_count  INT             DEFAULT 0,
     create_time DATETIME        DEFAULT CURRENT_TIMESTAMP,

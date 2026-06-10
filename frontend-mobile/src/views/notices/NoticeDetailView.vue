@@ -4,6 +4,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useNoticeStore } from '@/stores/notice'
 import type { NoticeRecord } from '@/types'
 
+import { noticeApi } from '@/services/api'
+
 const router = useRouter()
 const route = useRoute()
 const noticeStore = useNoticeStore()
@@ -14,17 +16,12 @@ onMounted(async () => {
   const id = Number(route.params.id)
   await noticeStore.fetchNotices()
   notice.value = noticeStore.notices.find((n) => n.id === id) || null
+  if (notice.value) {
+    noticeApi.incrementView(id).catch(() => {})
+    notice.value.viewCount += 1
+  }
 })
 
-function targetTypeLabel(value: string) {
-  const mapping: Record<string, string> = {
-    ALL: '全体业主',
-    RESIDENT: '住户',
-    TENANT: '商铺租户',
-    BUILDING: '楼栋',
-  }
-  return mapping[value] || value
-}
 </script>
 
 <template>
@@ -39,7 +36,6 @@ function targetTypeLabel(value: string) {
           </template>
         </van-cell>
         <van-cell title="发布时间" :value="notice.createTime || '-'" />
-        <van-cell title="发布对象" :value="targetTypeLabel(notice.targetType)" />
         <van-cell title="浏览次数" :value="String(notice.viewCount)" />
       </van-cell-group>
 

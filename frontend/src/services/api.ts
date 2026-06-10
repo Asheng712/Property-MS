@@ -205,6 +205,11 @@ export const noticeApi = {
       body: payload,
     })
   },
+  incrementView(id: number) {
+    return request<null>(`/api/v1/notices/${id}/view`, {
+      method: 'PUT',
+    })
+  },
 }
 
 export const purchaseApi = {
