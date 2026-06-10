@@ -78,7 +78,10 @@
       "Bash(mv /tmp/ComplaintControllerApiTest.java /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/ComplaintControllerApiTest.java)",
       "Bash(awk 'BEGIN{c=0} { if\\(/\\\\.andExpect\\\\\\(status\\\\\\(\\\\\\)\\\\.isBadRequest\\\\\\(\\\\\\)\\\\\\)/\\) { c++; if\\(c==2\\) { sub\\(/isBadRequest/, \"isOk\"\\) } } print }' /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/NoticeControllerApiTest.java)",
       "Bash(mv /tmp/NoticeControllerApiTest.java /f/Git/Property-MS/backend/wisdom-server/src/test/java/com/wisdom/controller/NoticeControllerApiTest.java)",
-      "Bash(grep -v \"^--$\")"
+      "Bash(grep -v \"^--$\")",
+      "Read(//d/develop/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c//**)"
     ]
   }
 }
